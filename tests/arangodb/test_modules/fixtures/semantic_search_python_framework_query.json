@@ -1,0 +1,18 @@
+{
+  "query": "What frameworks and libraries are available for Python?",
+  "min_score": 0.5,
+  "expected_count_min": 1,
+  "actual_count": 10,
+  "expected_keys": [
+    "search_40ed45fb",
+    "search_294202e3",
+    "similarity_test_45393189",
+    "search_a77ed24d",
+    "similarity_test_356b2556",
+    "search_498ab492",
+    "search_cbd95265",
+    "test_doc_3e417b6a_1",
+    "test_doc_2487c0da_2",
+    "cache_test_df645e26"
+  ]
+}

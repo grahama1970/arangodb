@@ -1,0 +1,26 @@
+{
+  "query": "Programming languages and their applications",
+  "min_score": {
+    "bm25": 0.1,
+    "semantic": 0.5
+  },
+  "weights": {
+    "bm25": 0.3,
+    "semantic": 0.7
+  },
+  "tag_list": null,
+  "expected_count_min": 1,
+  "actual_count": 10,
+  "expected_keys": [
+    "similarity_test_ffe2025a",
+    "search_40ed45fb",
+    "test_doc_16da5676_1",
+    "similarity_test_45393189",
+    "test_doc_00bc6fb7_1",
+    "search_a89152c3",
+    "search_1adad6da",
+    "search_498ab492",
+    "cache_test_df645e26",
+    "search_1d023593"
+  ]
+}

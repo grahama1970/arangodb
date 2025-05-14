@@ -1,0 +1,16 @@
+{
+  "tags": [
+    "database"
+  ],
+  "require_all_tags": false,
+  "expected_count": 6,
+  "expected_keys": [
+    "search_1d023593",
+    "search_498ab492",
+    "search_667453ca",
+    "search_8513aec9",
+    "search_a77ed24d",
+    "search_e92786c3"
+  ],
+  "filter_expr": "doc.difficulty == @difficulty"
+}

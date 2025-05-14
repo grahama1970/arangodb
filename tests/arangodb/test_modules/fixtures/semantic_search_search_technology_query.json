@@ -1,0 +1,18 @@
+{
+  "query": "What techniques are used in modern search engines?",
+  "min_score": 0.5,
+  "expected_count_min": 1,
+  "actual_count": 10,
+  "expected_keys": [
+    "search_cbd95265",
+    "embedding_update_714262f9",
+    "test_doc_3e417b6a_2",
+    "similarity_test_0a0b8367",
+    "search_e92786c3",
+    "similarity_test_51e7b3b9",
+    "cache_test_df645e26",
+    "test_doc_00bc6fb7_2",
+    "test_doc_16da5676_1",
+    "search_1adad6da"
+  ]
+}

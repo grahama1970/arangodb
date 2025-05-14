@@ -1,0 +1,24 @@
+{
+  "query": "Database concepts and models",
+  "min_score": {
+    "bm25": 0.1,
+    "semantic": 0.5
+  },
+  "weights": {
+    "bm25": 0.5,
+    "semantic": 0.5
+  },
+  "tag_list": [
+    "database"
+  ],
+  "expected_count_min": 1,
+  "actual_count": 6,
+  "expected_keys": [
+    "search_498ab492",
+    "search_8513aec9",
+    "search_1d023593",
+    "search_667453ca",
+    "search_a77ed24d",
+    "search_e92786c3"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "query": "search algorithms",
+  "min_score": 0.1,
+  "expected_count": 6,
+  "expected_keys": [
+    "search_2c8321dc",
+    "search_a89152c3",
+    "search_40ed45fb",
+    "search_498ab492",
+    "search_a77ed24d",
+    "search_e92786c3"
+  ]
+}

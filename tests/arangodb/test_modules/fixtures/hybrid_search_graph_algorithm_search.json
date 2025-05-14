@@ -1,0 +1,26 @@
+{
+  "query": "Graph databases and search algorithms",
+  "min_score": {
+    "bm25": 0.1,
+    "semantic": 0.5
+  },
+  "weights": {
+    "bm25": 0.7,
+    "semantic": 0.3
+  },
+  "tag_list": null,
+  "expected_count_min": 1,
+  "actual_count": 10,
+  "expected_keys": [
+    "search_498ab492",
+    "search_a89152c3",
+    "search_e92786c3",
+    "search_2c8321dc",
+    "search_a77ed24d",
+    "search_8513aec9",
+    "search_40ed45fb",
+    "search_667453ca",
+    "similarity_test_b4b7375d",
+    "search_1d023593"
+  ]
+}

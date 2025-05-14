@@ -1,0 +1,12 @@
+{
+  "start_key": "search_294202e3",
+  "direction": "INBOUND",
+  "min_depth": 1,
+  "max_depth": 1,
+  "relationship_types": null,
+  "expected_count": 2,
+  "expected_vertex_keys": [
+    "test_doc_09cb5984_1",
+    "test_doc_09cb5984_2"
+  ]
+}

@@ -1,0 +1,415 @@
+2025-05-03 19:57:44.205 | INFO     | complexity.arangodb.embedding_utils:<module>:14 - Transformers library is available for embeddings
+2025-05-03 19:57:44.205 | DEBUG    | complexity.arangodb.search_api.semantic_search:<module>:76 - PyTorch search utilities not available
+2025-05-03 19:57:45.492 | INFO     | complexity.arangodb.arango_setup:connect_arango:92 - Connecting to ArangoDB at http://localhost:8529
+2025-05-03 19:57:45.495 | INFO     | complexity.arangodb.arango_setup:connect_arango:96 - Connected to ArangoDB version 3.12.4
+2025-05-03 19:57:45.498 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:102 - BM25 search started - query: 'python programming'
+2025-05-03 19:57:45.498 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:103 - Collections: ['test_docs']
+2025-05-03 19:57:45.498 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:104 - View name: complexity_view
+2025-05-03 19:57:45.498 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:105 - Search fields: ['question', 'answer', 'tags', 'title', 'context']
+2025-05-03 19:57:45.498 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:106 - Filter expression: None
+2025-05-03 19:57:45.498 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:107 - Tag list: None
+2025-05-03 19:57:45.499 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:159 - Building search field conditions using fields: ['question', 'answer', 'tags', 'title', 'context']
+2025-05-03 19:57:45.499 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:170 - Search field conditions: ANALYZER(doc.question IN search_tokens, "text_en") OR ANALYZER(doc.context IN search_tokens, "text_en") OR ANALYZER(doc.answer IN search_tokens, "text_en") OR ANALYZER(doc.tags IN search_tokens, "text_en") OR ANALYZER(doc.content IN search_tokens, "text_en") OR ANALYZER(doc.title IN search_tokens, "text_en")
+2025-05-03 19:57:45.499 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:187 - AQL query: 
+        LET search_tokens = TOKENS(@query, "text_en")
+        FOR doc IN complexity_view
+        SEARCH ANALYZER(doc.question IN search_tokens, "text_en") OR ANALYZER(doc.context IN search_tokens, "text_en") OR ANALYZER(doc.answer IN search_tokens, "text_en") OR ANALYZER(doc.tags IN search_tokens, "text_en") OR ANALYZER(doc.content IN search_tokens, "text_en") OR ANALYZER(doc.title IN search_tokens, "text_en")
+        
+        LET score = BM25(doc)
+        FILTER score >= @min_score
+        SORT score DESC
+        LIMIT 0, 10
+        RETURN {
+            "doc": doc,
+            "score": score
+        }
+        
+2025-05-03 19:57:45.499 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:199 - Query bind vars: {'query': 'python programming', 'min_score': 0.1}
+2025-05-03 19:57:45.501 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:202 - Query returned 0 results
+2025-05-03 19:57:45.502 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:228 - Total count: 0
+2025-05-03 19:57:45.502 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:232 - Search completed in 0.0043 seconds
+2025-05-03 19:57:45.503 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:102 - BM25 search started - query: 'database arangodb'
+2025-05-03 19:57:45.503 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:103 - Collections: ['test_docs']
+2025-05-03 19:57:45.503 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:104 - View name: complexity_view
+2025-05-03 19:57:45.503 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:105 - Search fields: ['question', 'answer', 'tags', 'title', 'context']
+2025-05-03 19:57:45.503 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:106 - Filter expression: None
+2025-05-03 19:57:45.503 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:107 - Tag list: None
+2025-05-03 19:57:45.504 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:159 - Building search field conditions using fields: ['question', 'answer', 'tags', 'title', 'context']
+2025-05-03 19:57:45.504 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:170 - Search field conditions: ANALYZER(doc.question IN search_tokens, "text_en") OR ANALYZER(doc.context IN search_tokens, "text_en") OR ANALYZER(doc.answer IN search_tokens, "text_en") OR ANALYZER(doc.tags IN search_tokens, "text_en") OR ANALYZER(doc.content IN search_tokens, "text_en") OR ANALYZER(doc.title IN search_tokens, "text_en")
+2025-05-03 19:57:45.504 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:187 - AQL query: 
+        LET search_tokens = TOKENS(@query, "text_en")
+        FOR doc IN complexity_view
+        SEARCH ANALYZER(doc.question IN search_tokens, "text_en") OR ANALYZER(doc.context IN search_tokens, "text_en") OR ANALYZER(doc.answer IN search_tokens, "text_en") OR ANALYZER(doc.tags IN search_tokens, "text_en") OR ANALYZER(doc.content IN search_tokens, "text_en") OR ANALYZER(doc.title IN search_tokens, "text_en")
+        
+        LET score = BM25(doc)
+        FILTER score >= @min_score
+        SORT score DESC
+        LIMIT 0, 10
+        RETURN {
+            "doc": doc,
+            "score": score
+        }
+        
+2025-05-03 19:57:45.504 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:199 - Query bind vars: {'query': 'database arangodb', 'min_score': 0.1}
+2025-05-03 19:57:45.505 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:202 - Query returned 0 results
+2025-05-03 19:57:45.506 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:228 - Total count: 0
+2025-05-03 19:57:45.506 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:232 - Search completed in 0.0038 seconds
+2025-05-03 19:57:45.506 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:102 - BM25 search started - query: 'search algorithms'
+2025-05-03 19:57:45.506 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:103 - Collections: ['test_docs']
+2025-05-03 19:57:45.506 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:104 - View name: complexity_view
+2025-05-03 19:57:45.506 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:105 - Search fields: ['question', 'answer', 'tags', 'title', 'context']
+2025-05-03 19:57:45.507 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:106 - Filter expression: None
+2025-05-03 19:57:45.507 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:107 - Tag list: None
+2025-05-03 19:57:45.507 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:159 - Building search field conditions using fields: ['question', 'answer', 'tags', 'title', 'context']
+2025-05-03 19:57:45.508 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:170 - Search field conditions: ANALYZER(doc.question IN search_tokens, "text_en") OR ANALYZER(doc.context IN search_tokens, "text_en") OR ANALYZER(doc.answer IN search_tokens, "text_en") OR ANALYZER(doc.tags IN search_tokens, "text_en") OR ANALYZER(doc.content IN search_tokens, "text_en") OR ANALYZER(doc.title IN search_tokens, "text_en")
+2025-05-03 19:57:45.508 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:187 - AQL query: 
+        LET search_tokens = TOKENS(@query, "text_en")
+        FOR doc IN complexity_view
+        SEARCH ANALYZER(doc.question IN search_tokens, "text_en") OR ANALYZER(doc.context IN search_tokens, "text_en") OR ANALYZER(doc.answer IN search_tokens, "text_en") OR ANALYZER(doc.tags IN search_tokens, "text_en") OR ANALYZER(doc.content IN search_tokens, "text_en") OR ANALYZER(doc.title IN search_tokens, "text_en")
+        
+        LET score = BM25(doc)
+        FILTER score >= @min_score
+        SORT score DESC
+        LIMIT 0, 10
+        RETURN {
+            "doc": doc,
+            "score": score
+        }
+        
+2025-05-03 19:57:45.508 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:199 - Query bind vars: {'query': 'search algorithms', 'min_score': 0.1}
+2025-05-03 19:57:45.509 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:202 - Query returned 0 results
+2025-05-03 19:57:45.510 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:228 - Total count: 0
+2025-05-03 19:57:45.510 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:232 - Search completed in 0.0038 seconds
+2025-05-03 19:57:45.510 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:102 - BM25 search started - query: 'nonexistent term xylophone'
+2025-05-03 19:57:45.510 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:103 - Collections: ['test_docs']
+2025-05-03 19:57:45.510 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:104 - View name: complexity_view
+2025-05-03 19:57:45.510 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:105 - Search fields: ['question', 'answer', 'tags', 'title', 'context']
+2025-05-03 19:57:45.510 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:106 - Filter expression: None
+2025-05-03 19:57:45.510 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:107 - Tag list: None
+2025-05-03 19:57:45.511 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:159 - Building search field conditions using fields: ['question', 'answer', 'tags', 'title', 'context']
+2025-05-03 19:57:45.511 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:170 - Search field conditions: ANALYZER(doc.question IN search_tokens, "text_en") OR ANALYZER(doc.context IN search_tokens, "text_en") OR ANALYZER(doc.answer IN search_tokens, "text_en") OR ANALYZER(doc.tags IN search_tokens, "text_en") OR ANALYZER(doc.content IN search_tokens, "text_en") OR ANALYZER(doc.title IN search_tokens, "text_en")
+2025-05-03 19:57:45.511 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:187 - AQL query: 
+        LET search_tokens = TOKENS(@query, "text_en")
+        FOR doc IN complexity_view
+        SEARCH ANALYZER(doc.question IN search_tokens, "text_en") OR ANALYZER(doc.context IN search_tokens, "text_en") OR ANALYZER(doc.answer IN search_tokens, "text_en") OR ANALYZER(doc.tags IN search_tokens, "text_en") OR ANALYZER(doc.content IN search_tokens, "text_en") OR ANALYZER(doc.title IN search_tokens, "text_en")
+        
+        LET score = BM25(doc)
+        FILTER score >= @min_score
+        SORT score DESC
+        LIMIT 0, 10
+        RETURN {
+            "doc": doc,
+            "score": score
+        }
+        
+2025-05-03 19:57:45.511 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:199 - Query bind vars: {'query': 'nonexistent term xylophone', 'min_score': 0.1}
+2025-05-03 19:57:45.513 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:202 - Query returned 0 results
+2025-05-03 19:57:45.514 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:228 - Total count: 0
+2025-05-03 19:57:45.514 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:232 - Search completed in 0.0039 seconds
+2025-05-03 19:57:45.514 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:102 - BM25 search started - query: 'database'
+2025-05-03 19:57:45.514 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:103 - Collections: ['test_docs']
+2025-05-03 19:57:45.514 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:104 - View name: complexity_view
+2025-05-03 19:57:45.514 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:105 - Search fields: ['question', 'answer', 'tags', 'title', 'context']
+2025-05-03 19:57:45.514 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:106 - Filter expression: doc.difficulty == @difficulty
+2025-05-03 19:57:45.514 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:107 - Tag list: None
+2025-05-03 19:57:45.515 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:156 - Combined filter clause: FILTER (doc.difficulty == @difficulty)
+2025-05-03 19:57:45.515 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:159 - Building search field conditions using fields: ['question', 'answer', 'tags', 'title', 'context']
+2025-05-03 19:57:45.515 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:170 - Search field conditions: ANALYZER(doc.question IN search_tokens, "text_en") OR ANALYZER(doc.context IN search_tokens, "text_en") OR ANALYZER(doc.answer IN search_tokens, "text_en") OR ANALYZER(doc.tags IN search_tokens, "text_en") OR ANALYZER(doc.content IN search_tokens, "text_en") OR ANALYZER(doc.title IN search_tokens, "text_en")
+2025-05-03 19:57:45.515 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:187 - AQL query: 
+        LET search_tokens = TOKENS(@query, "text_en")
+        FOR doc IN complexity_view
+        SEARCH ANALYZER(doc.question IN search_tokens, "text_en") OR ANALYZER(doc.context IN search_tokens, "text_en") OR ANALYZER(doc.answer IN search_tokens, "text_en") OR ANALYZER(doc.tags IN search_tokens, "text_en") OR ANALYZER(doc.content IN search_tokens, "text_en") OR ANALYZER(doc.title IN search_tokens, "text_en")
+        FILTER (doc.difficulty == @difficulty)
+        LET score = BM25(doc)
+        FILTER score >= @min_score
+        SORT score DESC
+        LIMIT 0, 10
+        RETURN {
+            "doc": doc,
+            "score": score
+        }
+        
+2025-05-03 19:57:45.515 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:199 - Query bind vars: {'query': 'database', 'min_score': 0.1, 'difficulty': 'intermediate'}
+2025-05-03 19:57:45.517 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:202 - Query returned 0 results
+2025-05-03 19:57:45.518 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:228 - Total count: 0
+2025-05-03 19:57:45.518 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:232 - Search completed in 0.0039 seconds
+2025-05-03 19:58:12.410 | INFO     | complexity.arangodb.embedding_utils:<module>:14 - Transformers library is available for embeddings
+2025-05-03 19:58:12.410 | DEBUG    | complexity.arangodb.search_api.semantic_search:<module>:76 - PyTorch search utilities not available
+2025-05-03 19:58:13.648 | INFO     | complexity.arangodb.arango_setup:connect_arango:92 - Connecting to ArangoDB at http://localhost:8529
+2025-05-03 19:58:13.651 | INFO     | complexity.arangodb.arango_setup:connect_arango:96 - Connected to ArangoDB version 3.12.4
+2025-05-03 19:58:13.655 | INFO     | complexity.arangodb.db_operations:create_document:87 - Created document in test_docs: search_1adad6da
+2025-05-03 19:58:13.656 | INFO     | complexity.arangodb.db_operations:create_document:87 - Created document in test_docs: search_1d023593
+2025-05-03 19:58:13.657 | INFO     | complexity.arangodb.db_operations:create_document:87 - Created document in test_docs: search_085158a2
+2025-05-03 19:58:13.658 | INFO     | complexity.arangodb.db_operations:create_document:87 - Created document in test_docs: search_a89152c3
+2025-05-03 19:58:13.659 | INFO     | complexity.arangodb.db_operations:create_document:87 - Created document in test_docs: search_a77ed24d
+2025-05-03 19:58:15.675 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:102 - BM25 search started - query: 'python programming'
+2025-05-03 19:58:15.676 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:103 - Collections: ['test_docs']
+2025-05-03 19:58:15.676 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:104 - View name: complexity_view
+2025-05-03 19:58:15.676 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:105 - Search fields: ['question', 'answer', 'tags', 'title', 'context']
+2025-05-03 19:58:15.676 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:106 - Filter expression: None
+2025-05-03 19:58:15.676 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:107 - Tag list: None
+2025-05-03 19:58:15.677 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:159 - Building search field conditions using fields: ['question', 'answer', 'tags', 'title', 'context']
+2025-05-03 19:58:15.677 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:170 - Search field conditions: ANALYZER(doc.title IN search_tokens, "text_en") OR ANALYZER(doc.content IN search_tokens, "text_en") OR ANALYZER(doc.answer IN search_tokens, "text_en") OR ANALYZER(doc.question IN search_tokens, "text_en") OR ANALYZER(doc.tags IN search_tokens, "text_en") OR ANALYZER(doc.context IN search_tokens, "text_en")
+2025-05-03 19:58:15.677 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:187 - AQL query: 
+        LET search_tokens = TOKENS(@query, "text_en")
+        FOR doc IN complexity_view
+        SEARCH ANALYZER(doc.title IN search_tokens, "text_en") OR ANALYZER(doc.content IN search_tokens, "text_en") OR ANALYZER(doc.answer IN search_tokens, "text_en") OR ANALYZER(doc.question IN search_tokens, "text_en") OR ANALYZER(doc.tags IN search_tokens, "text_en") OR ANALYZER(doc.context IN search_tokens, "text_en")
+        
+        LET score = BM25(doc)
+        FILTER score >= @min_score
+        SORT score DESC
+        LIMIT 0, 10
+        RETURN {
+            "doc": doc,
+            "score": score
+        }
+        
+2025-05-03 19:58:15.677 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:199 - Query bind vars: {'query': 'python programming', 'min_score': 0.1}
+2025-05-03 19:58:15.679 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:202 - Query returned 6 results
+2025-05-03 19:58:15.681 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:228 - Total count: 6
+2025-05-03 19:58:15.681 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:232 - Search completed in 0.0054 seconds
+2025-05-03 19:58:15.681 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:102 - BM25 search started - query: 'database arangodb'
+2025-05-03 19:58:15.681 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:103 - Collections: ['test_docs']
+2025-05-03 19:58:15.681 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:104 - View name: complexity_view
+2025-05-03 19:58:15.681 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:105 - Search fields: ['question', 'answer', 'tags', 'title', 'context']
+2025-05-03 19:58:15.681 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:106 - Filter expression: None
+2025-05-03 19:58:15.681 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:107 - Tag list: None
+2025-05-03 19:58:15.682 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:159 - Building search field conditions using fields: ['question', 'answer', 'tags', 'title', 'context']
+2025-05-03 19:58:15.683 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:170 - Search field conditions: ANALYZER(doc.title IN search_tokens, "text_en") OR ANALYZER(doc.content IN search_tokens, "text_en") OR ANALYZER(doc.answer IN search_tokens, "text_en") OR ANALYZER(doc.question IN search_tokens, "text_en") OR ANALYZER(doc.tags IN search_tokens, "text_en") OR ANALYZER(doc.context IN search_tokens, "text_en")
+2025-05-03 19:58:15.683 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:187 - AQL query: 
+        LET search_tokens = TOKENS(@query, "text_en")
+        FOR doc IN complexity_view
+        SEARCH ANALYZER(doc.title IN search_tokens, "text_en") OR ANALYZER(doc.content IN search_tokens, "text_en") OR ANALYZER(doc.answer IN search_tokens, "text_en") OR ANALYZER(doc.question IN search_tokens, "text_en") OR ANALYZER(doc.tags IN search_tokens, "text_en") OR ANALYZER(doc.context IN search_tokens, "text_en")
+        
+        LET score = BM25(doc)
+        FILTER score >= @min_score
+        SORT score DESC
+        LIMIT 0, 10
+        RETURN {
+            "doc": doc,
+            "score": score
+        }
+        
+2025-05-03 19:58:15.683 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:199 - Query bind vars: {'query': 'database arangodb', 'min_score': 0.1}
+2025-05-03 19:58:15.685 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:202 - Query returned 10 results
+2025-05-03 19:58:15.687 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:228 - Total count: 16
+2025-05-03 19:58:15.687 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:232 - Search completed in 0.0063 seconds
+2025-05-03 19:58:15.687 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:102 - BM25 search started - query: 'search algorithms'
+2025-05-03 19:58:15.687 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:103 - Collections: ['test_docs']
+2025-05-03 19:58:15.687 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:104 - View name: complexity_view
+2025-05-03 19:58:15.687 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:105 - Search fields: ['question', 'answer', 'tags', 'title', 'context']
+2025-05-03 19:58:15.687 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:106 - Filter expression: None
+2025-05-03 19:58:15.688 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:107 - Tag list: None
+2025-05-03 19:58:15.689 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:159 - Building search field conditions using fields: ['question', 'answer', 'tags', 'title', 'context']
+2025-05-03 19:58:15.689 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:170 - Search field conditions: ANALYZER(doc.title IN search_tokens, "text_en") OR ANALYZER(doc.content IN search_tokens, "text_en") OR ANALYZER(doc.answer IN search_tokens, "text_en") OR ANALYZER(doc.question IN search_tokens, "text_en") OR ANALYZER(doc.tags IN search_tokens, "text_en") OR ANALYZER(doc.context IN search_tokens, "text_en")
+2025-05-03 19:58:15.689 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:187 - AQL query: 
+        LET search_tokens = TOKENS(@query, "text_en")
+        FOR doc IN complexity_view
+        SEARCH ANALYZER(doc.title IN search_tokens, "text_en") OR ANALYZER(doc.content IN search_tokens, "text_en") OR ANALYZER(doc.answer IN search_tokens, "text_en") OR ANALYZER(doc.question IN search_tokens, "text_en") OR ANALYZER(doc.tags IN search_tokens, "text_en") OR ANALYZER(doc.context IN search_tokens, "text_en")
+        
+        LET score = BM25(doc)
+        FILTER score >= @min_score
+        SORT score DESC
+        LIMIT 0, 10
+        RETURN {
+            "doc": doc,
+            "score": score
+        }
+        
+2025-05-03 19:58:15.689 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:199 - Query bind vars: {'query': 'search algorithms', 'min_score': 0.1}
+2025-05-03 19:58:15.691 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:202 - Query returned 2 results
+2025-05-03 19:58:15.693 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:228 - Total count: 2
+2025-05-03 19:58:15.693 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:232 - Search completed in 0.0063 seconds
+2025-05-03 19:58:15.694 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:102 - BM25 search started - query: 'nonexistent term xylophone'
+2025-05-03 19:58:15.694 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:103 - Collections: ['test_docs']
+2025-05-03 19:58:15.694 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:104 - View name: complexity_view
+2025-05-03 19:58:15.694 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:105 - Search fields: ['question', 'answer', 'tags', 'title', 'context']
+2025-05-03 19:58:15.694 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:106 - Filter expression: None
+2025-05-03 19:58:15.694 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:107 - Tag list: None
+2025-05-03 19:58:15.695 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:159 - Building search field conditions using fields: ['question', 'answer', 'tags', 'title', 'context']
+2025-05-03 19:58:15.696 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:170 - Search field conditions: ANALYZER(doc.title IN search_tokens, "text_en") OR ANALYZER(doc.content IN search_tokens, "text_en") OR ANALYZER(doc.answer IN search_tokens, "text_en") OR ANALYZER(doc.question IN search_tokens, "text_en") OR ANALYZER(doc.tags IN search_tokens, "text_en") OR ANALYZER(doc.context IN search_tokens, "text_en")
+2025-05-03 19:58:15.696 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:187 - AQL query: 
+        LET search_tokens = TOKENS(@query, "text_en")
+        FOR doc IN complexity_view
+        SEARCH ANALYZER(doc.title IN search_tokens, "text_en") OR ANALYZER(doc.content IN search_tokens, "text_en") OR ANALYZER(doc.answer IN search_tokens, "text_en") OR ANALYZER(doc.question IN search_tokens, "text_en") OR ANALYZER(doc.tags IN search_tokens, "text_en") OR ANALYZER(doc.context IN search_tokens, "text_en")
+        
+        LET score = BM25(doc)
+        FILTER score >= @min_score
+        SORT score DESC
+        LIMIT 0, 10
+        RETURN {
+            "doc": doc,
+            "score": score
+        }
+        
+2025-05-03 19:58:15.696 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:199 - Query bind vars: {'query': 'nonexistent term xylophone', 'min_score': 0.1}
+2025-05-03 19:58:15.698 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:202 - Query returned 0 results
+2025-05-03 19:58:15.700 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:228 - Total count: 0
+2025-05-03 19:58:15.700 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:232 - Search completed in 0.0062 seconds
+2025-05-03 19:58:15.700 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:102 - BM25 search started - query: 'database'
+2025-05-03 19:58:15.700 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:103 - Collections: ['test_docs']
+2025-05-03 19:58:15.700 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:104 - View name: complexity_view
+2025-05-03 19:58:15.700 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:105 - Search fields: ['question', 'answer', 'tags', 'title', 'context']
+2025-05-03 19:58:15.700 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:106 - Filter expression: doc.difficulty == @difficulty
+2025-05-03 19:58:15.700 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:107 - Tag list: None
+2025-05-03 19:58:15.702 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:156 - Combined filter clause: FILTER (doc.difficulty == @difficulty)
+2025-05-03 19:58:15.702 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:159 - Building search field conditions using fields: ['question', 'answer', 'tags', 'title', 'context']
+2025-05-03 19:58:15.702 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:170 - Search field conditions: ANALYZER(doc.title IN search_tokens, "text_en") OR ANALYZER(doc.content IN search_tokens, "text_en") OR ANALYZER(doc.answer IN search_tokens, "text_en") OR ANALYZER(doc.question IN search_tokens, "text_en") OR ANALYZER(doc.tags IN search_tokens, "text_en") OR ANALYZER(doc.context IN search_tokens, "text_en")
+2025-05-03 19:58:15.702 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:187 - AQL query: 
+        LET search_tokens = TOKENS(@query, "text_en")
+        FOR doc IN complexity_view
+        SEARCH ANALYZER(doc.title IN search_tokens, "text_en") OR ANALYZER(doc.content IN search_tokens, "text_en") OR ANALYZER(doc.answer IN search_tokens, "text_en") OR ANALYZER(doc.question IN search_tokens, "text_en") OR ANALYZER(doc.tags IN search_tokens, "text_en") OR ANALYZER(doc.context IN search_tokens, "text_en")
+        FILTER (doc.difficulty == @difficulty)
+        LET score = BM25(doc)
+        FILTER score >= @min_score
+        SORT score DESC
+        LIMIT 0, 10
+        RETURN {
+            "doc": doc,
+            "score": score
+        }
+        
+2025-05-03 19:58:15.702 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:199 - Query bind vars: {'query': 'database', 'min_score': 0.1, 'difficulty': 'intermediate'}
+2025-05-03 19:58:15.704 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:202 - Query returned 3 results
+2025-05-03 19:58:15.706 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:228 - Total count: 3
+2025-05-03 19:58:15.707 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:232 - Search completed in 0.0066 seconds
+2025-05-03 19:58:44.493 | INFO     | complexity.arangodb.embedding_utils:<module>:14 - Transformers library is available for embeddings
+2025-05-03 19:58:44.493 | DEBUG    | complexity.arangodb.search_api.semantic_search:<module>:76 - PyTorch search utilities not available
+2025-05-03 19:58:45.764 | INFO     | complexity.arangodb.arango_setup:connect_arango:92 - Connecting to ArangoDB at http://localhost:8529
+2025-05-03 19:58:45.766 | INFO     | complexity.arangodb.arango_setup:connect_arango:96 - Connected to ArangoDB version 3.12.4
+2025-05-03 19:58:45.771 | INFO     | complexity.arangodb.db_operations:create_document:87 - Created document in test_docs: search_cbd95265
+2025-05-03 19:58:45.773 | INFO     | complexity.arangodb.db_operations:create_document:87 - Created document in test_docs: search_8513aec9
+2025-05-03 19:58:45.774 | INFO     | complexity.arangodb.db_operations:create_document:87 - Created document in test_docs: search_5f743f32
+2025-05-03 19:58:45.776 | INFO     | complexity.arangodb.db_operations:create_document:87 - Created document in test_docs: search_2c8321dc
+2025-05-03 19:58:45.777 | INFO     | complexity.arangodb.db_operations:create_document:87 - Created document in test_docs: search_498ab492
+2025-05-03 19:58:47.783 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:102 - BM25 search started - query: 'python programming'
+2025-05-03 19:58:47.783 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:103 - Collections: ['test_docs']
+2025-05-03 19:58:47.783 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:104 - View name: complexity_view
+2025-05-03 19:58:47.783 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:105 - Search fields: ['question', 'answer', 'tags', 'title', 'context']
+2025-05-03 19:58:47.783 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:106 - Filter expression: None
+2025-05-03 19:58:47.783 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:107 - Tag list: None
+2025-05-03 19:58:47.785 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:159 - Building search field conditions using fields: ['question', 'answer', 'tags', 'title', 'context']
+2025-05-03 19:58:47.785 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:170 - Search field conditions: ANALYZER(doc.question IN search_tokens, "text_en") OR ANALYZER(doc.tags IN search_tokens, "text_en") OR ANALYZER(doc.answer IN search_tokens, "text_en") OR ANALYZER(doc.content IN search_tokens, "text_en") OR ANALYZER(doc.context IN search_tokens, "text_en") OR ANALYZER(doc.title IN search_tokens, "text_en")
+2025-05-03 19:58:47.785 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:187 - AQL query: 
+        LET search_tokens = TOKENS(@query, "text_en")
+        FOR doc IN complexity_view
+        SEARCH ANALYZER(doc.question IN search_tokens, "text_en") OR ANALYZER(doc.tags IN search_tokens, "text_en") OR ANALYZER(doc.answer IN search_tokens, "text_en") OR ANALYZER(doc.content IN search_tokens, "text_en") OR ANALYZER(doc.context IN search_tokens, "text_en") OR ANALYZER(doc.title IN search_tokens, "text_en")
+        
+        LET score = BM25(doc)
+        FILTER score >= @min_score
+        SORT score DESC
+        LIMIT 0, 10
+        RETURN {
+            "doc": doc,
+            "score": score
+        }
+        
+2025-05-03 19:58:47.785 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:199 - Query bind vars: {'query': 'python programming', 'min_score': 0.1}
+2025-05-03 19:58:47.787 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:202 - Query returned 8 results
+2025-05-03 19:58:47.788 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:228 - Total count: 8
+2025-05-03 19:58:47.788 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:232 - Search completed in 0.0056 seconds
+2025-05-03 19:58:47.788 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:102 - BM25 search started - query: 'database arangodb'
+2025-05-03 19:58:47.788 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:103 - Collections: ['test_docs']
+2025-05-03 19:58:47.788 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:104 - View name: complexity_view
+2025-05-03 19:58:47.789 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:105 - Search fields: ['question', 'answer', 'tags', 'title', 'context']
+2025-05-03 19:58:47.789 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:106 - Filter expression: None
+2025-05-03 19:58:47.789 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:107 - Tag list: None
+2025-05-03 19:58:47.790 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:159 - Building search field conditions using fields: ['question', 'answer', 'tags', 'title', 'context']
+2025-05-03 19:58:47.790 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:170 - Search field conditions: ANALYZER(doc.question IN search_tokens, "text_en") OR ANALYZER(doc.tags IN search_tokens, "text_en") OR ANALYZER(doc.answer IN search_tokens, "text_en") OR ANALYZER(doc.content IN search_tokens, "text_en") OR ANALYZER(doc.context IN search_tokens, "text_en") OR ANALYZER(doc.title IN search_tokens, "text_en")
+2025-05-03 19:58:47.790 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:187 - AQL query: 
+        LET search_tokens = TOKENS(@query, "text_en")
+        FOR doc IN complexity_view
+        SEARCH ANALYZER(doc.question IN search_tokens, "text_en") OR ANALYZER(doc.tags IN search_tokens, "text_en") OR ANALYZER(doc.answer IN search_tokens, "text_en") OR ANALYZER(doc.content IN search_tokens, "text_en") OR ANALYZER(doc.context IN search_tokens, "text_en") OR ANALYZER(doc.title IN search_tokens, "text_en")
+        
+        LET score = BM25(doc)
+        FILTER score >= @min_score
+        SORT score DESC
+        LIMIT 0, 10
+        RETURN {
+            "doc": doc,
+            "score": score
+        }
+        
+2025-05-03 19:58:47.790 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:199 - Query bind vars: {'query': 'database arangodb', 'min_score': 0.1}
+2025-05-03 19:58:47.792 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:202 - Query returned 10 results
+2025-05-03 19:58:47.795 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:228 - Total count: 19
+2025-05-03 19:58:47.795 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:232 - Search completed in 0.0065 seconds
+2025-05-03 19:58:47.795 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:102 - BM25 search started - query: 'search algorithms'
+2025-05-03 19:58:47.795 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:103 - Collections: ['test_docs']
+2025-05-03 19:58:47.795 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:104 - View name: complexity_view
+2025-05-03 19:58:47.795 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:105 - Search fields: ['question', 'answer', 'tags', 'title', 'context']
+2025-05-03 19:58:47.795 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:106 - Filter expression: None
+2025-05-03 19:58:47.795 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:107 - Tag list: None
+2025-05-03 19:58:47.797 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:159 - Building search field conditions using fields: ['question', 'answer', 'tags', 'title', 'context']
+2025-05-03 19:58:47.797 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:170 - Search field conditions: ANALYZER(doc.question IN search_tokens, "text_en") OR ANALYZER(doc.tags IN search_tokens, "text_en") OR ANALYZER(doc.answer IN search_tokens, "text_en") OR ANALYZER(doc.content IN search_tokens, "text_en") OR ANALYZER(doc.context IN search_tokens, "text_en") OR ANALYZER(doc.title IN search_tokens, "text_en")
+2025-05-03 19:58:47.797 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:187 - AQL query: 
+        LET search_tokens = TOKENS(@query, "text_en")
+        FOR doc IN complexity_view
+        SEARCH ANALYZER(doc.question IN search_tokens, "text_en") OR ANALYZER(doc.tags IN search_tokens, "text_en") OR ANALYZER(doc.answer IN search_tokens, "text_en") OR ANALYZER(doc.content IN search_tokens, "text_en") OR ANALYZER(doc.context IN search_tokens, "text_en") OR ANALYZER(doc.title IN search_tokens, "text_en")
+        
+        LET score = BM25(doc)
+        FILTER score >= @min_score
+        SORT score DESC
+        LIMIT 0, 10
+        RETURN {
+            "doc": doc,
+            "score": score
+        }
+        
+2025-05-03 19:58:47.797 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:199 - Query bind vars: {'query': 'search algorithms', 'min_score': 0.1}
+2025-05-03 19:58:47.798 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:202 - Query returned 4 results
+2025-05-03 19:58:47.800 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:228 - Total count: 4
+2025-05-03 19:58:47.800 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:232 - Search completed in 0.0046 seconds
+2025-05-03 19:58:47.800 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:102 - BM25 search started - query: 'nonexistent term xylophone'
+2025-05-03 19:58:47.800 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:103 - Collections: ['test_docs']
+2025-05-03 19:58:47.800 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:104 - View name: complexity_view
+2025-05-03 19:58:47.800 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:105 - Search fields: ['question', 'answer', 'tags', 'title', 'context']
+2025-05-03 19:58:47.800 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:106 - Filter expression: None
+2025-05-03 19:58:47.800 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:107 - Tag list: None
+2025-05-03 19:58:47.801 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:159 - Building search field conditions using fields: ['question', 'answer', 'tags', 'title', 'context']
+2025-05-03 19:58:47.801 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:170 - Search field conditions: ANALYZER(doc.question IN search_tokens, "text_en") OR ANALYZER(doc.tags IN search_tokens, "text_en") OR ANALYZER(doc.answer IN search_tokens, "text_en") OR ANALYZER(doc.content IN search_tokens, "text_en") OR ANALYZER(doc.context IN search_tokens, "text_en") OR ANALYZER(doc.title IN search_tokens, "text_en")
+2025-05-03 19:58:47.801 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:187 - AQL query: 
+        LET search_tokens = TOKENS(@query, "text_en")
+        FOR doc IN complexity_view
+        SEARCH ANALYZER(doc.question IN search_tokens, "text_en") OR ANALYZER(doc.tags IN search_tokens, "text_en") OR ANALYZER(doc.answer IN search_tokens, "text_en") OR ANALYZER(doc.content IN search_tokens, "text_en") OR ANALYZER(doc.context IN search_tokens, "text_en") OR ANALYZER(doc.title IN search_tokens, "text_en")
+        
+        LET score = BM25(doc)
+        FILTER score >= @min_score
+        SORT score DESC
+        LIMIT 0, 10
+        RETURN {
+            "doc": doc,
+            "score": score
+        }
+        
+2025-05-03 19:58:47.801 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:199 - Query bind vars: {'query': 'nonexistent term xylophone', 'min_score': 0.1}
+2025-05-03 19:58:47.802 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:202 - Query returned 0 results
+2025-05-03 19:58:47.804 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:228 - Total count: 0
+2025-05-03 19:58:47.804 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:232 - Search completed in 0.0041 seconds
+2025-05-03 19:58:47.804 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:102 - BM25 search started - query: 'database'
+2025-05-03 19:58:47.804 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:103 - Collections: ['test_docs']
+2025-05-03 19:58:47.804 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:104 - View name: complexity_view
+2025-05-03 19:58:47.804 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:105 - Search fields: ['question', 'answer', 'tags', 'title', 'context']
+2025-05-03 19:58:47.804 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:106 - Filter expression: doc.difficulty == @difficulty
+2025-05-03 19:58:47.804 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:107 - Tag list: None
+2025-05-03 19:58:47.805 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:156 - Combined filter clause: FILTER (doc.difficulty == @difficulty)
+2025-05-03 19:58:47.805 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:159 - Building search field conditions using fields: ['question', 'answer', 'tags', 'title', 'context']
+2025-05-03 19:58:47.805 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:170 - Search field conditions: ANALYZER(doc.question IN search_tokens, "text_en") OR ANALYZER(doc.tags IN search_tokens, "text_en") OR ANALYZER(doc.answer IN search_tokens, "text_en") OR ANALYZER(doc.content IN search_tokens, "text_en") OR ANALYZER(doc.context IN search_tokens, "text_en") OR ANALYZER(doc.title IN search_tokens, "text_en")
+2025-05-03 19:58:47.805 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:187 - AQL query: 
+        LET search_tokens = TOKENS(@query, "text_en")
+        FOR doc IN complexity_view
+        SEARCH ANALYZER(doc.question IN search_tokens, "text_en") OR ANALYZER(doc.tags IN search_tokens, "text_en") OR ANALYZER(doc.answer IN search_tokens, "text_en") OR ANALYZER(doc.content IN search_tokens, "text_en") OR ANALYZER(doc.context IN search_tokens, "text_en") OR ANALYZER(doc.title IN search_tokens, "text_en")
+        FILTER (doc.difficulty == @difficulty)
+        LET score = BM25(doc)
+        FILTER score >= @min_score
+        SORT score DESC
+        LIMIT 0, 10
+        RETURN {
+            "doc": doc,
+            "score": score
+        }
+        
+2025-05-03 19:58:47.805 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:199 - Query bind vars: {'query': 'database', 'min_score': 0.1, 'difficulty': 'intermediate'}
+2025-05-03 19:58:47.807 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:202 - Query returned 6 results
+2025-05-03 19:58:47.808 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:228 - Total count: 6
+2025-05-03 19:58:47.808 | DEBUG    | complexity.arangodb.search_api.bm25_search:bm25_search:232 - Search completed in 0.0044 seconds

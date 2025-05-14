@@ -1,0 +1,125 @@
+[project]
+name = "arangodb"
+description = "A Python package for analyzing and visualizing code complexity using ArangoDB."
+readme = "README.md"
+
+
+version = "0.1.0"
+requires-python = ">=3.10" 
+dependencies = [
+    # Core libraries
+    "python-dotenv>=1.0.0",
+    "litellm>=1.16.19",
+    "requests>=2.31.0",
+    "tenacity>=9.0.0",
+    "loguru>=0.7.3",
+    "pydantic>=2.0.0",
+    # CLI and visualization
+    "typer>=0.9.0",
+    "rich>=13.9.4",
+    "colorama>=0.4.6",
+    "tabulate>=0.9.0",
+    # Text processing and tokenization
+    "tiktoken>=0.8.0",
+    "spacy>=3.8.4",
+    "nltk>=3.9.1",
+    "markitdown>=0.1.1",
+    "markdownify>=0.11.6",
+    "json-repair>=0.35.0",
+    # Code analysis and parsing
+    "tree-sitter>=0.24.0",
+    "tree-sitter-languages>=1.10.2",
+    "tree-sitter-language-pack>=0.7.2",
+    "markdown-it-py>=3.0.0",
+    "gitingest>=0.1.4",
+    # Vector and embedding operations
+    "torch>=2.2.0",
+    "numpy>=2.2.2",
+    "scikit-learn>=1.6.1",
+    "faiss-cpu>=1.11.0",
+    "sentence-transformers>=4.1.0",
+    "transformers @ git+https://github.com/huggingface/transformers.git",
+    # Database and storage
+    "python-arango>=8.1.4",
+    "redis>=6.0.0",
+    "qdrant-client>=1.14.2",
+    # Data processing and analysis
+    "datasets>=2.16.0",
+    "pandas>=2.2.0",
+    "matplotlib>=3.8.3",
+    "seaborn>=0.13.2",
+    "deepmerge>=2.0.0",
+    "rapidfuzz>=3.11.0",
+    "einops>=0.8.1",
+    # API and cloud services
+    "google-auth>=2.39.0",
+    "google-auth-oauthlib>=1.2.2",
+    # Optional GPU support (commented out)
+    # "faiss-gpu>=1.7.2",
+    # "faiss-gpu-cu12[fix-cuda]",
+    "pyautogui>=0.9.54",
+    "pillow>=11.2.1",
+]
+
+[project.scripts]
+arangodb-cli = "arangodb.cli:app"  # Point directly to Typer app object, not wrapper function
+
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.3.0",
+    "black>=24.1.0",
+    "isort>=5.13.2",
+    "mypy>=1.8.0",
+    "pre-commit>=3.6.0"
+]
+test = [
+    "pytest>=8.3.5",
+    "pytest-asyncio>=0.26.0", 
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.12.0"
+]
+docs = [
+    "sphinx>=7.2.6",
+    "sphinx-rtd-theme>=2.0.0",
+    "myst-parser>=2.0.0"
+]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+# Path configuration
+[tool.setuptools]
+# Include the project directory in the Python path
+package-dir = {"" = "src"}
+
+# Environment configuration for development scripts
+[tool.run_env]
+PYTHONPATH = "/home/graham/workspace/experiments/arangodb"
+
+# Install as development mode by default
+[tool.pip]
+editable = true
+
+# Pytest configuration with path settings
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_functions = "test_*"
+pythonpath = ["/home/graham/workspace/experiments/arangodb"]
+markers = [
+    "dependency: mark test to run after specified dependencies",
+]
+
+# Python path for development and scripts
+[tool.python.dev]
+path = ["/home/graham/workspace/experiments/arangodb"]
+
+# Ensure VSCode and other editors respect the Python path
+[tool.vscode]
+python.analysis.extraPaths = ["/home/graham/workspace/experiments/arangodb"]

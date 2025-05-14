@@ -1,0 +1,17 @@
+{
+  "query": "python programming",
+  "min_score": 0.1,
+  "expected_count": 10,
+  "expected_keys": [
+    "search_cbd95265",
+    "search_1adad6da",
+    "search_03313c44",
+    "similarity_test_ffe2025a",
+    "similarity_test_95bb9ba8",
+    "search_5f743f32",
+    "search_085158a2",
+    "search_294202e3",
+    "similarity_test_45393189",
+    "similarity_test_356b2556"
+  ]
+}

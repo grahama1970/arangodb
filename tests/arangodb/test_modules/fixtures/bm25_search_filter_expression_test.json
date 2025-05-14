@@ -1,0 +1,17 @@
+{
+  "query": "database",
+  "min_score": 0.1,
+  "expected_count": 9,
+  "expected_keys": [
+    "search_498ab492",
+    "search_a77ed24d",
+    "search_e92786c3",
+    "search_8513aec9",
+    "search_1d023593",
+    "search_667453ca",
+    "search_5f743f32",
+    "search_085158a2",
+    "search_294202e3"
+  ],
+  "filter_expr": "doc.difficulty == @difficulty"
+}

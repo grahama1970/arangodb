@@ -1,0 +1,11 @@
+{
+  "start_key": "search_03313c44",
+  "direction": "OUTBOUND",
+  "min_depth": 1,
+  "max_depth": 1,
+  "relationship_types": null,
+  "expected_count": 1,
+  "expected_vertex_keys": [
+    "test_doc_09cb5984_1"
+  ]
+}

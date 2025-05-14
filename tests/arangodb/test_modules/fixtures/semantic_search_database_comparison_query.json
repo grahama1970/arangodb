@@ -1,0 +1,18 @@
+{
+  "query": "How do graph databases compare to other database types?",
+  "min_score": 0.5,
+  "expected_count_min": 1,
+  "actual_count": 10,
+  "expected_keys": [
+    "search_e92786c3",
+    "test_doc_00bc6fb7_2",
+    "search_085158a2",
+    "test_doc_bb73956c_1",
+    "search_a89152c3",
+    "similarity_test_356b2556",
+    "test_doc_09cb5984_2",
+    "test_doc_00bc6fb7_1",
+    "search_5f743f32",
+    "search_498ab492"
+  ]
+}

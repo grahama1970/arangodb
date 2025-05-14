@@ -1,0 +1,13 @@
+{
+  "tags": [
+    "python",
+    "arangodb"
+  ],
+  "require_all_tags": true,
+  "expected_count": 3,
+  "expected_keys": [
+    "search_085158a2",
+    "search_294202e3",
+    "search_5f743f32"
+  ]
+}

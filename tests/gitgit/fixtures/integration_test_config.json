@@ -1,0 +1,124 @@
+{
+  "test_repositories": [
+    {
+      "name": "python-arango",
+      "url": "https://github.com/arangodb/python-arango",
+      "extensions": ["md", "rst"],
+      "expected_files": ["README.md", "CHANGELOG.rst", "CONTRIBUTING.rst"],
+      "options": {
+        "chunk_text": true,
+        "max_chunk_tokens": 500,
+        "chunk_overlap": 100,
+        "enhanced_markdown": true,
+        "code_metadata": false,
+        "summary": false
+      }
+    },
+    {
+      "name": "minimal-readme",
+      "url": "https://github.com/minimal-xyz/minimal-readme",
+      "extensions": ["md"],
+      "expected_files": ["README.md"],
+      "options": {
+        "chunk_text": true,
+        "max_chunk_tokens": 500,
+        "chunk_overlap": 100,
+        "enhanced_markdown": true,
+        "code_metadata": false,
+        "summary": false
+      }
+    }
+  ],
+  "test_cases": [
+    {
+      "name": "basic_integration",
+      "repository": "minimal-readme",
+      "description": "Test basic integration functionality",
+      "test_outputs": [
+        "summary_path",
+        "digest_path",
+        "tree_path"
+      ]
+    },
+    {
+      "name": "chunking_integration",
+      "repository": "minimal-readme",
+      "description": "Test text chunking integration",
+      "options_override": {
+        "chunk_text": true,
+        "max_chunk_tokens": 250,
+        "chunk_overlap": 50
+      },
+      "test_outputs": [
+        "chunks_path"
+      ]
+    },
+    {
+      "name": "markdown_integration",
+      "repository": "minimal-readme",
+      "description": "Test markdown integration",
+      "options_override": {
+        "enhanced_markdown": true
+      },
+      "test_outputs": [
+        "parsed_markdown"
+      ]
+    },
+    {
+      "name": "code_metadata_integration",
+      "repository": "python-arango",
+      "description": "Test code metadata integration",
+      "file_override": ["aioarangodb/__init__.py"],
+      "options_override": {
+        "code_metadata": true
+      },
+      "test_outputs": [
+        "code_metadata"
+      ]
+    },
+    {
+      "name": "filtered_integration",
+      "repository": "python-arango",
+      "description": "Test filtered integration",
+      "file_override": ["README.md"],
+      "dir_override": null,
+      "test_outputs": [
+        "summary_path",
+        "digest_path",
+        "tree_path"
+      ]
+    }
+  ],
+  "expected_verification_results": {
+    "minimal-readme": {
+      "directory_structure": true,
+      "chunks": true,
+      "tree": true,
+      "backward_compatibility": true,
+      "error_handling": true
+    },
+    "python-arango": {
+      "directory_structure": true,
+      "chunks": true,
+      "tree": true,
+      "backward_compatibility": true,
+      "error_handling": true
+    }
+  },
+  "expected_backward_compatibility": {
+    "cli_commands": {
+      "basic_analyze": true,
+      "files_analyze": true,
+      "no_chunk_analyze": true,
+      "custom_chunk_analyze": true,
+      "code_metadata_analyze": true,
+      "help_command": true
+    },
+    "output_files": {
+      "SUMMARY.txt": true,
+      "DIGEST.txt": true,
+      "TREE.txt": true,
+      "chunks": true
+    }
+  }
+}

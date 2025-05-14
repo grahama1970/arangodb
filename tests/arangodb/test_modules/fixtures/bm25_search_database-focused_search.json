@@ -1,0 +1,17 @@
+{
+  "query": "database arangodb",
+  "min_score": 0.1,
+  "expected_count": 10,
+  "expected_keys": [
+    "search_8513aec9",
+    "search_667453ca",
+    "search_1d023593",
+    "search_5f743f32",
+    "search_294202e3",
+    "search_085158a2",
+    "search_e92786c3",
+    "search_a77ed24d",
+    "search_498ab492",
+    "similarity_test_51e7b3b9"
+  ]
+}

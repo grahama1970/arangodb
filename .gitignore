@@ -1,0 +1,56 @@
+# Crucial
+vertex_ai_service_account.json
+.mcp.json
+
+# Standard ignores
+.venv/
+.vscode/
+.env
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+repos
+archive
+examples
+
+# Debug and archive folders
+**/debug/
+_archive/
+
+# VSCODE
+tempCodeRunnerFile.py
+
+# Data/logs
+data/*
+logs/*
+*.csv
+*.tsv
+*.jsonl
+
+# Tensorboard
+runs/*
+logs/*
+
+# Models
+model/*
+
+# Experimental
+experiments/
+results/*
+notebooks/
+
+# Large files
+*.pt
+*.bin
+*.h5
+*.zip
+*.tar.gz
+
+# Local development
+.DS_Store
+.idea/
+
+**/.claude/settings.local.json

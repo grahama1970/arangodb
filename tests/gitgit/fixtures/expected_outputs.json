@@ -1,0 +1,159 @@
+{
+  "standard_output": {
+    "summary_file": {
+      "exists": true,
+      "contains": [
+        "Files analyzed:", 
+        "Total bytes:", 
+        "Estimated tokens:", 
+        "README.md",
+        "src/main.py",
+        "src/utils.py",
+        "docs/guide.md",
+        "tests/test_main.py",
+        "tests/test_utils.py"
+      ]
+    },
+    "digest_file": {
+      "exists": true,
+      "contains": [
+        "File: README.md",
+        "File: src/main.py",
+        "File: src/utils.py",
+        "File: docs/guide.md", 
+        "File: tests/test_main.py",
+        "File: tests/test_utils.py"
+      ]
+    },
+    "tree_file": {
+      "exists": true,
+      "contains": [
+        "README.md",
+        "src/",
+        "main.py",
+        "utils.py",
+        "docs/",
+        "guide.md",
+        "tests/",
+        "test_main.py",
+        "test_utils.py"
+      ]
+    },
+    "llm_summary_file": {
+      "exists": false
+    }
+  },
+  "filtered_output": {
+    "extension_md": {
+      "summary_file": {
+        "exists": true,
+        "contains": [
+          "README.md",
+          "docs/guide.md"
+        ],
+        "not_contains": [
+          "src/main.py",
+          "src/utils.py",
+          "tests/test_main.py",
+          "tests/test_utils.py"
+        ]
+      },
+      "digest_file": {
+        "exists": true,
+        "contains": [
+          "File: README.md",
+          "File: docs/guide.md"
+        ],
+        "not_contains": [
+          "File: src/main.py",
+          "File: src/utils.py",
+          "File: tests/test_main.py",
+          "File: tests/test_utils.py"
+        ]
+      }
+    },
+    "extension_py": {
+      "summary_file": {
+        "exists": true,
+        "contains": [
+          "src/main.py",
+          "src/utils.py",
+          "tests/test_main.py",
+          "tests/test_utils.py"
+        ],
+        "not_contains": [
+          "README.md",
+          "docs/guide.md"
+        ]
+      }
+    },
+    "specific_files": {
+      "summary_file": {
+        "exists": true,
+        "contains": [
+          "README.md",
+          "src/main.py"
+        ],
+        "not_contains": [
+          "src/utils.py",
+          "docs/guide.md",
+          "tests/test_main.py",
+          "tests/test_utils.py"
+        ]
+      }
+    },
+    "specific_dirs": {
+      "summary_file": {
+        "exists": true,
+        "contains": [
+          "src/main.py",
+          "src/utils.py"
+        ],
+        "not_contains": [
+          "README.md",
+          "docs/guide.md",
+          "tests/test_main.py",
+          "tests/test_utils.py"
+        ]
+      }
+    }
+  },
+  "with_llm_summary": {
+    "llm_summary_file": {
+      "exists": true,
+      "contains": [
+        "Summary",
+        "Table Of Contents"
+      ]
+    }
+  },
+  "with_code_metadata": {
+    "code_metadata_file": {
+      "exists": true,
+      "contains": [
+        "functions",
+        "classes",
+        "imports"
+      ]
+    }
+  },
+  "chunked_output": {
+    "chunks_dir": {
+      "exists": true
+    },
+    "chunks_files": [
+      "README.md.chunks.json",
+      "src_main.py.chunks.json",
+      "src_utils.py.chunks.json"
+    ]
+  },
+  "parsed_markdown": {
+    "parsed_dir": {
+      "exists": true
+    },
+    "parsed_files": [
+      "README.md.parsed.json",
+      "docs_guide.md.parsed.json"
+    ]
+  }
+}
