@@ -12,9 +12,11 @@ __pycache__/
 dist/
 build/
 
+
 repos
 archive
 examples
+
 
 # Debug and archive folders
 **/debug/

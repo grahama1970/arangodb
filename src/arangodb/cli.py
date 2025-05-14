@@ -134,24 +134,33 @@ from typing import List, Optional, Any, Dict, Union
 # --- Local Imports ---
 # Assume these modules exist and are importable based on project structure
 try:
-    # Use absolute imports from src
-    from complexity.arangodb.arango_setup import (
+    # Use imports from the standalone arangodb package
+    from arangodb.arango_setup import (
         connect_arango,
         ensure_database,
         ensure_edge_collections,  # Added for graph setup check (note: plural)
         ensure_graph,  # Added for graph setup check
         ensure_memory_agent_collections,  # For Memory Agent setup
     )
-    # Import from search_api directly (assuming search_advanced might be outdated or just re-exports)
-    from complexity.arangodb.search_api.bm25_search import bm25_search
-    from complexity.arangodb.search_api.semantic_search import semantic_search
-    from complexity.arangodb.search_api.hybrid_search import hybrid_search
-    from complexity.arangodb.search_api.graph_traverse import graph_traverse
-    from complexity.arangodb.search_api.keyword_search import search_keyword # Correct function name
-    from complexity.arangodb.search_api.tag_search import tag_search # Correct function name
-    # Removed outdated search_advanced import block
-    # Import from the new crud package
-    from complexity.arangodb.db_operations import ( # Import from consolidated db_operations module
+    # Import from search_api directly
+    from arangodb.search_api.bm25_search import bm25_search
+    from arangodb.search_api.semantic_search import semantic_search
+    from arangodb.search_api.hybrid_search import hybrid_search
+    from arangodb.search_api.graph_traverse import graph_traverse
+    from arangodb.search_api.keyword_search import search_keyword # Correct function name
+    from arangodb.search_api.tag_search import tag_search # Correct function name
+    
+    # Import cross-encoder reranking if available
+    try:
+        from arangodb.search_api.cross_encoder_reranking import rerank_search_results
+        from arangodb.search_api.hybrid_search_updated import hybrid_search as hybrid_search_with_rerank
+        HAS_CROSS_ENCODER_RERANKING = True
+        logger.info("Cross-encoder reranking support loaded successfully")
+    except ImportError:
+        logger.info("Cross-encoder reranking support not available")
+        HAS_CROSS_ENCODER_RERANKING = False
+    # Import from the db_operations module
+    from arangodb.db_operations import (
         create_document,
         get_document,
         update_document,
@@ -159,17 +168,17 @@ try:
         create_relationship,
         delete_relationship_by_key,
     )
-    from complexity.arangodb.embedding_utils import get_embedding
+    from arangodb.utils.embedding_utils import get_embedding
     
     # Import Memory Agent
-    from complexity.arangodb.memory_agent import MemoryAgent
+    from arangodb.memory_agent import MemoryAgent
 
     # Import log utility for truncation
-    from complexity.arangodb.log_utils import truncate_large_value
+    from arangodb.utils.log_utils import truncate_large_value
     # log_safe_results is for lists of dicts, truncate_large_value handles dicts recursively
 
-    # Added EDGE_COLLECTION_NAME, COLLECTION_NAME
-    from complexity.arangodb.config import (
+    # Add config imports
+    from arangodb.config import (
         ARANGO_DB_NAME,
         GRAPH_NAME,
         COLLECTION_NAME,
@@ -232,11 +241,33 @@ app.add_typer(memory_app, name="memory")
 console = Console()
 
 # --- Import memory commands utility functions ---
-from complexity.arangodb.memory_commands import (
+from arangodb.memory_commands import (
     memory_display_results,
     memory_display_related,
     memory_display_conversation,
 )
+
+# Import contradiction resolution command
+try:
+    from arangodb.cli_contradiction_resolve import resolve_contradictions_command
+except ImportError:
+    # Function might not be available in older versions
+    logger.warning("Contradiction resolution command not available")
+    resolve_contradictions_command = None
+
+# Import entity resolution command
+try:
+    from arangodb.cli_entity_resolution import (
+        find_potential_entity_matches,
+        resolve_entities_command,
+        add_entity_command
+    )
+except ImportError:
+    # Function might not be available in older versions
+    logger.warning("Entity resolution command not available")
+    find_potential_entity_matches = None
+    resolve_entities_command = None
+    add_entity_command = None
 
 
 # --- Global State / Context & Logging Setup ---
@@ -485,6 +516,21 @@ def cli_search_hybrid(
         "-t",
         help='Comma-separated list of tags to filter by (e.g., "tag1,tag2").',
     ),
+    use_reranking: bool = typer.Option(
+        False, "--rerank", help="Enable cross-encoder reranking for improved relevance."
+    ),
+    reranking_model: str = typer.Option(
+        "cross-encoder/ms-marco-MiniLM-L-6-v2", 
+        "--rerank-model", 
+        "-rm",
+        help="Cross-encoder model to use for reranking."
+    ),
+    reranking_strategy: str = typer.Option(
+        "replace", 
+        "--rerank-strategy", 
+        "-rs",
+        help="Strategy for combining original and reranked scores: replace, weighted, max, min."
+    ),
     json_output: bool = typer.Option(
         False, "--json-output", "-j", help="Output results as JSON array."
     ),
@@ -494,23 +540,90 @@ def cli_search_hybrid(
 
     *WHEN TO USE:* Use for the best general-purpose relevance, leveraging both
     keyword matching and conceptual understanding. Often provides more robust
-    results than either method alone.
+    results than either method alone. Use --rerank to further improve relevance
+    with cross-encoder reranking.
 
     *HOW TO USE:* Provide the query text. Optionally adjust the number of final
     results (`top_n`), initial candidates (`initial_k`), candidate thresholds,
-    or add tag filters.
+    or add tag filters. Enable cross-encoder reranking with `--rerank` flag.
+
+    *RERANKING:* When enabled with `--rerank`, results are further enhanced with
+    cross-encoder reranking, which provides more nuanced relevance judgments by
+    analyzing the query-document pairs together instead of separately.
+    
+    *RERANKING STRATEGIES:*
+    - `replace`: Use only the cross-encoder score (default, usually best)
+    - `weighted`: Combine original and cross-encoder scores with weights
+    - `max`: Take the maximum of original and cross-encoder scores
+    - `min`: Take the minimum of original and cross-encoder scores
     """
     logger.info(f"CLI: Performing Hybrid search for '{query}'")
     db = get_db_connection()
     tag_list = [tag.strip() for tag in tags.split(",")] if tags else None
-    try:
-        results_data = hybrid_search(
-            db, query, top_n, initial_k, bm25_threshold, sim_threshold, tag_list
+    
+    # Validate reranking strategy if reranking is enabled
+    valid_strategies = ["replace", "weighted", "max", "min"]
+    if use_reranking and reranking_strategy not in valid_strategies:
+        console.print(
+            f"[bold red]Error:[/bold red] Invalid reranking strategy: {reranking_strategy}. "
+            f"Must be one of: {', '.join(valid_strategies)}"
         )
+        raise typer.Exit(code=1)
+    
+    try:
+        # Use the enhanced hybrid search with reranking if requested and available
+        if use_reranking and HAS_CROSS_ENCODER_RERANKING:
+            logger.info(f"Using enhanced hybrid search with reranking: model={reranking_model}, strategy={reranking_strategy}")
+            
+            # Use the advanced hybrid search with reranking
+            results_data = hybrid_search_with_rerank(
+                db=db,
+                query_text=query,
+                tag_list=tag_list,
+                min_score={
+                    "bm25": bm25_threshold,
+                    "semantic": sim_threshold
+                },
+                top_n=top_n,
+                initial_k=initial_k,
+                use_reranking=True,
+                reranking_model=reranking_model,
+                reranking_strategy=reranking_strategy
+            )
+        else:
+            # Use standard hybrid search if reranking not requested or not available
+            if use_reranking and not HAS_CROSS_ENCODER_RERANKING:
+                console.print(
+                    "[yellow]Warning:[/yellow] Cross-encoder reranking requested but not available. "
+                    "Using standard hybrid search instead."
+                )
+            
+            results_data = hybrid_search(
+                db, query, top_n, initial_k, bm25_threshold, sim_threshold, tag_list
+            )
+        
         if json_output:
             print(json.dumps(results_data.get("results", []), indent=2))
         else:
-            _display_results(results_data, "Hybrid (RRF)", "rrf_score")
+            # Determine the appropriate score field and display title
+            score_field = "rrf_score"
+            search_type = "Hybrid (RRF)"
+            
+            # Update display settings if reranking was applied
+            if use_reranking and HAS_CROSS_ENCODER_RERANKING and results_data.get("reranking_applied", False):
+                score_field = "final_score"  # Use the reranked score
+                search_type = "Hybrid with Reranking"  # Update display title
+            
+            _display_results(results_data, search_type, score_field)
+            
+            # Display reranking info if applicable
+            if use_reranking and HAS_CROSS_ENCODER_RERANKING and results_data.get("reranking_applied", False):
+                console.print()
+                console.print(
+                    f"[bold cyan]Reranking Info:[/bold cyan] Model: [green]{reranking_model.split('/')[-1]}[/green], "
+                    f"Strategy: [green]{reranking_strategy}[/green], "
+                    f"Time: [green]{results_data.get('reranking_time', 0):.2f}s[/green]"
+                )
     except Exception as e:
         logger.error(f"Hybrid search failed: {e}", exc_info=True)
         console.print(f"[bold red]Error during Hybrid search:[/bold red] {e}")
@@ -1094,6 +1207,24 @@ def cli_add_relationship(
         "-a",
         help="Additional edge properties as a JSON string (e.g., '{\"confidence\": 0.9}').",
     ),
+    reference_time: Optional[str] = typer.Option(
+        None,
+        "--valid-from",
+        "-vf",
+        help="When the relationship became true (ISO-8601 format, e.g., '2023-01-15T12:00:00Z').",
+    ),
+    valid_until: Optional[str] = typer.Option(
+        None,
+        "--valid-until",
+        "-vu",
+        help="When the relationship stopped being true (ISO-8601 format, e.g., '2023-12-31T23:59:59Z').",
+    ),
+    check_contradictions: bool = typer.Option(
+        True,
+        "--check-contradictions",
+        "-cc",
+        help="Whether to check for and resolve contradicting relationships.",
+    ),
     json_output: bool = typer.Option(
         False, "--json-output", "-j", help="Output full metadata as JSON on success."
     ),
@@ -1133,14 +1264,17 @@ def cli_add_relationship(
     try:
         # Ensure type is uppercase if needed by convention/API
         rel_type_upper = relationship_type.upper()
-        # Call the new create_relationship function from crud package
+        # Call the enhanced create_relationship function with temporal parameters
         meta = create_relationship(
             db,
             from_doc_key=from_key,
             to_doc_key=to_key,
             relationship_type=rel_type_upper,
             rationale=rationale,
-            attributes=attr_dict
+            attributes=attr_dict,
+            reference_time=reference_time,
+            valid_until=valid_until,
+            check_contradictions=check_contradictions
         )
         if meta:
             output = meta  # Prepare JSON output
@@ -1366,6 +1500,93 @@ def cli_graph_traverse(
             print(json.dumps(output))
         else:
             console.print(f"[bold red]Error during graph traversal:[/bold red] {e}")
+        raise typer.Exit(code=1)
+
+
+@graph_app.command("resolve-contradictions")
+def cli_resolve_contradictions(
+    from_key: str = typer.Argument(
+        ..., help="The _key of the source document."
+    ),
+    to_key: str = typer.Argument(
+        ..., help="The _key of the target document."
+    ),
+    relationship_type: Optional[str] = typer.Option(
+        None, "--type", "-t", help="Type of relationship to filter by."
+    ),
+    strategy: str = typer.Option(
+        "newest_wins", "--strategy", "-s", 
+        help="Resolution strategy: newest_wins, merge, or split_timeline."
+    ),
+    show_only: bool = typer.Option(
+        False, "--show-only", help="Only show contradictions without resolving."
+    ),
+    yes: bool = typer.Option(
+        False, "--yes", "-y", help="Confirm resolution without interactive prompt."
+    ),
+    json_output: bool = typer.Option(
+        False, "--json-output", "-j", help="Output results as JSON."
+    ),
+):
+    """
+    Detect and resolve contradictions between relationships.
+
+    *WHEN TO USE:* Use this command when you need to identify and resolve contradicting
+    relationships between the same pair of documents, particularly when they have
+    overlapping temporal validity periods. This helps maintain data consistency.
+
+    *HOW TO USE:* Provide the keys of the source and target documents. Optionally filter
+    by relationship type and choose a resolution strategy. Use `--show-only` to preview
+    contradictions without resolving them.
+
+    *RESOLUTION STRATEGIES:*
+    - `newest_wins`: The most recently created edge supersedes older ones (default)
+    - `merge`: Combine temporal ranges from contradicting edges
+    - `split_timeline`: Create separate valid periods for each relationship
+
+    *EXAMPLE:* `... graph resolve-contradictions doc1_key doc2_key --type RELATED_TO --strategy merge`
+    """
+    logger.info(f"CLI: Detecting and resolving contradictions between {from_key} and {to_key}")
+    
+    # Check if the command is available
+    if resolve_contradictions_command is None:
+        console.print("[bold red]Error:[/bold red] Contradiction resolution is not available in this version.")
+        raise typer.Exit(code=1)
+    
+    # Validate strategy
+    valid_strategies = ["newest_wins", "merge", "split_timeline"]
+    if strategy not in valid_strategies:
+        console.print(
+            f"[bold red]Error:[/bold red] Invalid strategy '{strategy}'. "
+            f"Must be one of: {', '.join(valid_strategies)}"
+        )
+        raise typer.Exit(code=1)
+    
+    # Get DB connection
+    db = get_db_connection()
+    
+    # Call the implementation function
+    try:
+        result = resolve_contradictions_command(
+            db=db,
+            from_key=from_key,
+            to_key=to_key,
+            collection_name=COLLECTION_NAME,
+            edge_collection=EDGE_COLLECTION_NAME,
+            relationship_type=relationship_type,
+            strategy=strategy,
+            show_only=show_only,
+            yes=yes,
+            json_output=json_output
+        )
+        
+        # Output JSON result if requested
+        if json_output and result:
+            print(json.dumps(result, indent=2))
+            
+    except Exception as e:
+        logger.error(f"Contradiction resolution failed: {e}", exc_info=True)
+        console.print(f"[bold red]Error resolving contradictions:[/bold red] {e}")
         raise typer.Exit(code=1)
 
 
@@ -1702,6 +1923,243 @@ def cli_memory_context(
     except Exception as e:
         logger.error(f"Get conversation context failed: {e}", exc_info=True)
         console.print(f"[bold red]Error getting conversation context:[/bold red] {e}")
+        raise typer.Exit(code=1)
+
+
+@memory_app.command("find-entities")
+def cli_find_entities(
+    search_term: str = typer.Argument(..., help="Search term to find entities."),
+    entity_type: Optional[str] = typer.Option(
+        None, "--type", "-t", help="Filter by entity type."
+    ),
+    exact_match: bool = typer.Option(
+        False, "--exact", "-e", help="Only return exact name matches."
+    ),
+    min_similarity: float = typer.Option(
+        0.7, "--min-similarity", "-s", help="Minimum similarity threshold for semantic matching.", min=0.0, max=1.0
+    ),
+    max_results: int = typer.Option(
+        10, "--max-results", "-m", help="Maximum number of results to return.", min=1
+    ),
+    json_output: bool = typer.Option(
+        False, "--json-output", "-j", help="Output results as JSON."
+    ),
+):
+    """
+    Find entities by name or semantic similarity.
+    
+    *WHEN TO USE:* Use this command to search for entities in the knowledge graph
+    by name or description. This is helpful when you need to find specific entities
+    before performing operations like merging or resolution.
+    
+    *HOW TO USE:* Provide a search term to match against entity names. Use the
+    `--type` option to filter by entity type, and `--exact` to only return
+    exact name matches. For semantic matching, adjust the similarity threshold
+    with `--min-similarity`.
+    
+    *EXAMPLE:* `... memory find-entities "John Smith" --type Person --min-similarity 0.8`
+    """
+    logger.info(f"CLI: Finding entities matching '{search_term}'")
+    
+    # Check if the command is available
+    if find_potential_entity_matches is None:
+        console.print("[bold red]Error:[/bold red] Entity resolution is not available in this version.")
+        raise typer.Exit(code=1)
+    
+    # Get DB connection
+    db = get_db_connection()
+    entity_collection = "agent_entities"  # Use the default entity collection from MemoryAgent
+    
+    # Call the implementation function
+    try:
+        results = find_potential_entity_matches(
+            db=db,
+            entity_collection=entity_collection,
+            search_term=search_term,
+            entity_type=entity_type,
+            exact_match_only=exact_match,
+            min_similarity=min_similarity,
+            max_results=max_results,
+            json_output=json_output
+        )
+        
+        # Output JSON result if requested
+        if json_output and results is not None:
+            print(json.dumps(results, indent=2))
+            
+    except Exception as e:
+        logger.error(f"Finding entities failed: {e}", exc_info=True)
+        console.print(f"[bold red]Error finding entities:[/bold red] {e}")
+        raise typer.Exit(code=1)
+
+
+@memory_app.command("resolve-entities")
+def cli_merge_entities(
+    entity1_key: str = typer.Argument(..., help="The _key of the first entity."),
+    entity2_key: str = typer.Argument(..., help="The _key of the second entity."),
+    merge_strategy: str = typer.Option(
+        "union", "--strategy", "-s", 
+        help="Merge strategy: union, prefer_existing, prefer_new, or intersection."
+    ),
+    keep_entity: str = typer.Option(
+        "1", "--keep", "-k", 
+        help="Which entity to keep: 1, 2, or 'new'."
+    ),
+    yes: bool = typer.Option(
+        False, "--yes", "-y", help="Confirm resolution without interactive prompt."
+    ),
+    json_output: bool = typer.Option(
+        False, "--json-output", "-j", help="Output results as JSON."
+    ),
+):
+    """
+    Resolve and merge two potentially duplicate entities.
+    
+    *WHEN TO USE:* Use this command when you have identified two entities that represent
+    the same real-world entity and need to merge them. This helps maintain data
+    consistency by reducing duplicate entities in the knowledge graph.
+    
+    *HOW TO USE:* Provide the keys of the two entities to merge. Choose a merge strategy
+    and specify which entity to keep as the base for the merge (or create a new entity).
+    
+    *MERGE STRATEGIES:*
+    - `union`: Combine all attributes from both entities (default)
+    - `prefer_existing`: Keep existing attributes, add new ones only if they don't exist
+    - `prefer_new`: Use new attributes, keeping existing ones only if they don't conflict
+    - `intersection`: Only keep attributes that appear in both entities
+    
+    *EXAMPLE:* `... memory resolve-entities entity1_key entity2_key --strategy union --keep 1`
+    """
+    logger.info(f"CLI: Resolving entities {entity1_key} and {entity2_key}")
+    
+    # Check if the command is available
+    if resolve_entities_command is None:
+        console.print("[bold red]Error:[/bold red] Entity resolution is not available in this version.")
+        raise typer.Exit(code=1)
+    
+    # Validate keep_entity parameter
+    valid_keep_values = ["1", "2", "new"]
+    if keep_entity not in valid_keep_values:
+        console.print(
+            f"[bold red]Error:[/bold red] Invalid --keep value '{keep_entity}'. "
+            f"Must be one of: {', '.join(valid_keep_values)}"
+        )
+        raise typer.Exit(code=1)
+    
+    # Validate merge_strategy parameter
+    valid_strategies = ["union", "prefer_existing", "prefer_new", "intersection"]
+    if merge_strategy not in valid_strategies:
+        console.print(
+            f"[bold red]Error:[/bold red] Invalid strategy '{merge_strategy}'. "
+            f"Must be one of: {', '.join(valid_strategies)}"
+        )
+        raise typer.Exit(code=1)
+    
+    # Get DB connection
+    db = get_db_connection()
+    entity_collection = "agent_entities"  # Use the default entity collection from MemoryAgent
+    
+    # Call the implementation function
+    try:
+        result = resolve_entities_command(
+            db=db,
+            entity_collection=entity_collection,
+            entity1_key=entity1_key,
+            entity2_key=entity2_key,
+            merge_strategy=merge_strategy,
+            keep_entity=keep_entity,
+            yes=yes,
+            json_output=json_output
+        )
+        
+        # Output JSON result if requested
+        if json_output and result is not None:
+            print(json.dumps(result, indent=2))
+            
+    except Exception as e:
+        logger.error(f"Entity resolution failed: {e}", exc_info=True)
+        console.print(f"[bold red]Error resolving entities:[/bold red] {e}")
+        raise typer.Exit(code=1)
+
+
+@memory_app.command("add-entity")
+def cli_add_entity(
+    name: str = typer.Argument(..., help="The name of the entity."),
+    entity_type: str = typer.Argument(..., help="The type of the entity."),
+    attributes: Optional[str] = typer.Option(
+        None, "--attributes", "-a", help="JSON string of entity attributes."
+    ),
+    attributes_file: Optional[str] = typer.Option(
+        None, "--attributes-file", "-f", help="Path to JSON file with entity attributes."
+    ),
+    auto_resolve: bool = typer.Option(
+        True, "--auto-resolve/--no-auto-resolve", help="Automatically resolve duplicates."
+    ),
+    merge_strategy: str = typer.Option(
+        "union", "--strategy", "-s", help="Merge strategy for auto-resolution."
+    ),
+    min_confidence: float = typer.Option(
+        0.8, "--min-confidence", "-c", help="Minimum confidence for automatic merging.", min=0.0, max=1.0
+    ),
+    json_output: bool = typer.Option(
+        False, "--json-output", "-j", help="Output results as JSON."
+    ),
+):
+    """
+    Add a new entity with automatic duplicate resolution.
+    
+    *WHEN TO USE:* Use this command to add a new entity to the knowledge graph
+    with automatic duplicate detection and resolution. This ensures that you
+    don't create duplicate entities for the same real-world entity.
+    
+    *HOW TO USE:* Provide the name and type of the entity. Optionally provide
+    attributes as a JSON string or from a file. Choose whether to automatically
+    resolve duplicates and specify a merge strategy and confidence threshold.
+    
+    *EXAMPLE:* `... memory add-entity "John Smith" Person --attributes '{"age": 30, "occupation": "Engineer"}'`
+    """
+    logger.info(f"CLI: Adding entity '{name}' of type '{entity_type}'")
+    
+    # Check if the command is available
+    if add_entity_command is None:
+        console.print("[bold red]Error:[/bold red] Entity resolution is not available in this version.")
+        raise typer.Exit(code=1)
+    
+    # Validate merge_strategy parameter
+    valid_strategies = ["union", "prefer_existing", "prefer_new", "intersection"]
+    if merge_strategy not in valid_strategies:
+        console.print(
+            f"[bold red]Error:[/bold red] Invalid strategy '{merge_strategy}'. "
+            f"Must be one of: {', '.join(valid_strategies)}"
+        )
+        raise typer.Exit(code=1)
+    
+    # Get DB connection
+    db = get_db_connection()
+    entity_collection = "agent_entities"  # Use the default entity collection from MemoryAgent
+    
+    # Call the implementation function
+    try:
+        result = add_entity_command(
+            db=db,
+            entity_collection=entity_collection,
+            name=name,
+            entity_type=entity_type,
+            attributes_str=attributes,
+            attributes_file=attributes_file,
+            auto_resolve=auto_resolve,
+            merge_strategy=merge_strategy,
+            min_confidence=min_confidence,
+            json_output=json_output
+        )
+        
+        # Output JSON result if requested
+        if json_output and result is not None:
+            print(json.dumps(result, indent=2))
+            
+    except Exception as e:
+        logger.error(f"Adding entity failed: {e}", exc_info=True)
+        console.print(f"[bold red]Error adding entity:[/bold red] {e}")
         raise typer.Exit(code=1)
 
 

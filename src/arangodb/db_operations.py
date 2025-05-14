@@ -23,12 +23,22 @@ from arango.exceptions import (
 )
 
 # Import configuration
-from complexity.arangodb.config import (
-    COLLECTION_NAME,
-    EDGE_COLLECTION_NAME,
-    MESSAGES_COLLECTION_NAME,
-    GRAPH_NAME
-)
+try:
+    # Try absolute import first
+    from arangodb.config import (
+        COLLECTION_NAME,
+        EDGE_COLLECTION_NAME,
+        MESSAGES_COLLECTION_NAME,
+        GRAPH_NAME
+    )
+except ImportError:
+    # Fall back to legacy import path
+    from complexity.arangodb.config import (
+        COLLECTION_NAME,
+        EDGE_COLLECTION_NAME,
+        MESSAGES_COLLECTION_NAME,
+        GRAPH_NAME
+    )
 
 # Message history configuration
 # Defined here rather than importing from archived configs
@@ -660,10 +670,13 @@ def create_relationship(
     to_doc_key: str,
     relationship_type: str,
     rationale: str,
-    attributes: Optional[Dict[str, Any]] = None
+    attributes: Optional[Dict[str, Any]] = None,
+    reference_time: Optional[Union[datetime, str]] = None,
+    valid_until: Optional[Union[datetime, str]] = None,
+    check_contradictions: bool = False
 ) -> Optional[Dict[str, Any]]:
     """
-    Create a generic edge between two documents in the main document graph.
+    Create a generic edge between two documents in the main document graph with temporal metadata.
 
     Args:
         db: ArangoDB database handle
@@ -672,19 +685,92 @@ def create_relationship(
         relationship_type: Type/category of the relationship
         rationale: Explanation for the relationship
         attributes: Optional additional metadata for the edge
+        reference_time: When the relationship became true in the real world (defaults to now)
+        valid_until: When the relationship stopped being true (None means still valid)
+        check_contradictions: Whether to check for and resolve contradictions
 
     Returns:
         Optional[Dict[str, Any]]: The created edge document if successful, None otherwise
     """
-    edge = {
-        "_from": f"{COLLECTION_NAME}/{from_doc_key}",
-        "_to": f"{COLLECTION_NAME}/{to_doc_key}",
-        "type": relationship_type,
-        "rationale": rationale,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        **(attributes or {})
-    }
-    return create_document(db, EDGE_COLLECTION_NAME, edge)
+    # Import enhanced relationship functions within function to avoid circular imports
+    try:
+        # Try absolute import first
+        from arangodb.enhanced_relationships import (
+            enhance_edge_with_temporal_metadata,
+            find_contradicting_edges,
+            invalidate_edge
+        )
+    except ImportError:
+        # Fall back to legacy import path
+        from src.arangodb.enhanced_relationships import (
+            enhance_edge_with_temporal_metadata,
+            find_contradicting_edges,
+            invalidate_edge
+        )
+    
+    try:
+        # Create base edge document
+        edge = {
+            "_from": f"{COLLECTION_NAME}/{from_doc_key}",
+            "_to": f"{COLLECTION_NAME}/{to_doc_key}",
+            "type": relationship_type,
+            "rationale": rationale,
+            **(attributes or {})
+        }
+        
+        # Add temporal metadata
+        edge = enhance_edge_with_temporal_metadata(
+            edge_doc=edge,
+            reference_time=reference_time,
+            valid_until=valid_until
+        )
+        
+        # Keep backward compatibility with the old timestamp field
+        edge["timestamp"] = edge["created_at"]
+        
+        # Check for contradictions if enabled
+        if check_contradictions:
+            from_id = f"{COLLECTION_NAME}/{from_doc_key}"
+            to_id = f"{COLLECTION_NAME}/{to_doc_key}"
+            
+            contradictions = find_contradicting_edges(
+                db=db,
+                edge_collection=EDGE_COLLECTION_NAME,
+                from_id=from_id,
+                to_id=to_id,
+                relationship_type=relationship_type
+            )
+            
+            # Handle contradictions
+            if contradictions:
+                logger.info(f"Found {len(contradictions)} potentially contradicting edges")
+                for contradiction in contradictions:
+                    # Invalidate each contradicting edge
+                    invalidate_edge(
+                        db=db,
+                        edge_collection=EDGE_COLLECTION_NAME,
+                        edge_key=contradiction["_key"],
+                        invalid_from=edge["valid_at"],
+                        reason="Superseded by new relationship",
+                        invalidated_by="new_edge"
+                    )
+        
+        # Create the edge document
+        result = create_document(db, EDGE_COLLECTION_NAME, edge)
+        
+        # Update invalidated_by with the actual key of the new edge if there were contradictions
+        if check_contradictions and contradictions and result and "_key" in result:
+            for contradiction in contradictions:
+                db.collection(EDGE_COLLECTION_NAME).update(
+                    contradiction["_key"],
+                    {"invalidated_by": result["_key"]}
+                )
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"Failed to create relationship: {e}")
+        return None
 
 
 def delete_relationship_by_key(
