@@ -33,40 +33,16 @@ from typing import List, Optional, Dict, Any, Union
 from loguru import logger
 from pathlib import Path
 
-# Import dependency checker for graceful handling of missing dependencies
-from arangodb.core.utils.dependency_checker import (
-    HAS_ARANGO,
-    check_dependency
+# Import CLI utilities
+from arangodb.core.utils.cli import (
+    console, 
+    format_output, 
+    add_output_option,
+    format_error,
+    format_success,
+    format_info,
+    OutputFormat
 )
-
-# Check for UI dependencies
-HAS_RICH = "rich" in sys.modules
-HAS_TYPER = "typer" in sys.modules
-
-# Import UI components if available
-if HAS_RICH:
-    from rich.console import Console
-    from rich.table import Table
-    from rich.json import JSON
-    
-    # Initialize Rich console
-    console = Console()
-else:
-    # Fallback to simple console output for environments without Rich
-    class SimpleConsole:
-        def print(self, *args, **kwargs):
-            # Extract the text content from any formatting
-            content = str(args[0])
-            # Remove Rich formatting tags
-            content = content.replace("[bold red]", "").replace("[/bold red]", "")
-            content = content.replace("[bold green]", "").replace("[/bold green]", "")
-            content = content.replace("[bold cyan]", "").replace("[/bold cyan]", "")
-            content = content.replace("[bold yellow]", "").replace("[/bold yellow]", "")
-            content = content.replace("[bold]", "").replace("[/bold]", "")
-            # Print the clean text
-            print(content)
-    
-    console = SimpleConsole()
 
 # Import from core modules
 from arangodb.core.memory.compact_conversation import compact_conversation

@@ -27,13 +27,15 @@ from loguru import logger
 # Import from core layer
 from arangodb.core.search import (
     bm25_search,
-    semantic_search,
     hybrid_search,
     tag_search,
     graph_traverse,
     search_keyword,
     glossary_search
 )
+
+# Import safe semantic search for better error handling
+from arangodb.core.search.semantic_search import safe_semantic_search as semantic_search
 
 # Import utilities for embedding generation
 from arangodb.core.utils.embedding_utils import get_embedding

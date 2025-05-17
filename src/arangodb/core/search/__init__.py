@@ -17,7 +17,7 @@ search algorithm implementation.
 
 # Import all search functions
 from .bm25_search import bm25_search
-from .semantic_search import semantic_search
+from .semantic_search import semantic_search, safe_semantic_search
 from .hybrid_search import hybrid_search, weighted_reciprocal_rank_fusion
 from .cross_encoder_reranking import (
     cross_encoder_rerank,
@@ -39,6 +39,7 @@ __all__ = [
     
     # Semantic search
     "semantic_search",
+    "safe_semantic_search",
     
     # Hybrid search
     "hybrid_search",

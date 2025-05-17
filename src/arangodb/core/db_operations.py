@@ -48,6 +48,9 @@ from arango.exceptions import (
     AQLQueryExecuteError
 )
 
+# Import embedding utilities for automatic validation
+from arangodb.core.search.semantic_search import ensure_document_has_embedding
+
 # Import constants from core constants module
 from arangodb.core.constants import (
     COLLECTION_NAME,
@@ -73,7 +76,8 @@ def create_document(
     collection_name: str,
     document: Dict[str, Any],
     document_key: Optional[str] = None,
-    return_new: bool = True
+    return_new: bool = True,
+    ensure_embedding: bool = False
 ) -> Optional[Dict[str, Any]]:
     """
     Insert a document into a collection.
@@ -84,6 +88,7 @@ def create_document(
         document: Document data to insert
         document_key: Optional key for the document (auto-generated if not provided)
         return_new: Whether to return the new document
+        ensure_embedding: Whether to automatically add embeddings if the document contains text
 
     Returns:
         Optional[Dict[str, Any]]: The inserted document or metadata if successful, None otherwise
@@ -98,6 +103,10 @@ def create_document(
         # Add timestamp if not present
         if "timestamp" not in document:
             document["timestamp"] = datetime.now(timezone.utc).isoformat()
+
+        # Ensure embeddings if requested
+        if ensure_embedding:
+            document = ensure_document_has_embedding(document, db, collection_name)
 
         # Get the collection and insert document
         collection = db.collection(collection_name)
@@ -156,7 +165,8 @@ def update_document(
     updates: Dict[str, Any],
     return_new: bool = True,
     check_rev: bool = False,
-    rev: Optional[str] = None
+    rev: Optional[str] = None,
+    ensure_embedding: bool = False
 ) -> Optional[Dict[str, Any]]:
     """
     Update a document with new values.
@@ -169,6 +179,7 @@ def update_document(
         return_new: Whether to return the updated document
         check_rev: Whether to check document revision
         rev: Document revision (required if check_rev is True)
+        ensure_embedding: Whether to automatically update embeddings if document has text fields
 
     Returns:
         Optional[Dict[str, Any]]: The updated document if successful, None otherwise
@@ -185,6 +196,10 @@ def update_document(
         # 2. Merge updates into the existing document
         merged_doc = existing_doc.copy()
         merged_doc.update(updates)
+        
+        # Ensure embeddings if requested
+        if ensure_embedding:
+            merged_doc = ensure_document_has_embedding(merged_doc, db, collection_name)
 
         # Add/update timestamp
         merged_doc["updated_at"] = datetime.now(timezone.utc).isoformat()

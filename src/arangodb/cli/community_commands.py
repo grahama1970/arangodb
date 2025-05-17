@@ -22,21 +22,26 @@ from datetime import datetime
 from typing import Optional
 from loguru import logger
 
-# Import UI components
-from rich.console import Console
-from rich.table import Table
-from rich import print_json
+# Import CLI utilities
+from arangodb.core.utils.cli import (
+    console, 
+    format_output, 
+    add_output_option,
+    format_error,
+    format_success,
+    OutputFormat
+)
 
 # Import database and community detection
 from arangodb.cli.db_connection import get_db_connection
 from arangodb.core.graph.community_detection import CommunityDetector
 
-# Initialize UI components
-console = Console()
+# Initialize app
 app = typer.Typer()
 
 
 @app.command("detect", no_args_is_help=False)
+@add_output_option
 def detect_communities(
     min_size: int = typer.Option(
         2,
@@ -56,18 +61,15 @@ def detect_communities(
         "-R",
         help="Force rebuild all communities"
     ),
-    json_output: bool = typer.Option(
-        False,
-        "--json",
-        "-j",
-        help="Output results as JSON"
-    )
+    output_format: str = "table"
 ):
     """
     Detect communities in the entity graph using the Louvain algorithm.
     
     Communities are groups of closely related entities based on their 
     relationships. This helps organize knowledge into meaningful clusters.
+    
+    Use --output/-o to choose between table, json, csv, or text formats.
     """
     logger.info(f"CLI: Detecting communities with min_size={min_size}, resolution={resolution}")
     
@@ -99,17 +101,18 @@ def detect_communities(
                 community_groups[community] = []
             community_groups[community].append(entity)
         
-        if json_output:
-            # Output as JSON
+        # Get stored communities for additional metadata
+        stored_communities = detector.get_all_communities()
+        community_metadata = {c["original_id"]: c for c in stored_communities}
+        
+        # Prepare data for output
+        if output_format == OutputFormat.JSON:
+            # JSON format - full data structure
             result = {
                 "total_entities": len(communities),
                 "total_communities": len(community_groups),
                 "communities": []
             }
-            
-            # Get stored communities for additional metadata
-            stored_communities = detector.get_all_communities()
-            community_metadata = {c["original_id"]: c for c in stored_communities}
             
             for community_id, entities in community_groups.items():
                 metadata = community_metadata.get(community_id, {})
@@ -120,18 +123,11 @@ def detect_communities(
                     "modularity": metadata.get("metadata", {}).get("modularity_score", 0)
                 })
             
-            print_json(data=result)
+            console.print(format_output(result, output_format=output_format))
         else:
-            # Display as table
-            table = Table(title="Community Detection Results")
-            table.add_column("Community ID", style="cyan")
-            table.add_column("Size", style="green", justify="center")
-            table.add_column("Key Entities", style="yellow")
-            table.add_column("Modularity", style="magenta", justify="center")
-            
-            # Get stored communities for modularity scores
-            stored_communities = detector.get_all_communities()
-            community_metadata = {c["original_id"]: c for c in stored_communities}
+            # Table/CSV/Text format - prepare rows
+            headers = ["Community ID", "Size", "Key Entities", "Modularity"]
+            rows = []
             
             for community_id, entities in community_groups.items():
                 key_entities = ", ".join(entities[:3])
@@ -141,41 +137,49 @@ def detect_communities(
                 metadata = community_metadata.get(community_id, {})
                 modularity = metadata.get("metadata", {}).get("modularity_score", 0)
                 
-                table.add_row(
+                rows.append([
                     metadata.get("_key", community_id),
                     str(len(entities)),
                     key_entities,
                     f"{modularity:.3f}"
-                )
+                ])
             
-            console.print(table)
-            console.print(f"\n[green]Total communities: {len(community_groups)}[/green]")
-            console.print(f"[green]Total entities: {len(communities)}[/green]")
+            formatted_output = format_output(
+                rows,
+                output_format=output_format,
+                headers=headers,
+                title="Community Detection Results"
+            )
+            console.print(formatted_output)
+            
+            # Add summary for table format
+            if output_format == OutputFormat.TABLE:
+                console.print(format_success(
+                    f"Total communities: {len(community_groups)}, Total entities: {len(communities)}"
+                ))
     
     except Exception as e:
         logger.error(f"Community detection failed: {e}", exc_info=True)
-        console.print(f"[bold red]Error:[/bold red] {e}")
+        console.print(format_error("Community detection failed", str(e)))
         raise typer.Exit(code=1)
 
 
 @app.command("show")
+@add_output_option
 def show_community(
     community_id: str = typer.Argument(
         ...,
         help="Community ID to display"
     ),
-    json_output: bool = typer.Option(
-        False,
-        "--json",
-        "-j",
-        help="Output as JSON"
-    )
+    output_format: str = "table"
 ):
     """
     Show detailed information about a specific community.
     
     Displays all members of the community, their relationships,
     and community metadata like creation time and modularity score.
+    
+    Use --output/-o to choose between table, json, csv, or text formats.
     """
     logger.info(f"CLI: Showing community {community_id}")
     
@@ -189,7 +193,7 @@ def show_community(
         try:
             community = communities_col.get(community_id)
         except:
-            console.print(f"[bold red]Error:[/bold red] Community '{community_id}' not found")
+            console.print(format_error(f"Community '{community_id}' not found"))
             raise typer.Exit(code=1)
         
         # Get entity details
@@ -208,7 +212,7 @@ def show_community(
             except:
                 pass
         
-        if json_output:
+        if output_format == OutputFormat.JSON:
             # Output as JSON
             result = {
                 "id": community["_key"],
@@ -218,42 +222,59 @@ def show_community(
                 "created_at": community.get("created_at"),
                 "sample_members": community.get("sample_members", [])
             }
-            print_json(data=result)
+            console.print(format_output(result, output_format=output_format))
         else:
-            # Display as formatted output
-            console.print(f"\n[bold cyan]Community: {community['_key']}[/bold cyan]")
-            console.print(f"Members: {community.get('member_count', 0)}")
-            console.print(f"Created: {community.get('created_at', 'Unknown')}")
+            # For table/CSV/text formats
+            
+            # Community info
+            info_rows = [
+                ["Community ID", community["_key"]],
+                ["Members", str(community.get("member_count", 0))],
+                ["Created", community.get("created_at", "Unknown")]
+            ]
             
             if community.get("metadata"):
-                console.print(f"Algorithm: {community['metadata'].get('algorithm', 'Unknown')}")
-                console.print(f"Modularity Score: {community['metadata'].get('modularity_score', 0):.3f}")
+                info_rows.append(["Algorithm", community["metadata"].get("algorithm", "Unknown")])
+                info_rows.append(["Modularity Score", f"{community['metadata'].get('modularity_score', 0):.3f}"])
             
-            # Create entities table
-            if entities:
-                table = Table(title="Community Members")
-                table.add_column("Entity ID", style="cyan")
-                table.add_column("Name", style="yellow")
-                table.add_column("Type", style="green")
+            # Output community info
+            info_output = format_output(
+                info_rows,
+                output_format=output_format,
+                headers=["Property", "Value"],
+                title=f"Community: {community['_key']}"
+            )
+            console.print(info_output)
+            
+            # Output entities if available
+            if entities and output_format != OutputFormat.TEXT:
+                console.print("")  # Add spacing
                 
+                entity_rows = []
                 for entity in entities:
-                    table.add_row(
+                    entity_rows.append([
                         entity["id"],
                         entity["name"],
                         entity["type"]
-                    )
+                    ])
                 
-                console.print("\n")
-                console.print(table)
+                entity_output = format_output(
+                    entity_rows,
+                    output_format=output_format,
+                    headers=["Entity ID", "Name", "Type"],
+                    title="Community Members"
+                )
+                console.print(entity_output)
     
     except Exception as e:
         if "not found" not in str(e):
             logger.error(f"Show community failed: {e}", exc_info=True)
-            console.print(f"[bold red]Error:[/bold red] {e}")
+            console.print(format_error("Show community failed", str(e)))
         raise typer.Exit(code=1)
 
 
 @app.command("list")
+@add_output_option
 def list_communities(
     min_size: Optional[int] = typer.Option(
         None,
@@ -267,18 +288,15 @@ def list_communities(
         "-s",
         help="Sort by: size, modularity, or created"
     ),
-    json_output: bool = typer.Option(
-        False,
-        "--json",
-        "-j", 
-        help="Output as JSON"
-    )
+    output_format: str = "table"
 ):
     """
     List all communities with their basic information.
     
     Shows a summary of all detected communities including size,
     key members, and quality metrics like modularity score.
+    
+    Use --output/-o to choose between table, json, csv, or text formats.
     """
     logger.info("CLI: Listing all communities")
     
@@ -302,7 +320,7 @@ def list_communities(
         elif sort_by == "created":
             communities.sort(key=lambda c: c.get("created_at", ""), reverse=True)
         
-        if json_output:
+        if output_format == OutputFormat.JSON:
             # Output as JSON
             result = {
                 "total": len(communities),
@@ -317,15 +335,11 @@ def list_communities(
                     for c in communities
                 ]
             }
-            print_json(data=result)
+            console.print(format_output(result, output_format=output_format))
         else:
-            # Display as table
-            table = Table(title=f"Communities (Total: {len(communities)})")
-            table.add_column("ID", style="cyan")
-            table.add_column("Size", style="green", justify="center")
-            table.add_column("Sample Members", style="yellow")
-            table.add_column("Modularity", style="magenta", justify="center")
-            table.add_column("Created", style="blue")
+            # Prepare rows for table/CSV/text formats
+            headers = ["ID", "Size", "Sample Members", "Modularity", "Created"]
+            rows = []
             
             for community in communities:
                 sample_members = ", ".join(community.get("sample_members", [])[:3])
@@ -340,19 +354,25 @@ def list_communities(
                     except:
                         pass
                 
-                table.add_row(
+                rows.append([
                     community["_key"],
                     str(community.get("member_count", 0)),
                     sample_members,
                     f"{community.get('metadata', {}).get('modularity_score', 0):.3f}",
                     created
-                )
+                ])
             
-            console.print(table)
+            formatted_output = format_output(
+                rows,
+                output_format=output_format,
+                headers=headers,
+                title=f"Communities (Total: {len(communities)})"
+            )
+            console.print(formatted_output)
     
     except Exception as e:
         logger.error(f"List communities failed: {e}", exc_info=True)
-        console.print(f"[bold red]Error:[/bold red] {e}")
+        console.print(format_error("List communities failed", str(e)))
         raise typer.Exit(code=1)
 
 

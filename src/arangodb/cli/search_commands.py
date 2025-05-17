@@ -53,7 +53,6 @@ from arangodb.core.utils.cli import (
 # Import from core layer - note how we now use the core layer directly
 from arangodb.core.search import (
     bm25_search,
-    semantic_search,
     hybrid_search,
     weighted_reciprocal_rank_fusion,
     rerank_search_results,
@@ -62,6 +61,9 @@ from arangodb.core.search import (
     search_keyword,
     glossary_search
 )
+
+# Import safe semantic search for better error handling
+from arangodb.core.search.semantic_search import safe_semantic_search as semantic_search
 
 # Import utilities for embedding generation
 from arangodb.core.utils.embedding_utils import get_embedding
