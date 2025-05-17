@@ -23,16 +23,18 @@ Sample Input:
 - CLI command: arangodb search hybrid "Query optimization techniques" --rerank
 
 Expected Output:
-- Console-formatted tables or JSON output of search results based on --output parameter
+- Console-formatted tables or JSON output of search results
 """
 
 import typer
 import json
 import sys
-import time
 from pathlib import Path
 from typing import List, Optional, Dict, Any, Union
 from loguru import logger
+from rich.console import Console
+from rich.table import Table
+from rich.json import JSON
 
 # Import dependency checker for graceful handling of missing dependencies
 from arangodb.core.utils.dependency_checker import (
@@ -41,14 +43,9 @@ from arangodb.core.utils.dependency_checker import (
     check_dependency
 )
 
-# Import centralized CLI formatting utilities
-from arangodb.core.utils.cli import (
-    console,
-    format_output,
-    format_error,
-    add_output_option,
-    OutputFormat
-)
+# Check for UI dependencies
+HAS_RICH = "rich" in sys.modules
+HAS_TYPER = "typer" in sys.modules
 
 # Import from core layer - note how we now use the core layer directly
 from arangodb.core.search import (
@@ -77,39 +74,41 @@ from arangodb.core.constants import (
 # Import connection utilities (to be refactored in separate module)
 from arangodb.cli.db_connection import get_db_connection
 
+# Initialize Rich console
+console = Console()
+
 # Create the search app command group
 search_app = typer.Typer(name="search", help="Find documents using various search methods.")
 
-def _prepare_results_for_display(
+def _display_results(
     results_data: Dict[str, Any], 
-    search_type: str,
-    score_field: Optional[str] = None,
-    output_format: str = "table"
-) -> Any:
-    """
-    Prepare search results for display in the requested format.
+    search_type: str, 
+    score_field: Optional[str] = None
+) -> None:
+    """Display search results in a formatted table.
     
     Args:
         results_data: Dictionary with search results and metadata
         search_type: Type of search (e.g., "BM25", "Semantic")
         score_field: Name of the score field in results (or None if no score)
-        output_format: Output format (table, json, csv, text)
-        
-    Returns:
-        Formatted output based on the requested format
     """
-    # Extract results and metadata
     results = results_data.get("results", [])
     total_count = results_data.get("total", len(results))
     time_taken = results_data.get("time", None)
     
-    # Prepare table headers
-    headers = ["Key", "Title/Summary", "Tags"]
-    if score_field:
-        headers.append("Score")
+    # Create table with appropriate styling
+    table = Table(title=f"{search_type} Search Results")
     
-    # Prepare rows from results
-    rows = []
+    # Add standard columns
+    table.add_column("Key", style="cyan")
+    table.add_column("Title/Summary", style="green")
+    table.add_column("Tags", style="yellow")
+    
+    # Add score column if a score field is provided
+    if score_field:
+        table.add_column(f"Score", style="magenta")
+    
+    # Add rows for each result
     for i, result in enumerate(results):
         doc = result.get("doc", result)  # Some results have doc inside, others are direct
         
@@ -134,26 +133,22 @@ def _prepare_results_for_display(
                 score_str = str(score)
             row.append(score_str)
         
-        rows.append(row)
+        table.add_row(*row)
     
-    # Create title with metadata
-    title = f"{search_type} Search Results"
+    # Print the table
+    console.print(table)
+    
+    # Add summary footer
+    footer = f"Found {len(results)} results"
+    if total_count > len(results):
+        footer += f" of {total_count} total matches"
     if time_taken:
-        title += f" ({len(results)} of {total_count} in {time_taken:.2f}s)"
-    else:
-        title += f" ({len(results)} of {total_count})"
+        footer += f" in {time_taken:.2f} seconds"
     
-    # Format the output using the centralized formatter
-    return format_output(
-        rows,
-        output_format=output_format,
-        headers=headers,
-        title=title
-    )
+    console.print(footer)
 
 
 @search_app.command("bm25")
-@add_output_option
 def cli_search_bm25(
     query: str = typer.Argument(..., help="The search query text."),
     threshold: float = typer.Option(
@@ -163,7 +158,7 @@ def cli_search_bm25(
         5, "--top-n", "-n", help="Number of results to return.", min=1
     ),
     offset: int = typer.Option(
-        0, "--offset", "-off", help="Offset for pagination.", min=0
+        0, "--offset", "-o", help="Offset for pagination.", min=0
     ),
     tags: Optional[str] = typer.Option(
         None,
@@ -171,7 +166,9 @@ def cli_search_bm25(
         "-t",
         help='Comma-separated list of tags to filter by (e.g., "tag1,tag2").',
     ),
-    output_format: str = "table",  # Added by the add_output_option decorator
+    json_output: bool = typer.Option(
+        False, "--json-output", "-j", help="Output results as JSON array."
+    ),
 ):
     """
     Find documents based on keyword relevance (BM25 algorithm).
@@ -181,8 +178,6 @@ def cli_search_bm25(
 
     *HOW TO USE:* Provide the query text. Optionally refine with score threshold,
     result count, pagination offset, or tag filtering.
-    
-    *OUTPUT:* Use --output/-o to specify the format (table, json, csv, text).
     """
     logger.info(f"CLI: Performing BM25 search for '{query}'")
     db = get_db_connection()
@@ -199,24 +194,18 @@ def cli_search_bm25(
             tag_list=tag_list
         )
         
-        # Format results for display
-        formatted_output = _prepare_results_for_display(
-            results_data=results_data,
-            search_type="BM25",
-            score_field="bm25_score",
-            output_format=output_format
-        )
-        
-        console.print(formatted_output)
-        
+        if json_output:
+            # Use print directly for clean JSON output
+            print(json.dumps(results_data.get("results", []), indent=2))
+        else:
+            _display_results(results_data, "BM25", "bm25_score")
     except Exception as e:
         logger.error(f"BM25 search failed: {e}", exc_info=True)
-        console.print(format_error("Error during BM25 search", str(e)))
+        console.print(f"[bold red]Error during BM25 search:[/bold red] {e}")
         raise typer.Exit(code=1)
 
 
 @search_app.command("semantic")
-@add_output_option
 def cli_search_semantic(
     query: str = typer.Argument(..., help="The search query text (will be embedded)."),
     threshold: float = typer.Option(
@@ -236,7 +225,9 @@ def cli_search_semantic(
         "-t",
         help='Comma-separated list of tags to filter by (e.g., "tag1,tag2").',
     ),
-    output_format: str = "table",  # Added by the add_output_option decorator
+    json_output: bool = typer.Option(
+        False, "--json-output", "-j", help="Output results as JSON array."
+    ),
 ):
     """
     Find documents based on conceptual meaning (vector similarity).
@@ -247,8 +238,6 @@ def cli_search_semantic(
 
     *HOW TO USE:* Provide the query text. Optionally refine with similarity
     threshold, result count, or tag filtering.
-    
-    *OUTPUT:* Use --output/-o to specify the format (table, json, csv, text).
     """
     logger.info(f"CLI: Performing Semantic search for '{query}'")
     db = get_db_connection()
@@ -258,18 +247,16 @@ def cli_search_semantic(
     try:
         query_embedding = get_embedding(query)
         if not query_embedding:  # Check if list is empty or None
-            console.print(format_error(
-                "Failed to generate embedding for the query",
-                "Returned empty/None. Check API key and model."
-            ))
+            console.print(
+                "[bold red]Error:[/bold red] Failed to generate embedding for the query (returned empty/None). Check API key and model."
+            )
             raise typer.Exit(code=1)
         logger.debug(f"Query embedding generated ({len(query_embedding)} dims).")
     except Exception as emb_err:
         logger.error(f"Failed to generate query embedding: {emb_err}", exc_info=True)
-        console.print(format_error(
-            "Error generating query embedding",
-            str(emb_err)
-        ))
+        console.print(
+            f"[bold red]Error generating query embedding:[/bold red] {emb_err}"
+        )
         raise typer.Exit(code=1)
 
     try:
@@ -282,24 +269,17 @@ def cli_search_semantic(
             tag_list=tag_list
         )
         
-        # Format results for display
-        formatted_output = _prepare_results_for_display(
-            results_data=results_data,
-            search_type="Semantic",
-            score_field="similarity_score",
-            output_format=output_format
-        )
-        
-        console.print(formatted_output)
-        
+        if json_output:
+            print(json.dumps(results_data.get("results", []), indent=2))
+        else:
+            _display_results(results_data, "Semantic", "similarity_score")
     except Exception as e:
         logger.error(f"Semantic search failed: {e}", exc_info=True)
-        console.print(format_error("Error during Semantic search", str(e)))
+        console.print(f"[bold red]Error during Semantic search:[/bold red] {e}")
         raise typer.Exit(code=1)
 
 
 @search_app.command("hybrid")
-@add_output_option
 def cli_search_hybrid(
     query: str = typer.Argument(..., help="The search query text."),
     top_n: int = typer.Option(
@@ -343,7 +323,9 @@ def cli_search_hybrid(
         "-rs",
         help="Strategy for combining original and reranked scores: replace, weighted, max, min."
     ),
-    output_format: str = "table",  # Added by the add_output_option decorator
+    json_output: bool = typer.Option(
+        False, "--json-output", "-j", help="Output results as JSON array."
+    ),
 ):
     """
     Combine keyword (BM25) and semantic search results using RRF re-ranking.
@@ -366,8 +348,6 @@ def cli_search_hybrid(
     - `weighted`: Combine original and cross-encoder scores with weights
     - `max`: Take the maximum of original and cross-encoder scores
     - `min`: Take the minimum of original and cross-encoder scores
-    
-    *OUTPUT:* Use --output/-o to specify the format (table, json, csv, text).
     """
     logger.info(f"CLI: Performing Hybrid search for '{query}'")
     db = get_db_connection()
@@ -376,10 +356,10 @@ def cli_search_hybrid(
     # Validate reranking strategy if reranking is enabled
     valid_strategies = ["replace", "weighted", "max", "min"]
     if use_reranking and reranking_strategy not in valid_strategies:
-        console.print(format_error(
-            "Invalid reranking strategy",
-            f"'{reranking_strategy}' is not valid. Must be one of: {', '.join(valid_strategies)}"
-        ))
+        console.print(
+            f"[bold red]Error:[/bold red] Invalid reranking strategy: {reranking_strategy}. "
+            f"Must be one of: {', '.join(valid_strategies)}"
+        )
         raise typer.Exit(code=1)
     
     try:
@@ -396,7 +376,7 @@ def cli_search_hybrid(
         
         # Apply reranking if requested
         if use_reranking:
-            start_time = time.time()
+            start_time = results_data.get("time", 0)
             
             logger.info(f"Applying cross-encoder reranking with model: {reranking_model}")
             
@@ -420,6 +400,7 @@ def cli_search_hybrid(
                 results_data["reranking_strategy"] = reranking_strategy
                 
                 # Add reranking time to total time
+                import time
                 end_time = time.time()
                 results_data["reranking_time"] = end_time - start_time
                 
@@ -427,37 +408,35 @@ def cli_search_hybrid(
                 logger.error(f"Reranking failed: {rerank_err}", exc_info=True)
                 console.print(f"[yellow]Warning:[/yellow] Reranking failed: {rerank_err}. Using original hybrid results.")
         
-        # Determine the appropriate score field and display title
-        score_field = "rrf_score"
-        search_type = "Hybrid (RRF)"
-        
-        # Update display settings if reranking was applied
-        if use_reranking and results_data.get("reranking_applied", False):
-            score_field = "score"  # The reranking score field
-            search_type = "Hybrid with Reranking"  # Update display title
+        if json_output:
+            print(json.dumps(results_data.get("results", []), indent=2))
+        else:
+            # Determine the appropriate score field and display title
+            score_field = "rrf_score"
+            search_type = "Hybrid (RRF)"
             
-            # Add reranking info to the title
-            reranking_info = f" [{reranking_model.split('/')[-1]}, {reranking_strategy}]"
-            search_type += reranking_info
-        
-        # Format results for display
-        formatted_output = _prepare_results_for_display(
-            results_data=results_data,
-            search_type=search_type,
-            score_field=score_field,
-            output_format=output_format
-        )
-        
-        console.print(formatted_output)
-        
+            # Update display settings if reranking was applied
+            if use_reranking and results_data.get("reranking_applied", False):
+                score_field = "score"  # The reranking score field
+                search_type = "Hybrid with Reranking"  # Update display title
+            
+            _display_results(results_data, search_type, score_field)
+            
+            # Display reranking info if applicable
+            if use_reranking and results_data.get("reranking_applied", False):
+                console.print()
+                console.print(
+                    f"[bold cyan]Reranking Info:[/bold cyan] Model: [green]{reranking_model.split('/')[-1]}[/green], "
+                    f"Strategy: [green]{reranking_strategy}[/green], "
+                    f"Time: [green]{results_data.get('reranking_time', 0):.2f}s[/green]"
+                )
     except Exception as e:
         logger.error(f"Hybrid search failed: {e}", exc_info=True)
-        console.print(format_error("Error during Hybrid search", str(e)))
+        console.print(f"[bold red]Error during Hybrid search:[/bold red] {e}")
         raise typer.Exit(code=1)
 
 
 @search_app.command("keyword")
-@add_output_option
 def cli_find_keyword(
     keywords: List[str] = typer.Argument(..., help="One or more keywords to search for."),
     search_fields_str: Optional[str] = typer.Option(
@@ -475,7 +454,9 @@ def cli_find_keyword(
         "-ma",
         help="Require all keywords to match (AND logic) instead of any (OR logic).",
     ),
-    output_format: str = "table",  # Added by the add_output_option decorator
+    json_output: bool = typer.Option(
+        False, "--json-output", "-j", help="Output results as JSON array."
+    ),
 ):
     """
     Find documents based on exact keyword matching within specified fields.
@@ -486,8 +467,6 @@ def cli_find_keyword(
     
     *WHY TO USE:* Useful for locating lessons mentioning precise terms, error codes, 
     function names, or specific phrases you are looking for directly.
-    
-    *OUTPUT:* Use --output/-o to specify the format (table, json, csv, text).
     """
     logger.info(f"CLI: Performing Keyword search for: {keywords}")
     db = get_db_connection()
@@ -512,24 +491,21 @@ def cli_find_keyword(
             fields_to_search=parsed_search_fields
         )
 
-        # Format results for display
-        formatted_output = _prepare_results_for_display(
-            results_data=results,
-            search_type="Keyword",
-            score_field="keyword_score",
-            output_format=output_format
-        )
-        
-        console.print(formatted_output)
+        # No need to wrap - results is already a dictionary from search_keyword
+        results_data = results
+
+        if json_output:
+            print(json.dumps(results_data.get("results", []), indent=2))
+        else:
+            _display_results(results_data, "Keyword", score_field="keyword_score")
 
     except Exception as e:
         logger.error(f"Keyword search failed: {e}", exc_info=True)
-        console.print(format_error("Error during Keyword search", str(e)))
+        console.print(f"[bold red]Error during Keyword search:[/bold red] {e}")
         raise typer.Exit(code=1)
 
 
 @search_app.command("tag")
-@add_output_option
 def cli_search_tag(
     tags: List[str] = typer.Argument(..., help="One or more tags to search for (case-sensitive)."),
     limit: int = typer.Option(
@@ -541,7 +517,9 @@ def cli_search_tag(
         "-ma",
         help="Require all tags to match (AND logic) instead of any (OR logic).",
     ),
-    output_format: str = "table",  # Added by the add_output_option decorator
+    json_output: bool = typer.Option(
+        False, "--json-output", "-j", help="Output results as JSON array."
+    ),
 ):
     """
     Find documents based on exact tag matching within the 'tags' array field.
@@ -552,8 +530,6 @@ def cli_search_tag(
     
     *WHY TO USE:* Ideal for filtering lessons based on predefined categories 
     or topics represented by tags.
-    
-    *OUTPUT:* Use --output/-o to specify the format (table, json, csv, text).
     """
     logger.info(f"CLI: Performing Tag search for: {tags}")
     db = get_db_connection()
@@ -567,19 +543,14 @@ def cli_search_tag(
             require_all_tags=match_all,
         )
 
-        # Format results for display
-        formatted_output = _prepare_results_for_display(
-            results_data=results_data,
-            search_type="Tag",
-            score_field=None,
-            output_format=output_format
-        )
-        
-        console.print(formatted_output)
+        if json_output:
+            print(json.dumps(results_data.get("results", []), indent=2))
+        else:
+            _display_results(results_data, "Tag", score_field=None)
 
     except Exception as e:
         logger.error(f"Tag search failed: {e}", exc_info=True)
-        console.print(format_error("Error during Tag search", str(e)))
+        console.print(f"[bold red]Error during Tag search:[/bold red] {e}")
         raise typer.Exit(code=1)
 
 
@@ -617,7 +588,18 @@ if __name__ == "__main__":
     except Exception as e:
         all_validation_failures.append(f"Dependency checker validation failed: {e}")
     
-    # Test 2: Check core search function imports
+    # Test 2: Check UI dependency detection
+    total_tests += 1
+    try:
+        test_result = "HAS_RICH" in globals() and "HAS_TYPER" in globals()
+        if not test_result:
+            all_validation_failures.append("Failed to check UI dependencies")
+        else:
+            print(f"✓ UI dependency flags: HAS_RICH = {HAS_RICH}, HAS_TYPER = {HAS_TYPER}")
+    except Exception as e:
+        all_validation_failures.append(f"UI dependency validation failed: {e}")
+    
+    # Test 3: Check core search function imports
     total_tests += 1
     try:
         # Test import paths
@@ -628,18 +610,6 @@ if __name__ == "__main__":
             print("✓ Core search functions imported successfully")
     except Exception as e:
         all_validation_failures.append(f"Import validation failed: {e}")
-    
-    # Test 3: Check CLI formatter imports
-    total_tests += 1
-    try:
-        # Test import paths
-        test_result = "format_output" in globals() and "add_output_option" in globals()
-        if not test_result:
-            all_validation_failures.append("Failed to import CLI formatter functions")
-        else:
-            print("✓ CLI formatter functions imported successfully")
-    except Exception as e:
-        all_validation_failures.append(f"Formatter import validation failed: {e}")
     
     # Test 4: Verify Typer setup
     total_tests += 1

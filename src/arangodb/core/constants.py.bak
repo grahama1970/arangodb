@@ -17,7 +17,6 @@ Sample Input/Output:
   model_name = CONFIG["embedding"]["model_name"]
 
 - Accessing constants:
-from arangodb.core.utils.config_validator import validate_config, print_config_summary
   from arangodb.core.constants import COLLECTION_NAME, EDGE_COLLECTION_NAME
   
 - Running validation:
@@ -165,7 +164,7 @@ EMBEDDING_FIELD = CONFIG["embedding"]["field"]  # Should be "embedding"
 
 
 # Validate environment
-def legacy_validate_config() -> bool:
+def validate_config() -> bool:
     """
     Validate that required environment variables are set.
     Returns True if valid, False otherwise. Logs errors.
@@ -209,13 +208,6 @@ def legacy_validate_config() -> bool:
 
     return validation_passed
 
-
-# Validate config with enhanced validator
-try:
-    CONFIG = validate_config(CONFIG)
-except Exception as e:
-    logger.error(f"Enhanced configuration validation failed: {e}")
-    logger.warning("Falling back to legacy validation")
 
 if __name__ == "__main__":
     logger.remove() # Remove default handler

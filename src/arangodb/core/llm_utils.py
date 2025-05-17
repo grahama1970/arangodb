@@ -9,7 +9,7 @@ Vertex AI, OpenAI and Ollama models.
 import os
 import json
 import litellm
-from typing import Dict, Any, List, Optional, Union, Callable
+from typing import Dict, Any, List, Optional, Union, Callable, Type
 from loguru import logger
 
 # Import and initialize LiteLLM cache
@@ -18,7 +18,12 @@ from arangodb.core.utils.initialize_litellm_cache import initialize_litellm_cach
 # Initialize LiteLLM cache
 initialize_litellm_cache()
 
+# Enable JSON schema validation for structured outputs
+litellm.enable_json_schema_validation = True
+
 from arangodb.core.constants import CONFIG
+# Import models for structured LLM responses
+from arangodb.core.models import LLMResponse
 
 def get_llm_client(provider: str = None, for_rationale: bool = False) -> Callable:
     """
@@ -67,7 +72,7 @@ def get_llm_client(provider: str = None, for_rationale: bool = False) -> Callabl
         # Check if using Gemini 2.5 model (which requires thinking parameters)
         is_gemini_25 = "gemini-2.5" in model
         
-        def vertex_client(prompt: str) -> Any:
+        def vertex_client(prompt: str, response_format: Optional[Type] = None) -> Any:
             """Client for Vertex AI"""
             try:
                 # Create parameters with optional reasoning support
@@ -77,6 +82,13 @@ def get_llm_client(provider: str = None, for_rationale: bool = False) -> Callabl
                     "temperature": provider_config.get("temperature", 0.2),
                     "max_tokens": provider_config.get("max_tokens", 150)
                 }
+                
+                # Add response_format if provided
+                if response_format is not None:
+                    if issubclass(response_format, LLMResponse):
+                        params["response_format"] = response_format
+                    else:
+                        logger.warning(f"Ignoring response_format as it's not a subclass of LLMResponse: {response_format}")
                 
                 # Add reasoning_effort if this is for a rationale and the config has it
                 if for_rationale and "reasoning_effort" in provider_config:
@@ -119,15 +131,24 @@ def get_llm_client(provider: str = None, for_rationale: bool = False) -> Callabl
         
         model = provider_config["model"]
         
-        def openai_client(prompt: str) -> Any:
+        def openai_client(prompt: str, response_format: Optional[Type] = None) -> Any:
             """Client for OpenAI"""
             try:
-                response = litellm.completion(
-                    model=model,
-                    messages=[{"role": "user", "content": prompt}],
-                    temperature=provider_config.get("temperature", 0.2),
-                    max_tokens=provider_config.get("max_tokens", 150)
-                )
+                params = {
+                    "model": model,
+                    "messages": [{"role": "user", "content": prompt}],
+                    "temperature": provider_config.get("temperature", 0.2),
+                    "max_tokens": provider_config.get("max_tokens", 150)
+                }
+                
+                # Add response_format if provided
+                if response_format is not None:
+                    if issubclass(response_format, LLMResponse):
+                        params["response_format"] = response_format
+                    else:
+                        logger.warning(f"Ignoring response_format as it's not a subclass of LLMResponse: {response_format}")
+                
+                response = litellm.completion(**params)
                 return response
             except Exception as e:
                 logger.error(f"Error calling OpenAI: {e}")
@@ -140,17 +161,31 @@ def get_llm_client(provider: str = None, for_rationale: bool = False) -> Callabl
         model = provider_config["model"]
         api_base = provider_config.get("api_base", "http://localhost:11434")
         
-        def ollama_client(prompt: str) -> Any:
+        def ollama_client(prompt: str, response_format: Optional[Type] = None) -> Any:
             """Client for Ollama"""
             try:
                 # Configure litellm for Ollama
-                response = litellm.completion(
-                    model=f"ollama/{model}",
-                    messages=[{"role": "user", "content": prompt}],
-                    temperature=provider_config.get("temperature", 0.3),
-                    max_tokens=provider_config.get("max_tokens", 250),
-                    api_base=api_base
-                )
+                params = {
+                    "model": f"ollama/{model}",
+                    "messages": [{"role": "user", "content": prompt}],
+                    "temperature": provider_config.get("temperature", 0.3),
+                    "max_tokens": provider_config.get("max_tokens", 250),
+                    "api_base": api_base
+                }
+                
+                # Note: Ollama may not support all response_format options
+                if response_format is not None:
+                    if issubclass(response_format, LLMResponse):
+                        # Only add if the model supports it (most Ollama models don't)
+                        if "json" in model.lower():
+                            params["response_format"] = response_format
+                        else:
+                            logger.warning(f"Model {model} may not support JSON mode, but attempting to use response_format anyway")
+                            params["response_format"] = response_format
+                    else:
+                        logger.warning(f"Ignoring response_format as it's not a subclass of LLMResponse: {response_format}")
+                
+                response = litellm.completion(**params)
                 return response
             except Exception as e:
                 logger.error(f"Error calling Ollama: {e}")
@@ -250,12 +285,14 @@ def extract_rationale(response: Any) -> str:
     """
     try:
         # First check for reasoning content (Gemini 2.5)
-        if hasattr(response.choices[0].message, 'reasoning_content') and response.choices[0].message.reasoning_content:
-            return response.choices[0].message.reasoning_content
-        
-        # Fall back to standard content
-        if hasattr(response.choices[0].message, 'content') and response.choices[0].message.content:
-            return response.choices[0].message.content
+        if hasattr(response, 'choices') and response.choices and hasattr(response.choices[0], 'message'):
+            message = response.choices[0].message
+            if hasattr(message, 'reasoning_content') and message.reasoning_content:
+                return message.reasoning_content
+            
+            # Fall back to standard content
+            if hasattr(message, 'content') and message.content:
+                return message.content
         
         # Check if reasoning tokens were used (with Gemini 2.5)
         if hasattr(response, 'usage') and hasattr(response.usage, 'completion_tokens_details'):
@@ -263,11 +300,52 @@ def extract_rationale(response: Any) -> str:
             if hasattr(details, 'reasoning_tokens') and details.reasoning_tokens > 0:
                 logger.warning(f"Model used {details.reasoning_tokens} reasoning tokens but did not provide content")
         
-        # Default fallback
-        return "No rationale content available"
+        # Default to standard extraction if we couldn't find reasoning content
+        return extract_llm_response(response)
     except Exception as e:
         logger.error(f"Error extracting rationale: {e}")
         return f"Error extracting rationale: {str(e)}"
+
+def extract_structured_response(response: Any, model_class: Type[LLMResponse]) -> LLMResponse:
+    """
+    Extract a structured response from an LLM using the provided model class.
+    
+    Args:
+        response: The response object from an LLM
+        model_class: The Pydantic model class to validate against
+        
+    Returns:
+        An instance of the provided model class
+    """
+    try:
+        # Extract content from response
+        content = extract_llm_response(response)
+        
+        # Try to parse as JSON
+        try:
+            # First check if it's already a dict
+            if isinstance(content, dict):
+                return model_class.model_validate(content)
+            
+            # Otherwise, try to parse as JSON
+            json_data = json.loads(content)
+            return model_class.model_validate(json_data)
+        except json.JSONDecodeError:
+            # If not valid JSON, try to find JSON in the text
+            import re
+            json_pattern = r'(\{.*\}|\[.*\])'
+            matches = re.search(json_pattern, content, re.DOTALL)
+            if matches:
+                json_str = matches.group(1)
+                json_data = json.loads(json_str)
+                return model_class.model_validate(json_data)
+            
+            # If we still can't parse it, raise an error
+            raise ValueError(f"Could not extract valid JSON from the response: {content[:200]}...")
+        
+    except Exception as e:
+        logger.error(f"Error extracting structured response: {e}")
+        raise
 
 # Example usage
 if __name__ == "__main__":
@@ -286,6 +364,21 @@ if __name__ == "__main__":
         response = default_client("Hello, what is your name?")
         content = extract_llm_response(response)
         print(f"Response: {content}")
+        
+        # Test JSON mode if available
+        print("\nTesting JSON mode...")
+        try:
+            from arangodb.core.models import MessageClassification
+            
+            json_response = default_client(
+                "Classify this message: 'Can you help me with my project deadline tomorrow?'",
+                response_format=MessageClassification
+            )
+            
+            classification = extract_structured_response(json_response, MessageClassification)
+            print(f"Classification: {classification.model_dump_json(indent=2)}")
+        except Exception as e:
+            print(f"JSON mode test failed: {e}")
         
         sys.exit(0)
     except Exception as e:

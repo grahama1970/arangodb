@@ -56,7 +56,7 @@ from arangodb.core.utils.embedding_utils import get_embedding
 
 # Import search modules
 from arangodb.core.search.bm25_search import bm25_search
-from arangodb.core.search.semantic_search import semantic_search
+from arangodb.core.search.semantic_search import semantic_search, safe_semantic_search
 from arangodb.core.arango_setup import ensure_arangosearch_view
 from arangodb.core.search.search_config import SearchConfig, SearchConfigManager, SearchMethod
 
@@ -574,7 +574,7 @@ def hybrid_search(
                 "format": output_format
             }
         
-        semantic_results = semantic_search(
+        semantic_results = safe_semantic_search(
             db=db,
             query=query_text,
             collections=collections,
@@ -1002,7 +1002,7 @@ def search_with_config(
     
     elif config.preferred_method == SearchMethod.SEMANTIC:
         # Semantic search only
-        return semantic_search(
+        return safe_semantic_search(
             db=db,
             query=query_text,
             collections=collections,

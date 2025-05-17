@@ -12,7 +12,7 @@ Key features:
 
 Sample Input:
     ```python
-    # from gitget.summarization import llm_summarize
+    # # from gitget.summarization import llm_summarize
     
     llm_summarize(
         digest_path="/path/to/DIGEST.txt",
@@ -111,7 +111,7 @@ def llm_summarize(
     """
     # Try to import the advanced summarizer
     try:
-        # from gitget.llm_summarizer import summarize_text
+        # # from gitget.llm_summarizer import summarize_text
         advanced_summarizer_available = True
         logger.info("Using advanced LLM summarizer for repository summarization")
     except ImportError:

@@ -111,30 +111,6 @@ def check_collection_readiness(
     # Get semantic search status
     status = validator.get_semantic_search_status()
     
-    # Add specific error logging for common issues
-    if not status["can_search"]:
-        logger.error(f"Collection {collection_name} is not ready for semantic search")
-        
-        # Check specific issues from the issues array
-        issues = status.get("issues", [])
-        for issue in issues:
-            # Pattern match on specific issue types for better logging
-            if "does not exist" in issue:
-                logger.error(f"ERROR: {issue}")
-            elif "is empty" in issue:
-                logger.error(f"ERROR: {issue} - Cannot perform semantic search on empty collection")
-            elif "missing embeddings" in issue:
-                count = int(issue.split()[0]) if issue[0].isdigit() else "all"
-                logger.error(f"ERROR: {count} documents missing embeddings - All documents need embeddings for semantic search")
-            elif "not enough documents" in issue.lower():
-                logger.error(f"ERROR: {issue} - Need at least 2 documents with embeddings for semantic search")
-            elif "inconsistent embedding dimensions" in issue.lower():
-                logger.error(f"ERROR: {issue} - All embeddings must have the same dimensions")
-            elif "no vector index" in issue.lower():
-                logger.error(f"ERROR: {issue} - Cannot perform efficient vector search without index")
-            else:
-                logger.error(f"ISSUE: {issue}")
-    
     return status["can_search"], status
 
 
@@ -175,33 +151,17 @@ def prepare_collection_for_search(
         result_info["ready"] = True
         return True, result_info
     
-    # Log the specific issues
-    logger.warning(f"Collection {collection_name} is not ready: {status['message']}")
-    for issue in status.get("issues", []):
-        logger.warning(f"  - {issue}")
+    # Log the issues
+    logger.warning(f"Collection {collection_name} has issues: {status['message']}")
     
     # Fix embeddings if requested and needed
     if fix_embeddings:
         # Get current stats
         stats = document_stats(db, collection_name, embedding_field, metadata_field)
         
-        # Log specific document statistics
-        logger.info(f"Current collection stats:")
-        logger.info(f"  Total documents: {stats['total_documents']}")
-        logger.info(f"  Documents with embeddings: {stats['documents_with_embeddings']}")
-        
-        # Calculate missing embeddings
-        missing_embeddings = stats['total_documents'] - stats['documents_with_embeddings']
-        logger.info(f"  Documents missing embeddings: {missing_embeddings}")
-        logger.info(f"  Dimensions found: {stats['dimensions_found']}")
-        logger.info(f"  Models found: {stats['embedding_models']}")
-        
         # Only fix if there are issues
         if stats["issues"]:
-            logger.info(f"Attempting to fix {len(stats['issues'])} issues in {collection_name}")
-            for issue in stats["issues"]:
-                logger.info(f"  - Fixing: {issue}")
-            
+            logger.info(f"Attempting to fix embeddings for {collection_name}")
             fix_results = fix_collection_embeddings(
                 db=db,
                 collection_name=collection_name,
@@ -210,12 +170,6 @@ def prepare_collection_for_search(
                 dry_run=False
             )
             result_info["fix_results"] = fix_results
-            
-            # Log fix results
-            if fix_results.get("success", False):
-                logger.info(f"Successfully fixed {fix_results.get('fixed_count', 0)} documents")
-            else:
-                logger.error(f"Failed to fix embeddings: {fix_results.get('error', 'Unknown error')}")
             
             # Check status again after fixing
             is_ready, status = check_collection_readiness(db, collection_name, embedding_field, metadata_field)
@@ -293,7 +247,7 @@ def semantic_search(
         )
         
         if not is_ready:
-            # The detailed error logging is already done in check_collection_readiness
+            logger.error(f"Collection {collection_name} is not ready for semantic search: {status_info['status']['message']}")
             return {
                 "results": [],
                 "total": 0,
@@ -470,24 +424,8 @@ def ensure_document_has_embedding(
     # Fix the document if needed
     logger.warning(f"Document has embedding issues: {validation['issues']}")
     
-    # Check if embedding is missing, wrong type, or invalid
-    needs_new_embedding = False
-    
+    # Generate embedding if missing
     if embedding_field not in document or not isinstance(document[embedding_field], list):
-        needs_new_embedding = True
-    else:
-        # Check if dimensions are wrong
-        if len(document[embedding_field]) != DEFAULT_EMBEDDING_DIMENSIONS:
-            logger.warning(f"Embedding has wrong dimensions: {len(document[embedding_field])} != {DEFAULT_EMBEDDING_DIMENSIONS}")
-            needs_new_embedding = True
-        
-        # Check if model is wrong
-        metadata = document.get(metadata_field, {})
-        if metadata.get("model") != default_model:
-            logger.warning(f"Embedding has wrong model: {metadata.get('model')} != {default_model}")
-            needs_new_embedding = True
-    
-    if needs_new_embedding:
         # Extract text to embed
         text_fields = ["content", "text", "summary", "title", "description"]
         text_to_embed = ""
@@ -504,7 +442,7 @@ def ensure_document_has_embedding(
             text_to_embed = f"{title} {content}".strip()
         
         if text_to_embed:
-            logger.info(f"Generating new embedding for document: {text_to_embed[:50]}...")
+            logger.info(f"Generating embedding for document: {text_to_embed[:50]}...")
             embedding = get_embedding(text_to_embed)
             if embedding:
                 document[embedding_field] = embedding
@@ -527,75 +465,6 @@ def insert_documents_with_validation(db: StandardDatabase, collection_name: str,
     """
     collection = db.collection(collection_name)
     return collection.insert_many(documents)
-
-
-def safe_semantic_search(
-    db: StandardDatabase,
-    query: Union[str, List[float]],
-    collections: Optional[List[str]] = None,
-    **kwargs
-) -> Dict[str, Any]:
-    """
-    A safe wrapper for semantic search that always validates and provides clear error messages.
-    
-    This function is designed to be used by all other modules to ensure consistent
-    error handling and validation across the application.
-    
-    Args:
-        db: Database connection
-        query: Search query or embedding
-        collections: Collections to search
-        **kwargs: Additional arguments for semantic_search
-        
-    Returns:
-        Search results dictionary with clear error messages if search fails
-    """
-    # Always enable validation and attempt to fix issues
-    kwargs["validate_before_search"] = True
-    kwargs["auto_fix_embeddings"] = kwargs.get("auto_fix_embeddings", True)
-    
-    # Set default collection if not provided
-    if not collections:
-        collections = [COLLECTION_NAME]
-    
-    try:
-        # Log the search attempt
-        logger.info(f"Performing safe semantic search in collections: {collections}")
-        
-        # Perform the search
-        result = semantic_search(db, query, collections=collections, **kwargs)
-        
-        # Check if search failed
-        if result.get("search_engine") == "failed":
-            error_msg = result.get("error", "Unknown search failure")
-            collection_status = result.get("collection_status", {})
-            
-            # Provide actionable error messages
-            if "no documents" in error_msg.lower():
-                logger.error("ACTION REQUIRED: Add documents to the collection before searching")
-            elif "no documents with embeddings" in error_msg.lower():
-                logger.error("ACTION REQUIRED: Generate embeddings for existing documents")
-            elif "not enough documents" in error_msg.lower():
-                logger.error("ACTION REQUIRED: Add more documents with embeddings (minimum 2 required)")
-            elif "inconsistent embedding dimensions" in error_msg.lower():
-                logger.error("ACTION REQUIRED: Fix embedding dimensions to be consistent across all documents")
-            elif "no vector index" in error_msg.lower():
-                logger.error("ACTION REQUIRED: Create a vector index on the embedding field")
-            elif "collection does not exist" in error_msg.lower():
-                logger.error("ACTION REQUIRED: Create the collection first")
-                
-        return result
-        
-    except Exception as e:
-        logger.exception(f"Unexpected error during semantic search: {e}")
-        return {
-            "results": [],
-            "total": 0,
-            "query": query if isinstance(query, str) else "Vector query",
-            "time": 0,
-            "search_engine": "failed",
-            "error": f"Unexpected error: {str(e)}"
-        }
 
 
 if __name__ == "__main__":

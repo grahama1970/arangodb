@@ -1,0 +1,9 @@
+{
+  "title": "Python Programming Basics",
+  "content": "Python is a high-level programming language known for its simplicity and readability",
+  "problem": "Understanding basic syntax and concepts",
+  "solution": "Practice with simple examples and gradual progression",
+  "code": "print('Hello, World!')\nx = 10\ny = 20\nprint(f'Sum: {x + y}')",
+  "category": "programming",
+  "tags": ["python", "basics", "programming"]
+}

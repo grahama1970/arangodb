@@ -44,8 +44,6 @@ from arangodb.core.utils.workflow_tracking import WorkflowTracker
 
 # Import compact_conversation function
 from arangodb.core.memory.compact_conversation import compact_conversation
-# Import enhanced error handling
-from arangodb.core.memory.improved_error_handling import enhance_memory_agent
 
 class MemoryAgent:
     """
@@ -62,8 +60,6 @@ class MemoryAgent:
     """
     
     def __init__(self, db: StandardDatabase):
-        # Apply enhanced error handling
-        self = enhance_memory_agent(self)
         """
         Initialize the Memory Agent with a database connection.
         
