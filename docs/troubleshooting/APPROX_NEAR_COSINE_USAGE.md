@@ -150,3 +150,22 @@ See: `/src/arangodb/tests/test_vector_search_working.py`
 3. **nLists Parameter**: Use 2 for small datasets, higher for larger ones
 4. **Error 1554**: Usually means index structure is wrong
 5. **Function Availability**: Requires ArangoDB 3.12+ with experimental flag
+
+## Fix for Current Issue (2025-05-17)
+
+The semantic search was failing because:
+1. The vector index wasn't properly created for the `memory_documents` collection
+2. The index params must be in a sub-object structure (not flat)
+
+To fix:
+1. Create proper vector index with correct structure:
+```python
+from arangodb.core.arango_fix_vector_index import fix_memory_agent_indexes
+fix_memory_agent_indexes(db)
+```
+
+2. If the collection doesn't have enough documents for training (needs at least 2), add more documents first before creating the index.
+
+3. Ensure embeddings are stored as arrays, not objects.
+
+The fix script at `/src/arangodb/core/arango_fix_vector_index.py` handles creating proper vector indexes for all memory collections.
