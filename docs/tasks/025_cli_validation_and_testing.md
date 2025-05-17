@@ -9,6 +9,24 @@ After completing the Critical Graphiti Features (Task 024), we need to ensure th
 2. All commands should return real results from actual database operations
 3. Comprehensive documentation with actual outputs is needed
 
+## Critical Validation Points
+
+### Output Parameter Consistency
+All CLI commands MUST:
+1. Accept `--output` parameter with `json` and `table` options
+2. Default to `table` format when `--output` not specified
+3. Return consistently structured JSON when `--output json` is used
+4. Handle errors gracefully in both output formats
+
+### Semantic Search Pre-validation
+For commands using semantic search:
+1. Check if collection exists BEFORE attempting search
+2. Verify collection has documents with embeddings
+3. Ensure embedding dimensions are consistent
+4. Confirm vector index exists
+5. Provide clear error messages if any check fails
+6. Attempt auto-fix of embeddings when appropriate
+
 ## Command Groups to Validate
 
 ### 1. Search Commands ⚠️ TODO
@@ -83,6 +101,15 @@ After completing the Critical Graphiti Features (Task 024), we need to ensure th
 - [ ] Search compactions
 - [ ] Delete compaction
 
+### 10. Output Format Testing ⚠️ TODO
+**Cross-Module Validation**
+- [ ] Test all commands with `--output json`
+- [ ] Test all commands with `--output table`
+- [ ] Test all commands with no output parameter (default)
+- [ ] Verify JSON structure consistency
+- [ ] Verify table formatting consistency
+- [ ] Test error handling in both formats
+
 ## Validation Requirements
 
 ### For Each Command:
@@ -91,6 +118,20 @@ After completing the Critical Graphiti Features (Task 024), we need to ensure th
 3. **Capture Output**: Record the real output (not mocked)
 4. **Verify Results**: Confirm data matches expectations
 5. **Document Everything**: Include command, parameters, and output
+6. **Test Output Formats**: Verify `--output json` and `--output table` work consistently
+7. **Validate Semantic Search**: Ensure pre-checks before semantic operations
+
+### Output Parameter Validation:
+1. **Consistency Check**: All commands must support `--output` parameter
+2. **Format Options**: Support both `json` and `table` formats
+3. **Default Format**: Table format should be default when not specified
+4. **JSON Structure**: Ensure consistent JSON structure across commands
+
+### Semantic Search Validation:
+1. **Pre-flight Checks**: Validate collection has embeddings BEFORE search
+2. **Error Messages**: Clear error messages if collection not ready
+3. **Fallback Options**: Graceful degradation to other search methods
+4. **Auto-fix Attempts**: Try to fix embeddings if possible
 
 ### Environment Setup:
 1. Activate virtual environment: `source .venv/bin/activate`
@@ -127,6 +168,10 @@ For each command group in `/docs/reports/025_cli_validation_and_testing_report.m
 - ✅ Returns real data
 - ✅ Format correct
 - ✅ Performance acceptable
+- ✅ --output json works correctly
+- ✅ --output table works correctly
+- ✅ Semantic search pre-checks performed
+- ✅ Error messages are clear and actionable
 - ❌ Any issues found
 
 ### Performance Metrics
