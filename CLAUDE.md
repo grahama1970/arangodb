@@ -213,6 +213,37 @@ All task plans must follow the standard structure defined in the Task Plan Guide
 
 Refer to the full [Task Plan Guide](./docs/memory_bank/guides/TASK_PLAN_GUIDE.md) for comprehensive details.
 
+## 🔴 Report Requirements for Task Completion
+
+Every completed task MUST have a corresponding report in `docs/reports/` following these requirements:
+
+1. **Report Structure**:
+   - Human-readable ArangoDB queries with actual execution
+   - Non-mocked results showing real database output
+   - Performance metrics for each operation
+   - Implementation notes documenting decisions
+   - Test coverage information
+   - Discovered limitations or issues
+
+2. **Task Tracking Workflow**:
+   - Create report section after each feature implementation
+   - Use actual ArangoDB queries and results (no mocking)
+   - Update task status based on report evidence
+   - Iterate on incomplete tasks until fully functional
+
+3. **Completion Criteria**:
+   - All features marked COMPLETE with supporting evidence
+   - Real ArangoDB query results in report
+   - Performance benchmarks recorded
+   - CLI commands functional
+   - Memory Agent integration verified
+
+4. **Report Validation**:
+   - Thoroughly review report to confirm task completion
+   - Mark tasks as COMPLETE/INCOMPLETE based on actual results
+   - Continue iteration on incomplete tasks
+   - Final report must show all critical features working
+
 ## 🔴 VALIDATION OUTPUT REQUIREMENTS
 
 - **NEVER print "All Tests Passed" or similar unless ALL tests actually passed**
@@ -225,6 +256,7 @@ Refer to the full [Task Plan Guide](./docs/memory_bank/guides/TASK_PLAN_GUIDE.md
 - **ALWAYS include details of each failure when tests fail**
 - **NEVER include irrelevant test output that could hide failures**
 - **ALWAYS structure validation in a way that explicitly checks EACH test case**
+- **🔴 NEVER claim success if search returns 0 results - this is ALWAYS a failure that must be investigated**
 
 ## 🔴 COMPLIANCE CHECK
 As an agent, before completing a task, verify that your work adheres to ALL standards in this document. Confirm each of the following:
@@ -240,5 +272,6 @@ As an agent, before completing a task, verify that your work adheres to ALL stan
 9. Validation functions ONLY report success if explicitly verified by comparing actual to expected results
 10. Validation functions track and report ALL failures, not just the first one encountered
 11. Validation output includes count of failed tests out of total tests run
+12. Search results MUST return actual data - 0 results is ALWAYS a failure that must be investigated
 
 If any standard is not met, fix the issue before submitting the work.

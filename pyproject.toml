@@ -62,7 +62,7 @@ dependencies = [
 ]
 
 [project.scripts]
-arangodb-cli = "arangodb.cli:app"  # Point directly to Typer app object, not wrapper function
+arangodb-cli = "arangodb.cli.main:app"  # Updated to point to the correct Typer app object in the cli package
 
 
 [project.optional-dependencies]

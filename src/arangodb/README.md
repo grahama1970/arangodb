@@ -2,7 +2,44 @@
 
 ## 📋 Overview
 
-A sophisticated system for managing and analyzing "lessons learned" using ArangoDB, combining advanced search capabilities with graph-based knowledge representation.
+A sophisticated system for managing and analyzing "lessons learned" using ArangoDB, combining advanced search capabilities with graph-based knowledge representation. The system now follows a 3-layer architecture for improved maintainability and integration flexibility.
+
+## 🏗️ 3-Layer Architecture
+
+The package follows a clean 3-layer architecture:
+
+1. **Core Layer**: Pure business logic with no UI dependencies
+   - Search operations (BM25, semantic, hybrid, etc.)
+   - Document operations (CRUD)
+   - Graph operations (relationships, traversal)
+   - Memory agent (conversation storage with temporal metadata)
+   - Community detection (automatic clustering of related entities)
+
+2. **CLI Layer**: Command-line interface built on top of the core layer
+   - Search commands for all search types
+   - CRUD commands for document management
+   - Graph commands for relationship operations
+   - Memory commands for conversation storage and retrieval
+   - Community commands for entity clustering and analysis
+
+3. **MCP Layer**: Machine-Collaborator Protocol integration for Claude
+   - Standardized interface for integration with Claude
+   - Response formatting according to MCP standards
+   - Consistent error handling and validation
+
+## 📋 Development Guidelines
+
+### Task Management
+All development follows strict task guidelines:
+- **Task Guidelines**: [/docs/TASK_GUIDELINES.md](/docs/TASK_GUIDELINES.md)
+- **Quick Reference**: [/docs/TASK_GUIDELINES_QUICK_REFERENCE.md](/docs/TASK_GUIDELINES_QUICK_REFERENCE.md)
+
+Key principles:
+- One task = one task file + one report file
+- Real queries with actual results (no mocking)
+- Performance metrics for all operations
+- Final evaluation to verify completion
+- Iterative fixes until all criteria met
 
 ### 📥 Installation Steps
 
@@ -56,6 +93,10 @@ pip install -r requirements.txt
   - Redis caching system
   - In-memory fallback option
   - Reduced API calls and latency
+- **🌐 Community Detection**
+  - Automatic entity clustering
+  - Louvain algorithm implementation
+  - Knowledge graph organization
 
 #### Developer Tools
 - **🛠️ CRUD API**
@@ -420,6 +461,26 @@ python -m src.mcp_doc_retriever.arangodb.cli graph traverse \
     lessons_learned/<key1> \
     --max-depth 2 \
     --direction ANY
+```
+
+##### 🌐 Community Detection
+```bash
+# Detect Communities
+python -m src.mcp_doc_retriever.arangodb.cli community detect \
+    --min-size 3 \
+    --resolution 1.0
+
+# List All Communities
+python -m src.mcp_doc_retriever.arangodb.cli community list \
+    --sort size
+
+# Show Community Details
+python -m src.mcp_doc_retriever.arangodb.cli community show \
+    community_12345
+
+# Force Rebuild Communities
+python -m src.mcp_doc_retriever.arangodb.cli community detect \
+    --rebuild
 ```
 
 #### 📚 Help & Documentation
