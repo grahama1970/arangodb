@@ -9,8 +9,18 @@ import json
 from datetime import datetime, timezone
 from typing import Optional, List
 import typer
-from rich.console import Console
-from rich.table import Table
+
+# Import CLI utilities
+from arangodb.core.utils.cli.formatters import (
+    console, 
+    format_output, 
+    add_output_option,
+    format_error,
+    format_success,
+    format_info,
+    format_warning,
+    OutputFormat
+)
 from rich.panel import Panel
 from rich.syntax import Syntax
 
@@ -23,17 +33,21 @@ from .db_connection import get_db_connection
 
 # Initialize the Typer app
 app = typer.Typer(name="contradiction", help="Contradiction detection and resolution commands")
-console = Console()
 
 
 @app.command("list")
+@add_output_option
 def list_contradictions(
     limit: int = typer.Option(50, "--limit", "-l", help="Maximum number of contradictions to show"),
     status: Optional[str] = typer.Option(None, "--status", "-s", help="Filter by status (resolved/failed)"),
     edge_type: Optional[str] = typer.Option(None, "--type", "-t", help="Filter by edge type"),
-    entity_id: Optional[str] = typer.Option(None, "--entity", "-e", help="Filter by entity ID")
+    entity_id: Optional[str] = typer.Option(None, "--entity", "-e", help="Filter by entity ID"),
+    output_format: str = "table"
 ):
-    """List detected contradictions from the log."""
+    """List detected contradictions from the log.
+    
+    Use --output/-o to choose between table, json, csv, or text formats.
+    """
     try:
         # Get database connection
         db = get_db_connection()
@@ -50,64 +64,63 @@ def list_contradictions(
         )
         
         if not contradictions:
-            console.print("[yellow]No contradictions found matching the criteria.[/yellow]")
+            console.print(format_warning("No contradictions found matching the criteria."))
             return
         
-        # Create results table
-        table = Table(
-            title=f"Contradiction Log (Showing {len(contradictions)} of {limit} max)",
-            show_header=True,
-            header_style="bold magenta"
-        )
-        
-        table.add_column("Timestamp", style="cyan", width=20)
-        table.add_column("Edge Type", style="green")
-        table.add_column("Status", style="red")
-        table.add_column("Resolution", style="yellow")
-        table.add_column("From → To", style="blue")
-        table.add_column("Context", style="white")
-        
-        for entry in contradictions:
-            # Parse timestamp
-            ts = datetime.fromisoformat(entry['timestamp'].replace('Z', '+00:00'))
-            ts_str = ts.strftime("%Y-%m-%d %H:%M:%S")
+        if output_format == OutputFormat.JSON:
+            console.print(format_output(contradictions, output_format=output_format))
+        else:
+            # Prepare data for table/CSV/text format
+            headers = ["Timestamp", "Edge Type", "Status", "Resolution", "From → To", "Context"]
+            rows = []
             
-            # Format edge info
-            edge_type = entry['new_edge']['type']
-            from_id = entry['new_edge']['from'].split('/')[-1]
-            to_id = entry['new_edge']['to'].split('/')[-1]
-            edge_str = f"{from_id} → {to_id}"
+            for entry in contradictions:
+                # Parse timestamp
+                ts = datetime.fromisoformat(entry['timestamp'].replace('Z', '+00:00'))
+                ts_str = ts.strftime("%Y-%m-%d %H:%M:%S")
+                
+                # Format edge info
+                edge_type = entry['new_edge']['type']
+                from_id = entry['new_edge']['from'].split('/')[-1]
+                to_id = entry['new_edge']['to'].split('/')[-1]
+                edge_str = f"{from_id} → {to_id}"
+                
+                # Resolution info
+                resolution = entry['resolution']
+                res_str = f"{resolution['action']} ({resolution['strategy']})"
+                
+                # Status
+                status_str = entry['status']
+                
+                rows.append([
+                    ts_str,
+                    edge_type,
+                    status_str,
+                    res_str,
+                    edge_str,
+                    entry.get('context', 'unknown')
+                ])
             
-            # Resolution info
-            resolution = entry['resolution']
-            res_str = f"{resolution['action']} ({resolution['strategy']})"
-            
-            # Status with color
-            status_str = entry['status']
-            if status_str == "resolved":
-                status_str = f"[green]{status_str}[/green]"
-            else:
-                status_str = f"[red]{status_str}[/red]"
-            
-            table.add_row(
-                ts_str,
-                edge_type,
-                status_str,
-                res_str,
-                edge_str,
-                entry.get('context', 'unknown')
+            formatted_output = format_output(
+                rows,
+                output_format=output_format,
+                headers=headers,
+                title=f"Contradiction Log (Showing {len(contradictions)} of {limit} max)"
             )
-        
-        console.print(table)
+            console.print(formatted_output)
         
     except Exception as e:
-        console.print(f"[red]Error listing contradictions: {e}[/red]")
+        console.print(format_error("Error listing contradictions", str(e)))
         raise typer.Exit(1)
 
 
 @app.command("summary")
-def contradiction_summary():
-    """Show contradiction statistics summary."""
+@add_output_option
+def contradiction_summary(output_format: str = "table"):
+    """Show contradiction statistics summary.
+    
+    Use --output/-o to choose between table, json, csv, or text formats.
+    """
     try:
         # Get database connection
         db = get_db_connection()
@@ -118,59 +131,78 @@ def contradiction_summary():
         # Get summary
         summary = logger.get_contradiction_summary()
         
-        # Create summary panel
-        summary_text = f"""
-[bold]Contradiction Summary[/bold]
-
-[cyan]Total Contradictions:[/cyan] {summary['total']}
-[green]Resolved:[/green] {summary['resolved']}
-[red]Failed:[/red] {summary['failed']}
-[yellow]Success Rate:[/yellow] {summary['success_rate']:.1%}
-        """
-        
-        console.print(Panel(summary_text.strip(), title="Statistics", border_style="blue"))
-        
-        # Show breakdown by edge type
-        if summary['by_edge_type']:
-            type_table = Table(title="Contradictions by Edge Type", show_header=True)
-            type_table.add_column("Type", style="cyan")
-            type_table.add_column("Count", style="green")
+        if output_format == OutputFormat.JSON:
+            console.print(format_output(summary, output_format=output_format))
+        else:
+            # Prepare main summary data
+            headers = ["Metric", "Value"]
+            rows = [
+                ["Total Contradictions", str(summary['total'])],
+                ["Resolved", str(summary['resolved'])],
+                ["Failed", str(summary['failed'])],
+                ["Success Rate", f"{summary['success_rate']:.1%}"]
+            ]
             
-            for item in summary['by_edge_type']:
-                type_table.add_row(
-                    item['type'] or "(none)",
-                    str(item['count'])
+            formatted_output = format_output(
+                rows,
+                output_format=output_format,
+                headers=headers,
+                title="Contradiction Summary"
+            )
+            console.print(formatted_output)
+            
+            # Show breakdown by edge type
+            if summary['by_edge_type'] and output_format == OutputFormat.TABLE:
+                type_rows = []
+                for item in summary['by_edge_type']:
+                    type_rows.append([
+                        item['type'] or "(none)",
+                        str(item['count'])
+                    ])
+                
+                type_output = format_output(
+                    type_rows,
+                    output_format=output_format,
+                    headers=["Type", "Count"],
+                    title="Contradictions by Edge Type"
                 )
+                console.print("\n" + type_output)
             
-            console.print(type_table)
-        
-        # Show breakdown by resolution action
-        if summary['by_resolution_action']:
-            action_table = Table(title="Resolution Actions", show_header=True)
-            action_table.add_column("Action", style="cyan")
-            action_table.add_column("Count", style="green")
-            
-            for item in summary['by_resolution_action']:
-                action_table.add_row(
-                    item['action'] or "(none)",
-                    str(item['count'])
+            # Show breakdown by resolution action
+            if summary['by_resolution_action'] and output_format == OutputFormat.TABLE:
+                action_rows = []
+                for item in summary['by_resolution_action']:
+                    action_rows.append([
+                        item['action'] or "(none)",
+                        str(item['count'])
+                    ])
+                
+                action_output = format_output(
+                    action_rows,
+                    output_format=output_format,
+                    headers=["Action", "Count"],
+                    title="Resolution Actions"
                 )
-            
-            console.print(action_table)
+                console.print("\n" + action_output)
         
     except Exception as e:
-        console.print(f"[red]Error getting summary: {e}[/red]")
+        console.print(format_error("Error getting summary", str(e)))
         raise typer.Exit(1)
 
 
 @app.command("detect")
+@add_output_option
 def detect_contradictions(
     from_id: str = typer.Argument(..., help="Source entity ID (_id format)"),
     to_id: str = typer.Argument(..., help="Target entity ID (_id format)"),
     edge_type: Optional[str] = typer.Option(None, "--type", "-t", help="Filter by relationship type"),
-    collection: str = typer.Option("agent_relationships", "--collection", "-c", help="Edge collection name")
+    collection: str = typer.Option("agent_relationships", "--collection", "-c", help="Edge collection name"),
+    output_format: str = "table"
 ):
-    """Detect potential contradictions between two entities."""
+    """Detect potential contradictions between two entities.
+    
+    Use --output/-o to choose between table, json, csv, or text formats.
+    """
     try:
         # Get database connection
         db = get_db_connection()
@@ -186,14 +218,18 @@ def detect_contradictions(
         )
         
         if not contradictions:
-            console.print(f"[green]No contradictions found between {from_id} and {to_id}[/green]")
+            console.print(format_success(f"No contradictions found between {from_id} and {to_id}"))
             return
         
-        console.print(f"[yellow]Found {len(contradictions)} potential contradictions:[/yellow]\n")
-        
-        # Display each contradiction
-        for i, edge in enumerate(contradictions, 1):
-            panel_content = f"""
+        if output_format == OutputFormat.JSON:
+            console.print(format_output(contradictions, output_format=output_format))
+        else:
+            console.print(format_warning(f"Found {len(contradictions)} potential contradictions"))
+            
+            if output_format == OutputFormat.TABLE:
+                # Display each contradiction as panels for table format
+                for i, edge in enumerate(contradictions, 1):
+                    panel_content = f"""
 [cyan]Edge Key:[/cyan] {edge['_key']}
 [cyan]Type:[/cyan] {edge['type']}
 [cyan]Valid From:[/cyan] {edge.get('valid_at', 'unknown')}
@@ -201,29 +237,55 @@ def detect_contradictions(
 [cyan]Created At:[/cyan] {edge.get('created_at', 'unknown')}
 [cyan]Attributes:[/cyan]
 {json.dumps(edge.get('attributes', {}), indent=2)}
-            """
-            
-            console.print(Panel(
-                panel_content.strip(),
-                title=f"Contradiction {i}",
-                border_style="red"
-            ))
+                    """
+                    
+                    console.print(Panel(
+                        panel_content.strip(),
+                        title=f"Contradiction {i}",
+                        border_style="red"
+                    ))
+            else:
+                # For CSV/text format, display as rows
+                headers = ["Edge Key", "Type", "Valid From", "Invalid At", "Created At"]
+                rows = []
+                
+                for edge in contradictions:
+                    rows.append([
+                        edge['_key'],
+                        edge['type'],
+                        edge.get('valid_at', 'unknown'),
+                        edge.get('invalid_at', 'null'),
+                        edge.get('created_at', 'unknown')
+                    ])
+                
+                formatted_output = format_output(
+                    rows,
+                    output_format=output_format,
+                    headers=headers,
+                    title="Potential Contradictions"
+                )
+                console.print(formatted_output)
         
     except Exception as e:
-        console.print(f"[red]Error detecting contradictions: {e}[/red]")
+        console.print(format_error("Error detecting contradictions", str(e)))
         raise typer.Exit(1)
 
 
 @app.command("resolve")
+@add_output_option
 def resolve_contradiction_manually(
     new_edge_key: str = typer.Argument(..., help="Key of the new edge"),
     existing_edge_key: str = typer.Argument(..., help="Key of the existing edge"),
     strategy: str = typer.Option("newest_wins", "--strategy", "-s", 
                                 help="Resolution strategy: newest_wins, merge, split_timeline"),
     collection: str = typer.Option("agent_relationships", "--collection", "-c", help="Edge collection name"),
-    reason: Optional[str] = typer.Option(None, "--reason", "-r", help="Resolution reason")
+    reason: Optional[str] = typer.Option(None, "--reason", "-r", help="Resolution reason"),
+    output_format: str = "table"
 ):
-    """Manually resolve a contradiction between two edges."""
+    """Manually resolve a contradiction between two edges.
+    
+    Use --output/-o to choose between table, json, csv, or text formats.
+    """
     try:
         # Get database connection
         db = get_db_connection()
@@ -234,11 +296,11 @@ def resolve_contradiction_manually(
         existing_edge = edge_collection.get(existing_edge_key)
         
         if not new_edge:
-            console.print(f"[red]New edge {new_edge_key} not found[/red]")
+            console.print(format_error(f"New edge {new_edge_key} not found"))
             raise typer.Exit(1)
         
         if not existing_edge:
-            console.print(f"[red]Existing edge {existing_edge_key} not found[/red]")
+            console.print(format_error(f"Existing edge {existing_edge_key} not found"))
             raise typer.Exit(1)
         
         # Display the edges for confirmation
@@ -273,20 +335,38 @@ def resolve_contradiction_manually(
         )
         
         # Display result
-        if result["success"]:
-            console.print(f"[green]✓ Successfully resolved contradiction[/green]")
-            console.print(f"[cyan]Action:[/cyan] {result['action']}")
-            console.print(f"[cyan]Reason:[/cyan] {result['reason']}")
-            
-            if result.get("resolved_edge"):
-                console.print("\n[bold]Resolved Edge:[/bold]")
-                console.print(Syntax(json.dumps(result["resolved_edge"], indent=2), "json"))
+        if output_format == OutputFormat.JSON:
+            console.print(format_output(result, output_format=output_format))
         else:
-            console.print(f"[red]✗ Failed to resolve contradiction[/red]")
-            console.print(f"[red]Reason:[/red] {result['reason']}")
+            if result["success"]:
+                console.print(format_success("Successfully resolved contradiction"))
+                
+                # Show details for table/CSV/text
+                headers = ["Property", "Value"]
+                rows = [
+                    ["Action", result['action']],
+                    ["Reason", result['reason']]
+                ]
+                
+                formatted_output = format_output(
+                    rows,
+                    output_format=output_format,
+                    headers=headers,
+                    title="Resolution Details"
+                )
+                console.print(formatted_output)
+                
+                if result.get("resolved_edge") and output_format == OutputFormat.TABLE:
+                    console.print("\n[bold]Resolved Edge:[/bold]")
+                    console.print(Syntax(json.dumps(result["resolved_edge"], indent=2), "json"))
+            else:
+                console.print(format_error(
+                    "Failed to resolve contradiction",
+                    result['reason']
+                ))
         
     except Exception as e:
-        console.print(f"[red]Error resolving contradiction: {e}[/red]")
+        console.print(format_error("Error resolving contradiction", str(e)))
         raise typer.Exit(1)
 
 

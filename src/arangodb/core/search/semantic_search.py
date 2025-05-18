@@ -336,41 +336,22 @@ def semantic_search(
     if actual_dimension != expected_dimension:
         logger.warning(f"Query embedding dimension mismatch: expected {expected_dimension}, got {actual_dimension}")
     
-    # Try to use APPROX_NEAR_COSINE (primary implementation)
+    # Always use pure APPROX_NEAR_COSINE without any filters
+    # Get more results initially if filters will be applied in Python
+    initial_limit = top_n * 5 if tag_list else top_n * 2
+    
     vector_query = f"""
     FOR doc IN {collection_name}
     LET score = APPROX_NEAR_COSINE(doc.{embedding_field}, @query_embedding)
     SORT score DESC
-    LIMIT {top_n * 2}
-    RETURN {{
-        "id": doc._id,
+    LIMIT {initial_limit}
+    RETURN MERGE(doc, {{
+        "_id": doc._id,
         "similarity_score": score
-    }}
+    }})
     """
     
-    # Add tag filtering if needed
-    if tag_list and len(tag_list) > 0:
-        tag_conditions = []
-        bind_vars = {"query_embedding": query_embedding}
-        
-        for i, tag in enumerate(tag_list):
-            bind_var_name = f"tag_{i}"
-            bind_vars[bind_var_name] = tag
-            tag_conditions.append(f'@{bind_var_name} IN doc.tags')
-        
-        vector_query = f"""
-        FOR doc IN {collection_name}
-        FILTER {' AND '.join(tag_conditions)}
-        LET score = APPROX_NEAR_COSINE(doc.{embedding_field}, @query_embedding)
-        SORT score DESC
-        LIMIT {top_n * 2}
-        RETURN {{
-            "id": doc._id,
-            "similarity_score": score
-        }}
-        """
-    else:
-        bind_vars = {"query_embedding": query_embedding}
+    bind_vars = {"query_embedding": query_embedding}
     
     results = []
     try:
@@ -378,32 +359,29 @@ def semantic_search(
         vector_results = list(cursor)
         logger.info(f"APPROX_NEAR_COSINE returned {len(vector_results)} results successfully")
         
-        # Filter by minimum score and fetch full documents
+        # Apply Python-based filtering (Stage 2)
         for result in vector_results:
             score = result["similarity_score"]
+            
+            # Filter by minimum score
             if score < min_score:
                 continue
-                
-            # Fetch full document
-            doc_id = result["id"]
-            try:
-                aql = "FOR doc IN @@collection FILTER doc._id == @id RETURN doc"
-                cursor = execute_aql_with_retry(
-                    db, 
-                    aql, 
-                    bind_vars={"@collection": collection_name, "id": doc_id}
-                )
-                docs = list(cursor)
-                if docs:
-                    results.append({
-                        "doc": docs[0],
-                        "similarity_score": score
-                    })
-                    
-                    if len(results) >= top_n:
-                        break
-            except Exception as e:
-                logger.warning(f"Failed to fetch document {doc_id}: {e}")
+            
+            # Filter by tags if specified
+            if tag_list:
+                doc_tags = result.get("tags", [])
+                if not any(tag in doc_tags for tag in tag_list):
+                    continue
+            
+            # Document passed all filters
+            results.append({
+                "doc": result,
+                "similarity_score": score,
+                "score": score  # Add score field for compatibility
+            })
+            
+            if len(results) >= top_n:
+                break
         
         search_engine = "arangodb-approx-near-cosine"
         

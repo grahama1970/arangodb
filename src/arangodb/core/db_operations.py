@@ -377,7 +377,7 @@ def create_message(
     message = {
         "_key": message_key,
         "conversation_id": conversation_id,
-        "message_type": message_type,
+        "type": message_type,  # Field name is "type", not "message_type"
         "content": content,
         "timestamp": timestamp or datetime.now(timezone.utc).isoformat(),
         "metadata": metadata or {}

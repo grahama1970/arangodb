@@ -1,553 +1,578 @@
 """
-ArangoDB CLI CRUD Commands
+Fixed CRUD Commands with Consistent Interface
 
-This module provides command-line interface for CRUD operations using
-the core business logic layer. It handles document operations including:
-- Creating new documents
-- Reading existing documents
-- Updating document fields
-- Deleting documents
-
-Each function follows consistent parameter patterns and error handling to
-ensure a robust CLI experience.
-
-Sample Input:
-- CLI command: arangodb crud add-lesson --data-file path/to/lesson.json
-- CLI command: arangodb crud get-lesson abc123
-
-Expected Output:
-- Console-formatted document information or JSON output
+This module provides standardized CRUD commands following the stellar CLI template.
+Works with ANY collection, not just lesson-specific operations.
 """
 
 import typer
 import json
-import sys
+from typing import Optional, Dict, Any, List
+from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Dict, Any, Union
 from loguru import logger
-from rich.console import Console
-from rich.json import JSON
 
-# Import dependency checker for graceful handling of missing dependencies
-from arangodb.core.utils.dependency_checker import (
-    HAS_ARANGO,
-    check_dependency
+from arangodb.cli.db_connection import get_db_connection
+from arangodb.core.utils.cli.formatters import (
+    console,
+    format_output,
+    add_output_option,
+    OutputFormat,
+    format_error,
+    format_success,
+    CLIResponse
 )
-
-# Check for UI dependencies
-HAS_RICH = "rich" in sys.modules
-HAS_TYPER = "typer" in sys.modules
-
-# Import from core layer - note how we now use the core layer directly
-from arangodb.core.db_operations import (
-    create_document,
-    get_document,
-    update_document,
-    delete_document
-)
-
-# Import utilities for embedding generation
 from arangodb.core.utils.embedding_utils import get_embedding
 
-# Import constants from core
-from arangodb.core.constants import (
-    COLLECTION_NAME,
-    EDGE_COLLECTION_NAME,
-    GRAPH_NAME
-)
+# Initialize CRUD app
+crud_app = typer.Typer(help="CRUD operations with consistent interface")
 
-# Import connection utilities
-from arangodb.cli.db_connection import get_db_connection
+# Standard response structure
+def create_response(success: bool, data: Any = None, metadata: Dict = None, errors: List = None):
+    """Create standardized response structure"""
+    return {
+        "success": success,
+        "data": data,
+        "metadata": metadata or {},
+        "errors": errors or []
+    }
 
-# For truncating large values in logs
-from arangodb.core.utils.log_utils import truncate_large_value
-
-# Initialize Rich console
-console = Console()
-
-# Create the CRUD app command group
-crud_app = typer.Typer(
-    name="crud", 
-    help="Create, Read, Update, Delete operations for documents."
-)
-
-
-@crud_app.command("add-lesson")
-def cli_add_lesson(
-    data: Optional[str] = typer.Option(
-        None,
-        "--data",
-        "-d",
-        help="(Alternative) Lesson data as JSON string. Use with caution due to shell escaping.",
-    ),
-    data_file: Optional[Path] = typer.Option(
-        None,
-        "--data-file",
-        "-f",
-        help="(Recommended) Path to a JSON file containing lesson data.",
-        exists=True,
-        file_okay=True,
-        dir_okay=False,
-        readable=True,
-    ),
-    json_output: bool = typer.Option(
-        False, "--json-output", "-j", help="Output full metadata as JSON on success."
-    ),
+@crud_app.command("create")
+@add_output_option
+def create_document(
+    collection: str = typer.Argument(..., help="Collection name"),
+    data: str = typer.Argument(..., help="Document data as JSON string"),
+    output_format: OutputFormat = typer.Option(OutputFormat.TABLE, "--output", "-o"),
+    key: Optional[str] = typer.Option(None, "--key", "-k", help="Custom document key"),
+    embed: bool = typer.Option(True, "--embed/--no-embed", help="Generate embeddings for text fields"),
+    embed_fields: Optional[str] = typer.Option(None, "--embed-fields", help="Comma-separated fields to embed"),
 ):
     """
-    Add a new lesson document.
-
-    *WHEN TO USE:* Use when you have identified a new, distinct lesson learned
-    that needs to be added to the knowledge base. Ensure 'problem' and 'solution'
-    fields are present in the JSON data. Embedding is generated automatically.
-
-    *HOW TO USE:* Provide the lesson data via either a JSON file (`--data-file`, recommended)
-    or a JSON string (`--data`). *Exactly one of these options must be provided.*
+    Create a new document in any collection.
+    
+    USAGE:
+        arangodb crud create <collection> <json_data> [OPTIONS]
+    
+    WHEN TO USE:
+        When adding new documents to any collection with optional embedding
+    
+    OUTPUT:
+        - TABLE: Summary with created document ID
+        - JSON: Complete document with metadata
+    
+    EXAMPLES:
+        arangodb crud create users '{"name": "John", "email": "john@example.com"}'
+        arangodb crud create articles '{"title": "Guide", "content": "..."}' --embed
+        arangodb crud create products '{"name": "Widget", "price": 9.99}' --key "widget-001"
     """
-    logger.info("CLI: Received request to add new lesson.")
-
-    # --- Input Validation: Ensure exactly one data source ---
-    if not data and not data_file:
-        console.print(
-            "[bold red]Error:[/bold red] Either --data (JSON string) or --data-file (path to JSON file) must be provided."
-        )
-        raise typer.Exit(code=1)
-    if data and data_file:
-        console.print(
-            "[bold red]Error:[/bold red] Provide either --data or --data-file, not both."
-        )
-        raise typer.Exit(code=1)
-
-    lesson_data_dict = None
-    source_info = ""  # For error messages
-
-    # --- Load Data from chosen source ---
+    logger.info(f"Creating document in collection: {collection}")
+    
     try:
-        if data_file:
-            source_info = f"file '{data_file}'"
-            logger.debug(f"Loading lesson data from file: {data_file}")
-            with open(data_file, "r") as f:
-                lesson_data_dict = json.load(f)
-        elif data:  # Only parse if data_file wasn't used
-            source_info = "string --data"
-            # Parse JSON string
-            lesson_data_dict = json.loads(data)
-            logger.debug(f"Loaded lesson data from string: {truncate_large_value(lesson_data_dict)}")
-
-        # --- Validate loaded data structure ---
-        if not isinstance(lesson_data_dict, dict):
-            raise ValueError("Provided data must be a JSON object (dictionary).")
-
-    except json.JSONDecodeError as e:
-        console.print(
-            f"[bold red]Error:[/bold red] Invalid JSON provided via {source_info}: {e}"
-        )
-        raise typer.Exit(code=1)
-    except ValueError as e:  # Catch our custom validation error
-        console.print(f"[bold red]Error:[/bold red] {e}")
-        raise typer.Exit(code=1)
-    except FileNotFoundError:
-        console.print(f"[bold red]Error:[/bold red] Data file not found: {data_file}")
-        raise typer.Exit(code=1)
-    except Exception as e:  # Catch other potential file/parsing errors
-        console.print(
-            f"[bold red]Error reading/parsing data from {source_info}:[/bold red] {e}"
-        )
-        raise typer.Exit(code=1)
-
-    # --- Call the Core Layer Function ---
-    db = get_db_connection()
-    try:
-        # Generate embedding if needed
-        text_to_embed = f"{lesson_data_dict.get('problem','')} {lesson_data_dict.get('solution','')} {lesson_data_dict.get('context','')}"
-        if text_to_embed.strip() and 'embedding' not in lesson_data_dict:
-             try:
-                 logger.debug("Generating embedding for new lesson...")
-                 embedding = get_embedding(text_to_embed)
-                 if embedding:
-                     lesson_data_dict['embedding'] = embedding
-                     logger.debug("Embedding generated.")
-                 else:
-                     logger.warning("Embedding generation failed, proceeding without embedding.")
-             except Exception as emb_err:
-                 logger.warning(f"Embedding generation failed: {emb_err}, proceeding without embedding.")
-
-        # Use the core layer create_document function
-        meta = create_document(db, COLLECTION_NAME, lesson_data_dict)
+        db = get_db_connection()
+        collection_obj = db.collection(collection)
         
-        if meta:
-            output = meta
-            if json_output:
-                print(json.dumps(output))
+        # Parse JSON data
+        try:
+            doc_data = json.loads(data)
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Invalid JSON: {e}")
+        
+        # Add metadata
+        doc_data["created_at"] = datetime.now().isoformat()
+        
+        # Set custom key if provided
+        if key:
+            doc_data["_key"] = key
+        
+        # Generate embeddings if requested
+        if embed:
+            fields_to_embed = []
+            if embed_fields:
+                fields_to_embed = [f.strip() for f in embed_fields.split(",")]
             else:
-                console.print(
-                    f"[green]Success:[/green] Lesson added successfully. Key: [cyan]{meta.get('_key')}[/cyan]"
-                )
-        else:
-            console.print(
-                "[bold red]Error:[/bold red] Failed to add lesson (check logs for details)."
-            )
-            raise typer.Exit(code=1)
-    except Exception as e:
-        logger.error(f"Add lesson failed in CLI: {e}", exc_info=True)
-        console.print(f"[bold red]Error during add operation:[/bold red] {e}")
-        raise typer.Exit(code=1)
-
-
-@crud_app.command("get-lesson")
-def cli_get_lesson(
-    key: str = typer.Argument(..., help="The _key of the lesson document."),
-    json_output: bool = typer.Option(
-        True,
-        "--json-output",
-        "-j",
-        help="Output full document as JSON (default for get).",
-    ),
-):
-    """
-    Retrieve a specific lesson document by its _key.
-
-    *WHEN TO USE:* Use when you need the full details of a specific lesson
-    identified by its key (e.g., obtained from search results or previous operations).
-
-    *HOW TO USE:* Provide the `_key` of the lesson as an argument.
-    """
-    logger.info(f"CLI: Requesting lesson with key '{key}'")
-    db = get_db_connection()
-    try:
-        # Call the core layer get_document function
-        doc = get_document(db, COLLECTION_NAME, key)
-        
-        if doc:
-            output = doc
-            if json_output:
-                # Use print directly for clean JSON output
-                print(json.dumps(output, indent=2))
-            else:
-                # Human-readable fallback
-                console.print(f"[green]Lesson Found:[/green] _key=[cyan]{key}[/cyan]")
-                console.print(JSON(json.dumps(doc, indent=2)))  # Pretty print JSON
-        else:
-            # Not found is not an error state for 'get'
-            output = {"status": "error", "message": "Not Found", "key": key}
-            if json_output:
-                print(json.dumps(output))
-                # Exit with non-zero code for scripting if JSON output is requested and not found
-                raise typer.Exit(code=1)
-            else:
-                console.print(
-                    f"[yellow]Not Found:[/yellow] No lesson found with key '{key}'."
-                )
-            # For human output, not found is info, not error, so exit code 0
-            raise typer.Exit(code=0)
-    except Exception as e:
-        logger.error(f"Get lesson failed in CLI: {e}", exc_info=True)
-        output = {"status": "error", "message": str(e), "key": key}
-        if json_output:
-            print(json.dumps(output))
-        else:
-            console.print(f"[bold red]Error during get operation:[/bold red] {e}")
-        raise typer.Exit(code=1)
-
-
-@crud_app.command("update-lesson")
-def cli_update_lesson(
-    key: str = typer.Argument(..., help="The _key of the lesson document to update."),
-    data: Optional[str] = typer.Option(
-        None,
-        "--data",
-        "-d",
-        help="(Alternative) Fields to update as JSON string. Use with caution.",
-    ),
-    data_file: Optional[Path] = typer.Option(
-        None,
-        "--data-file",
-        "-f",
-        help="(Recommended) Path to JSON file containing fields to update.",
-        exists=True,
-        file_okay=True,
-        dir_okay=False,
-        readable=True,
-    ),
-    json_output: bool = typer.Option(
-        False, "--json-output", "-j", help="Output full metadata as JSON on success."
-    ),
-):
-    """
-    Modify specific fields of an existing lesson document.
-
-    *WHEN TO USE:* Use to correct or enhance information in an existing lesson
-    (e.g., refining the solution, adding tags, changing severity). If embedding-relevant
-    fields (problem, solution, context, etc.) are updated, the embedding will be regenerated.
-
-    *HOW TO USE:* Provide the `_key` and the update data via either a JSON file
-    (`--data-file`, recommended) or a JSON string (`--data`).
-    """
-    logger.info(f"CLI: Updating lesson with key '{key}'")
-
-    # --- Input Validation: Ensure exactly one data source ---
-    if not data and not data_file:
-        console.print(
-            "[bold red]Error:[/bold red] Either --data (JSON string) or --data-file (path to JSON file) must be provided."
-        )
-        raise typer.Exit(code=1)
-    if data and data_file:
-        console.print(
-            "[bold red]Error:[/bold red] Provide either --data or --data-file, not both."
-        )
-        raise typer.Exit(code=1)
-
-    update_data_dict = None
-    source_info = ""  # For error messages
-
-    # --- Load Data from chosen source ---
-    try:
-        if data_file:
-            source_info = f"file '{data_file}'"
-            logger.debug(f"Loading update data from file: {data_file}")
-            with open(data_file, "r") as f:
-                update_data_dict = json.load(f)
-        elif data:  # Only parse if data_file wasn't used
-            source_info = "string --data"
-            # Parse JSON string
-            update_data_dict = json.loads(data)
-            logger.debug(f"Loaded update data from string: {truncate_large_value(update_data_dict)}")
-
-        # --- Validate loaded data structure ---
-        if not isinstance(update_data_dict, dict):
-            raise ValueError("Provided data must be a JSON object (dictionary).")
-
-    except Exception as e:  # Handle all parsing errors
-        console.print(
-            f"[bold red]Error reading/parsing data from {source_info}:[/bold red] {e}"
-        )
-        raise typer.Exit(code=1)
-
-    # --- Get Current Document for Embedding Generation ---
-    db = get_db_connection()
-    try:
-        # Get current document first to check if we need to regenerate embedding
-        current_doc = get_document(db, COLLECTION_NAME, key)
-        if not current_doc:
-            console.print(
-                f"[bold red]Error:[/bold red] Document with key '{key}' not found in collection '{COLLECTION_NAME}'."
-            )
-            raise typer.Exit(code=1)
-        
-        # Check if we need to update the embedding
-        embedding_fields = ['problem', 'solution', 'context']
-        needs_embedding_update = any(field in update_data_dict for field in embedding_fields)
-        
-        if needs_embedding_update:
-            # Merge current and update data for embedding generation
-            merged_doc = {**current_doc, **update_data_dict}
-            text_to_embed = f"{merged_doc.get('problem','')} {merged_doc.get('solution','')} {merged_doc.get('context','')}"
+                # Auto-detect text fields
+                fields_to_embed = [k for k, v in doc_data.items() 
+                                 if isinstance(v, str) and len(v) > 20]
             
-            if text_to_embed.strip():
-                try:
-                    logger.debug("Regenerating embedding for updated lesson...")
-                    embedding = get_embedding(text_to_embed)
-                    if embedding:
-                        update_data_dict['embedding'] = embedding
-                        logger.debug("Embedding regenerated.")
-                    else:
-                        logger.warning("Embedding regeneration failed, proceeding without embedding update.")
-                except Exception as emb_err:
-                    logger.warning(f"Embedding regeneration failed: {emb_err}, proceeding without embedding update.")
+            if fields_to_embed:
+                # Combine text from specified fields
+                text_content = " ".join(str(doc_data.get(f, "")) for f in fields_to_embed)
+                if text_content.strip():
+                    embedding = get_embedding(text_content)
+                    doc_data["embedding"] = embedding
+                    doc_data["embedding_fields"] = fields_to_embed
+                    logger.debug(f"Generated embedding for fields: {fields_to_embed}")
         
-        # Call the core layer update_document function
-        meta = update_document(db, COLLECTION_NAME, key, update_data_dict)
+        # Insert document
+        start_time = datetime.now()
+        result = collection_obj.insert(doc_data)
+        insert_time = (datetime.now() - start_time).total_seconds() * 1000
         
-        if meta:
-            output = meta
-            if json_output:
-                print(json.dumps(output))
-            else:
-                console.print(
-                    f"[green]Success:[/green] Lesson updated successfully. Key: [cyan]{key}[/cyan]"
-                )
+        # Get the created document
+        created_doc = collection_obj.get(result["_key"])
+        
+        response = create_response(
+            success=True,
+            data=created_doc,
+            metadata={
+                "operation": "create",
+                "collection": collection,
+                "key": result["_key"],
+                "embedded": embed and "embedding" in created_doc,
+                "timing": {"insert_ms": round(insert_time, 2)}
+            }
+        )
+        
+        if output_format == OutputFormat.JSON:
+            console.print_json(data=response)
         else:
-            console.print(
-                "[bold red]Error:[/bold red] Failed to update lesson (check logs for details)."
-            )
-            raise typer.Exit(code=1)
+            console.print(format_success(
+                f"Document created successfully\n"
+                f"Collection: {collection}\n"
+                f"Key: {result['_key']}\n"
+                f"Embedded: {'Yes' if embed and 'embedding' in created_doc else 'No'}"
+            ))
+        
     except Exception as e:
-        logger.error(f"Update lesson failed in CLI: {e}", exc_info=True)
-        console.print(f"[bold red]Error during update operation:[/bold red] {e}")
-        raise typer.Exit(code=1)
+        logger.error(f"Create failed: {e}")
+        response = create_response(
+            success=False,
+            errors=[{
+                "code": "CREATE_ERROR",
+                "message": str(e),
+                "suggestion": "Check JSON syntax and collection exists"
+            }]
+        )
+        if output_format == OutputFormat.JSON:
+            console.print_json(data=response)
+        else:
+            console.print(format_error("Create Failed", str(e)))
+        raise typer.Exit(1)
 
-
-@crud_app.command("delete-lesson")
-def cli_delete_lesson(
-    key: str = typer.Argument(..., help="The _key of the lesson document to delete."),
-    yes: bool = typer.Option(
-        False,
-        "--yes",
-        "-y",
-        help="Skip confirmation prompt and delete immediately.",
-    ),
-    json_output: bool = typer.Option(
-        False, "--json-output", "-j", help="Output result as JSON."
-    ),
+@crud_app.command("read")
+@add_output_option  
+def read_document(
+    collection: str = typer.Argument(..., help="Collection name"),
+    key: str = typer.Argument(..., help="Document key"),
+    output_format: OutputFormat = typer.Option(OutputFormat.TABLE, "--output", "-o"),
 ):
     """
-    Permanently remove a lesson document and its associated edges.
-
-    *WHEN TO USE:* Use cautiously when a lesson is determined to be completely
-    irrelevant, incorrect beyond repair, or a duplicate that should be removed.
-    Automatically cleans up relationships.
-
-    *HOW TO USE:* Provide the `_key` of the lesson as an argument.
-    Use the `--yes` flag to skip the confirmation prompt.
+    Read a document from any collection.
+    
+    USAGE:
+        arangodb crud read <collection> <key> [OPTIONS]
+    
+    WHEN TO USE:
+        When retrieving a specific document by its key
+    
+    OUTPUT:
+        - TABLE: Formatted document fields
+        - JSON: Complete document data
+    
+    EXAMPLES:
+        arangodb crud read users user-123
+        arangodb crud read articles article-456 --output json
     """
-    logger.info(f"CLI: Attempting to delete lesson with key '{key}'")
-    db = get_db_connection()
+    logger.info(f"Reading document: {collection}/{key}")
     
-    # Get the document first to confirm it exists
     try:
-        doc = get_document(db, COLLECTION_NAME, key)
-        if not doc:
-            message = f"Document with key '{key}' not found in collection '{COLLECTION_NAME}'."
-            if json_output:
-                print(json.dumps({"status": "error", "message": message}))
-            else:
-                console.print(f"[yellow]Not Found:[/yellow] {message}")
-            raise typer.Exit(code=1)
-    except Exception as e:
-        logger.error(f"Error checking document before delete: {e}", exc_info=True)
-        if json_output:
-            print(json.dumps({"status": "error", "message": str(e)}))
+        db = get_db_connection()
+        collection_obj = db.collection(collection)
+        
+        # Get document
+        document = collection_obj.get(key)
+        
+        if not document:
+            raise ValueError(f"Document '{key}' not found in collection '{collection}'")
+        
+        response = create_response(
+            success=True,
+            data=document,
+            metadata={
+                "operation": "read",
+                "collection": collection,
+                "key": key
+            }
+        )
+        
+        if output_format == OutputFormat.JSON:
+            console.print_json(data=response)
         else:
-            console.print(f"[bold red]Error:[/bold red] {e}")
-        raise typer.Exit(code=1)
-    
-    # Confirm deletion
-    if not yes:
-        # Get a minimal preview of the document for confirmation
-        preview = {
-            "_key": doc.get("_key", ""),
-            "title": doc.get("title", "No title"),
-            "problem": truncate_large_value(doc.get("problem", ""), max_str_len=50),
-        }
+            from rich.table import Table
+            table = Table(title=f"Document: {collection}/{key}", show_header=False)
+            table.add_column("Field", style="cyan")
+            table.add_column("Value")
+            
+            for field, value in document.items():
+                if field == "embedding":
+                    value = f"[{len(value)} dimensions]"
+                elif isinstance(value, (dict, list)):
+                    value = json.dumps(value, indent=2)
+                table.add_row(field.replace('_', ' ').title(), str(value))
+            
+            console.print(table)
         
-        console.print("\n[bold yellow]Warning:[/bold yellow] You are about to delete this document:")
-        console.print(f"Key: [cyan]{preview['_key']}[/cyan]")
-        console.print(f"Title: {preview['title']}")
-        console.print(f"Problem excerpt: {preview['problem']}...")
-        console.print("\nThis action [bold red]cannot be undone[/bold red] and will also delete any relationships involving this document.")
-        
-        confirmation = typer.confirm("Are you sure you want to proceed?")
-        if not confirmation:
-            if json_output:
-                print(json.dumps({"status": "cancelled", "message": "Deletion cancelled by user."}))
-            else:
-                console.print("[yellow]Operation cancelled.[/yellow]")
-            raise typer.Exit(code=0)
+    except Exception as e:
+        logger.error(f"Read failed: {e}")
+        response = create_response(
+            success=False,
+            errors=[{
+                "code": "READ_ERROR",
+                "message": str(e),
+                "suggestion": f"Verify document '{key}' exists in '{collection}'"
+            }]
+        )
+        if output_format == OutputFormat.JSON:
+            console.print_json(data=response)
+        else:
+            console.print(format_error("Read Failed", str(e)))
+        raise typer.Exit(1)
+
+@crud_app.command("update")
+@add_output_option
+def update_document(
+    collection: str = typer.Argument(..., help="Collection name"),
+    key: str = typer.Argument(..., help="Document key"),
+    data: str = typer.Argument(..., help="Update data as JSON string"),
+    output_format: OutputFormat = typer.Option(OutputFormat.TABLE, "--output", "-o"),
+    replace: bool = typer.Option(False, "--replace", "-r", help="Replace entire document"),
+    embed: bool = typer.Option(True, "--embed/--no-embed", help="Update embeddings"),
+):
+    """
+    Update a document in any collection.
     
-    # Proceed with deletion
+    USAGE:
+        arangodb crud update <collection> <key> <json_data> [OPTIONS]
+    
+    WHEN TO USE:
+        When modifying existing documents
+    
+    OUTPUT:
+        - TABLE: Summary of update operation
+        - JSON: Updated document with metadata
+    
+    EXAMPLES:
+        arangodb crud update users user-123 '{"email": "newemail@example.com"}'
+        arangodb crud update articles article-456 '{"status": "published"}' --no-embed
+        arangodb crud update products widget-001 '{"price": 12.99}' --replace
+    """
+    logger.info(f"Updating document: {collection}/{key}")
+    
     try:
-        # Call the core layer delete_document function
-        result = delete_document(db, COLLECTION_NAME, key)
+        db = get_db_connection()
+        collection_obj = db.collection(collection)
         
-        if result:
-            if json_output:
-                print(json.dumps({"status": "success", "message": "Document deleted successfully."}))
+        # Parse update data
+        try:
+            update_data = json.loads(data)
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Invalid JSON: {e}")
+        
+        # Add metadata
+        update_data["updated_at"] = datetime.now().isoformat()
+        
+        # Get existing document for embedding update
+        existing_doc = collection_obj.get(key)
+        if not existing_doc:
+            raise ValueError(f"Document '{key}' not found")
+        
+        # Update embeddings if requested
+        if embed:
+            # Determine which fields to embed
+            text_fields = []
+            if replace:
+                # For replace, use fields from new data
+                text_fields = [k for k, v in update_data.items() 
+                             if isinstance(v, str) and len(v) > 20]
             else:
-                console.print(f"[green]Success:[/green] Document with key '{key}' has been deleted.")
+                # For merge, combine existing and new text fields
+                merged_data = {**existing_doc, **update_data}
+                text_fields = [k for k, v in merged_data.items() 
+                             if isinstance(v, str) and len(v) > 20]
+            
+            if text_fields:
+                # Generate new embedding
+                if replace:
+                    text_content = " ".join(str(update_data.get(f, "")) for f in text_fields)
+                else:
+                    merged_data = {**existing_doc, **update_data}
+                    text_content = " ".join(str(merged_data.get(f, "")) for f in text_fields)
+                
+                if text_content.strip():
+                    embedding = get_embedding(text_content)
+                    update_data["embedding"] = embedding
+                    update_data["embedding_fields"] = text_fields
+                    logger.debug(f"Updated embedding for fields: {text_fields}")
+        
+        # Perform update
+        start_time = datetime.now()
+        if replace:
+            result = collection_obj.replace({"_key": key}, update_data)
         else:
-            if json_output:
-                print(json.dumps({"status": "error", "message": "Failed to delete document."}))
-            else:
-                console.print("[bold red]Error:[/bold red] Failed to delete document (check logs for details).")
-            raise typer.Exit(code=1)
+            result = collection_obj.update({"_key": key}, update_data)
+        update_time = (datetime.now() - start_time).total_seconds() * 1000
+        
+        # Get updated document
+        updated_doc = collection_obj.get(key)
+        
+        response = create_response(
+            success=True,
+            data=updated_doc,
+            metadata={
+                "operation": "update",
+                "collection": collection,
+                "key": key,
+                "replace": replace,
+                "embedded": embed and "embedding" in update_data,
+                "timing": {"update_ms": round(update_time, 2)}
+            }
+        )
+        
+        if output_format == OutputFormat.JSON:
+            console.print_json(data=response)
+        else:
+            console.print(format_success(
+                f"Document updated successfully\n"
+                f"Collection: {collection}\n"
+                f"Key: {key}\n"
+                f"Mode: {'Replace' if replace else 'Merge'}\n"
+                f"Embedded: {'Updated' if embed and 'embedding' in update_data else 'No'}"
+            ))
+        
     except Exception as e:
-        logger.error(f"Delete lesson failed in CLI: {e}", exc_info=True)
-        if json_output:
-            print(json.dumps({"status": "error", "message": str(e)}))
+        logger.error(f"Update failed: {e}")
+        response = create_response(
+            success=False,
+            errors=[{
+                "code": "UPDATE_ERROR",
+                "message": str(e),
+                "suggestion": "Check document exists and JSON is valid"
+            }]
+        )
+        if output_format == OutputFormat.JSON:
+            console.print_json(data=response)
         else:
-            console.print(f"[bold red]Error during delete operation:[/bold red] {e}")
-        raise typer.Exit(code=1)
+            console.print(format_error("Update Failed", str(e)))
+        raise typer.Exit(1)
 
+@crud_app.command("delete")
+@add_output_option
+def delete_document(
+    collection: str = typer.Argument(..., help="Collection name"),
+    key: str = typer.Argument(..., help="Document key"),
+    output_format: OutputFormat = typer.Option(OutputFormat.TABLE, "--output", "-o"),
+    force: bool = typer.Option(False, "--force", "-f", help="Skip confirmation"),
+):
+    """
+    Delete a document from any collection.
+    
+    USAGE:
+        arangodb crud delete <collection> <key> [OPTIONS]
+    
+    WHEN TO USE:
+        When removing documents from a collection
+    
+    OUTPUT:
+        - TABLE: Deletion confirmation
+        - JSON: Operation metadata
+    
+    EXAMPLES:
+        arangodb crud delete users user-123 --force
+        arangodb crud delete articles article-456 --output json
+    """
+    logger.info(f"Deleting document: {collection}/{key}")
+    
+    try:
+        db = get_db_connection()
+        collection_obj = db.collection(collection)
+        
+        # Check if document exists
+        document = collection_obj.get(key)
+        if not document:
+            raise ValueError(f"Document '{key}' not found in collection '{collection}'")
+        
+        # Confirm deletion
+        if not force:
+            console.print(f"[yellow]About to delete document: {collection}/{key}[/yellow]")
+            if not typer.confirm("Are you sure?"):
+                console.print("[red]Deletion cancelled[/red]")
+                raise typer.Exit(0)
+        
+        # Delete document
+        start_time = datetime.now()
+        result = collection_obj.delete(key)
+        delete_time = (datetime.now() - start_time).total_seconds() * 1000
+        
+        response = create_response(
+            success=True,
+            data={"deleted_key": key},
+            metadata={
+                "operation": "delete",
+                "collection": collection,
+                "key": key,
+                "timing": {"delete_ms": round(delete_time, 2)}
+            }
+        )
+        
+        if output_format == OutputFormat.JSON:
+            console.print_json(data=response)
+        else:
+            console.print(format_success(
+                f"Document deleted successfully\n"
+                f"Collection: {collection}\n"
+                f"Key: {key}"
+            ))
+        
+    except Exception as e:
+        logger.error(f"Delete failed: {e}")
+        response = create_response(
+            success=False,
+            errors=[{
+                "code": "DELETE_ERROR",
+                "message": str(e),
+                "suggestion": f"Verify document '{key}' exists in '{collection}'"
+            }]
+        )
+        if output_format == OutputFormat.JSON:
+            console.print_json(data=response)
+        else:
+            console.print(format_error("Delete Failed", str(e)))
+        raise typer.Exit(1)
 
-# Expose the CRUD app for use in the main CLI
-def get_crud_app():
-    """Get the CRUD app Typer instance for use in the main CLI."""
-    return crud_app
-
+@crud_app.command("list")
+@add_output_option
+def list_documents(
+    collection: str = typer.Argument(..., help="Collection name"),
+    output_format: OutputFormat = typer.Option(OutputFormat.TABLE, "--output", "-o"),
+    limit: int = typer.Option(10, "--limit", "-l", help="Number of results"),
+    offset: int = typer.Option(0, "--offset", help="Skip this many results"),
+    filter_field: Optional[str] = typer.Option(None, "--filter-field", help="Field to filter by"),
+    filter_value: Optional[str] = typer.Option(None, "--filter-value", help="Value to filter for"),
+    sort_by: Optional[str] = typer.Option(None, "--sort", "-s", help="Field to sort by"),
+    descending: bool = typer.Option(False, "--desc", help="Sort in descending order"),
+):
+    """
+    List documents from any collection.
+    
+    USAGE:
+        arangodb crud list <collection> [OPTIONS]
+    
+    WHEN TO USE:
+        When browsing documents in a collection
+    
+    OUTPUT:
+        - TABLE: Document summaries in table format
+        - JSON: Complete document list with metadata
+    
+    EXAMPLES:
+        arangodb crud list users --limit 20
+        arangodb crud list articles --filter-field status --filter-value published
+        arangodb crud list products --sort price --desc --output json
+    """
+    logger.info(f"Listing documents from collection: {collection}")
+    
+    try:
+        db = get_db_connection()
+        
+        # Build query
+        query = f"FOR doc IN {collection}"
+        bind_vars = {}
+        
+        # Add filter if specified
+        if filter_field and filter_value:
+            query += " FILTER doc.@field == @value"
+            bind_vars["field"] = filter_field
+            bind_vars["value"] = filter_value
+        
+        # Add sorting
+        if sort_by:
+            query += f" SORT doc.@sort_field {'DESC' if descending else 'ASC'}"
+            bind_vars["sort_field"] = sort_by
+        
+        # Add limit and offset
+        query += " LIMIT @offset, @limit"
+        bind_vars.update({"offset": offset, "limit": limit})
+        
+        query += " RETURN doc"
+        
+        # Execute query
+        start_time = datetime.now()
+        cursor = db.aql.execute(query, bind_vars=bind_vars)
+        results = list(cursor)
+        query_time = (datetime.now() - start_time).total_seconds() * 1000
+        
+        # Get total count
+        count_query = f"FOR doc IN {collection}"
+        if filter_field and filter_value:
+            count_query += f" FILTER doc.{filter_field} == @value"
+            count_cursor = db.aql.execute(count_query, bind_vars={"value": filter_value})
+        else:
+            count_cursor = db.aql.execute(count_query)
+        total = len(list(count_cursor))
+        
+        response = create_response(
+            success=True,
+            data=results,
+            metadata={
+                "collection": collection,
+                "count": len(results),
+                "total": total,
+                "limit": limit,
+                "offset": offset,
+                "filter": {"field": filter_field, "value": filter_value} if filter_field else None,
+                "sort": {"field": sort_by, "order": "desc" if descending else "asc"} if sort_by else None,
+                "timing": {"query_ms": round(query_time, 2)}
+            }
+        )
+        
+        if output_format == OutputFormat.JSON:
+            console.print_json(data=response)
+        else:
+            if results:
+                from rich.table import Table
+                table = Table(title=f"Documents in {collection}")
+                
+                # Add columns based on first document
+                if results[0]:
+                    for key in results[0].keys():
+                        if not key.startswith('_') or key == "_key":
+                            table.add_column(key.replace('_', ' ').title())
+                
+                # Add rows
+                for doc in results:
+                    row = []
+                    for key in results[0].keys():
+                        if not key.startswith('_') or key == "_key":
+                            value = doc.get(key, '')
+                            if key == "embedding":
+                                value = f"[{len(value)} dims]"
+                            elif isinstance(value, (dict, list)):
+                                value = json.dumps(value)[:30] + "..."
+                            else:
+                                value = str(value)[:50]
+                            row.append(value)
+                    table.add_row(*row)
+                
+                table.caption = f"Showing {len(results)} of {total} documents"
+                console.print(table)
+            else:
+                console.print("[yellow]No documents found[/yellow]")
+        
+    except Exception as e:
+        logger.error(f"List failed: {e}")
+        response = create_response(
+            success=False,
+            errors=[{
+                "code": "LIST_ERROR",
+                "message": str(e),
+                "suggestion": f"Verify collection '{collection}' exists"
+            }]
+        )
+        if output_format == OutputFormat.JSON:
+            console.print_json(data=response)
+        else:
+            console.print(format_error("List Failed", str(e)))
+        raise typer.Exit(1)
 
 if __name__ == "__main__":
-    """
-    Self-validation tests for the crud_commands module.
-    
-    This validation checks for dependencies and performs appropriate tests
-    regardless of whether ArangoDB and other dependencies are available.
-    """
-    import sys
-    
-    # Configure logger
-    logger.remove()
-    logger.add(sys.stderr, level="INFO")
-    
-    # List of validation failures
-    all_validation_failures = []
-    total_tests = 0
-    
-    # Test 1: Check dependency checker imports
-    total_tests += 1
-    try:
-        test_result = "HAS_ARANGO" in globals() and "check_dependency" in globals()
-        if not test_result:
-            all_validation_failures.append("Failed to import dependency checker flags")
-        else:
-            print(f"✓ Dependency flags: HAS_ARANGO = {HAS_ARANGO}")
-    except Exception as e:
-        all_validation_failures.append(f"Dependency checker validation failed: {e}")
-    
-    # Test 2: Check UI dependency detection
-    total_tests += 1
-    try:
-        test_result = "HAS_RICH" in globals() and "HAS_TYPER" in globals()
-        if not test_result:
-            all_validation_failures.append("Failed to check UI dependencies")
-        else:
-            print(f"✓ UI dependency flags: HAS_RICH = {HAS_RICH}, HAS_TYPER = {HAS_TYPER}")
-    except Exception as e:
-        all_validation_failures.append(f"UI dependency validation failed: {e}")
-    
-    # Test 3: Check core CRUD function imports
-    total_tests += 1
-    try:
-        # Test import paths
-        test_result = "create_document" in globals() and "get_document" in globals() and "update_document" in globals() and "delete_document" in globals()
-        if not test_result:
-            all_validation_failures.append("Failed to import core db_operations functions")
-        else:
-            print("✓ Core CRUD functions imported successfully")
-    except Exception as e:
-        all_validation_failures.append(f"Import validation failed: {e}")
-    
-    # Test 4: Verify Typer setup
-    total_tests += 1
-    try:
-        # Check that we have commands registered
-        commands = [c.name for c in crud_app.registered_commands]
-        expected_commands = ["add-lesson", "get-lesson", "update-lesson", "delete-lesson"]
-        
-        missing_commands = [cmd for cmd in expected_commands if cmd not in commands]
-        if missing_commands:
-            all_validation_failures.append(f"Missing commands: {missing_commands}")
-        else:
-            print(f"✓ All required commands ({', '.join(expected_commands)}) are registered")
-    except Exception as e:
-        all_validation_failures.append(f"Typer command validation failed: {e}")
-    
-    # Display validation results
-    if all_validation_failures:
-        print(f"\n❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
-        for failure in all_validation_failures:
-            print(f"  - {failure}")
-        sys.exit(1)
-    else:
-        print(f"\n✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
-        print("Module validated and ready for use")
-        sys.exit(0)
+    crud_app()

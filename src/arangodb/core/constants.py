@@ -159,8 +159,7 @@ CONFIG["search"]["compaction"] = {
     "default_method": "summarize",
     "available_methods": ["summarize", "extract_key_points", "topic_model"]
 }
-# If EMBEDDING_FIELD isn't already defined in constants.py, add:
-EMBEDDING_FIELD = CONFIG["embedding"]["field"]  # Should be "embedding"
+# Field constants will be imported at the bottom to avoid circular imports
 
 
 
@@ -212,6 +211,7 @@ def legacy_validate_config() -> bool:
 
 # Validate config with enhanced validator
 try:
+    from arangodb.core.utils.config_validator import validate_config
     CONFIG = validate_config(CONFIG)
 except Exception as e:
     logger.error(f"Enhanced configuration validation failed: {e}")
@@ -230,5 +230,32 @@ if __name__ == "__main__":
     else:
         print("❌ VALIDATION FAILED - Missing required environment variables. See logs for details.")
         sys.exit(1)
+
+# Import field constants at the end to avoid circular imports
+try:
+    from arangodb.core.field_constants import (
+        TYPE_FIELD,
+        CONTENT_FIELD,
+        TIMESTAMP_FIELD,
+        EMBEDDING_FIELD,
+        CONVERSATION_ID_FIELD,
+        EPISODE_ID_FIELD,
+        METADATA_FIELD,
+        KEY_FIELD,
+        ID_FIELD,
+        FROM_FIELD,
+        TO_FIELD,
+        VALID_FROM_FIELD,
+        VALID_TO_FIELD,
+    )
+except ImportError:
+    # Set defaults if field_constants isn't available yet
+    TYPE_FIELD = "type"
+    CONTENT_FIELD = "content"
+    TIMESTAMP_FIELD = "timestamp"
+    EMBEDDING_FIELD = CONFIG["embedding"]["field"]
+    CONVERSATION_ID_FIELD = "conversation_id"
+    EPISODE_ID_FIELD = "episode_id"
+    METADATA_FIELD = "metadata"
 
 

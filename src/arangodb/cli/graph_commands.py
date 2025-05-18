@@ -27,19 +27,24 @@ import json
 import sys
 from typing import List, Optional, Dict, Any, Union
 from loguru import logger
-from rich.console import Console
-from rich.table import Table
-from rich.json import JSON
+
+# Import CLI utilities
+from arangodb.core.utils.cli.formatters import (
+    console, 
+    format_output, 
+    add_output_option,
+    format_error,
+    format_success,
+    format_warning,
+    format_info,
+    OutputFormat
+)
 
 # Import dependency checker for graceful handling of missing dependencies
 from arangodb.core.utils.dependency_checker import (
     HAS_ARANGO,
     check_dependency
 )
-
-# Check for UI dependencies
-HAS_RICH = "rich" in sys.modules
-HAS_TYPER = "typer" in sys.modules
 
 # Import from core layer - note how we now use the core layer directly
 from arangodb.core.graph import (
@@ -58,9 +63,6 @@ from arangodb.core.constants import (
 # Import connection utilities
 from arangodb.cli.db_connection import get_db_connection
 
-# Initialize Rich console
-console = Console()
-
 # Create the Graph app command group
 graph_app = typer.Typer(
     name="graph", 
@@ -69,6 +71,7 @@ graph_app = typer.Typer(
 
 
 @graph_app.command("add-relationship")
+@add_output_option
 def cli_add_relationship(
     from_key: str = typer.Argument(..., help="The _key of the source lesson document."),
     to_key: str = typer.Argument(..., help="The _key of the target lesson document."),
@@ -84,9 +87,7 @@ def cli_add_relationship(
         "-a",
         help="Additional properties as a JSON string (e.g., '{\"confidence\": 0.9}').",
     ),
-    json_output: bool = typer.Option(
-        False, "--json-output", "-j", help="Output metadata as JSON."
-    ),
+    output_format: str = "table"
 ):
     """
     Create a link (edge) between two lessons.
@@ -97,6 +98,8 @@ def cli_add_relationship(
 
     *HOW TO USE:* Provide the source and target document keys, relationship type,
     and rationale. Optionally add additional attributes as a JSON string.
+    
+    Use --output/-o to choose between table, json, csv, or text formats.
     """
     logger.info(f"CLI: Creating relationship from '{from_key}' to '{to_key}' of type '{relationship_type}'")
     db = get_db_connection()
@@ -107,10 +110,10 @@ def cli_add_relationship(
         try:
             edge_attributes = json.loads(attributes)
             if not isinstance(edge_attributes, dict):
-                console.print("[bold red]Error:[/bold red] Attributes must be a valid JSON object.")
+                console.print(format_error("Attributes must be a valid JSON object."))
                 raise typer.Exit(code=1)
         except json.JSONDecodeError as e:
-            console.print(f"[bold red]Error parsing attributes JSON:[/bold red] {e}")
+            console.print(format_error("Error parsing attributes JSON", str(e)))
             raise typer.Exit(code=1)
     
     try:
@@ -125,29 +128,38 @@ def cli_add_relationship(
         )
         
         if meta:
-            output = meta
-            if json_output:
-                print(json.dumps(output))
+            if output_format == OutputFormat.JSON:
+                console.print(format_output(meta, output_format=output_format))
             else:
-                console.print(
-                    f"[green]Success:[/green] Relationship created successfully."
+                console.print(format_success("Relationship created successfully."))
+                
+                # Prepare table data
+                headers = ["Property", "Value"]
+                rows = [
+                    ["From", from_key],
+                    ["To", to_key],
+                    ["Type", relationship_type],
+                    ["Edge Key", meta.get('_key', 'Unknown')]
+                ]
+                
+                formatted_output = format_output(
+                    rows,
+                    output_format=output_format,
+                    headers=headers,
+                    title="Relationship Details"
                 )
-                console.print(f"  From: [cyan]{from_key}[/cyan]")
-                console.print(f"  To: [cyan]{to_key}[/cyan]")
-                console.print(f"  Type: [cyan]{relationship_type}[/cyan]")
-                console.print(f"  Edge Key: [cyan]{meta.get('_key', 'Unknown')}[/cyan]")
+                console.print(formatted_output)
         else:
-            console.print(
-                "[bold red]Error:[/bold red] Failed to create relationship (check logs for details)."
-            )
+            console.print(format_error("Failed to create relationship (check logs for details)."))
             raise typer.Exit(code=1)
     except Exception as e:
         logger.error(f"Add relationship failed in CLI: {e}", exc_info=True)
-        console.print(f"[bold red]Error during add-relationship operation:[/bold red] {e}")
+        console.print(format_error("Error during add-relationship operation", str(e)))
         raise typer.Exit(code=1)
 
 
 @graph_app.command("delete-relationship")
+@add_output_option
 def cli_delete_relationship(
     edge_key: str = typer.Argument(..., help="The _key of the relationship edge document."),
     yes: bool = typer.Option(
@@ -156,9 +168,7 @@ def cli_delete_relationship(
         "-y",
         help="Skip confirmation prompt and delete immediately.",
     ),
-    json_output: bool = typer.Option(
-        False, "--json-output", "-j", help="Output result as JSON."
-    ),
+    output_format: str = "table"
 ):
     """
     Remove a specific link (edge) between lessons.
@@ -168,6 +178,8 @@ def cli_delete_relationship(
 
     *HOW TO USE:* Provide the `_key` of the relationship edge document.
     Use the `--yes` flag to skip the confirmation prompt.
+    
+    Use --output/-o to choose between table, json, csv, or text formats.
     """
     logger.info(f"CLI: Attempting to delete relationship with key '{edge_key}'")
     db = get_db_connection()
@@ -177,17 +189,17 @@ def cli_delete_relationship(
         edge = get_edge(db, EDGE_COLLECTION_NAME, edge_key)
         if not edge:
             message = f"Relationship with key '{edge_key}' not found in collection '{EDGE_COLLECTION_NAME}'."
-            if json_output:
-                print(json.dumps({"status": "error", "message": message}))
+            if output_format == OutputFormat.JSON:
+                console.print(format_output({"status": "error", "message": message}, output_format=output_format))
             else:
-                console.print(f"[yellow]Not Found:[/yellow] {message}")
+                console.print(format_warning(message))
             raise typer.Exit(code=1)
     except Exception as e:
         logger.error(f"Error checking edge before delete: {e}", exc_info=True)
-        if json_output:
-            print(json.dumps({"status": "error", "message": str(e)}))
+        if output_format == OutputFormat.JSON:
+            console.print(format_output({"status": "error", "message": str(e)}, output_format=output_format))
         else:
-            console.print(f"[bold red]Error:[/bold red] {e}")
+            console.print(format_error(str(e)))
         raise typer.Exit(code=1)
     
     # Confirm deletion
@@ -197,7 +209,7 @@ def cli_delete_relationship(
         to_id = edge.get("_to", "unknown")
         rel_type = edge.get("type", "unknown")
         
-        console.print("\n[bold yellow]Warning:[/bold yellow] You are about to delete this relationship:")
+        console.print(format_warning("\nYou are about to delete this relationship:"))
         console.print(f"Edge Key: [cyan]{edge_key}[/cyan]")
         console.print(f"From: [cyan]{from_id}[/cyan]")
         console.print(f"To: [cyan]{to_id}[/cyan]")
@@ -206,10 +218,10 @@ def cli_delete_relationship(
         
         confirmation = typer.confirm("Are you sure you want to proceed?")
         if not confirmation:
-            if json_output:
-                print(json.dumps({"status": "cancelled", "message": "Deletion cancelled by user."}))
+            if output_format == OutputFormat.JSON:
+                console.print(format_output({"status": "cancelled", "message": "Deletion cancelled by user."}, output_format=output_format))
             else:
-                console.print("[yellow]Operation cancelled.[/yellow]")
+                console.print(format_warning("Operation cancelled."))
             raise typer.Exit(code=0)
     
     # Proceed with deletion
@@ -218,26 +230,27 @@ def cli_delete_relationship(
         result = delete_relationship_by_key(db, EDGE_COLLECTION_NAME, edge_key)
         
         if result:
-            if json_output:
-                print(json.dumps({"status": "success", "message": "Relationship deleted successfully."}))
+            if output_format == OutputFormat.JSON:
+                console.print(format_output({"status": "success", "message": "Relationship deleted successfully."}, output_format=output_format))
             else:
-                console.print(f"[green]Success:[/green] Relationship with key '{edge_key}' has been deleted.")
+                console.print(format_success(f"Relationship with key '{edge_key}' has been deleted."))
         else:
-            if json_output:
-                print(json.dumps({"status": "error", "message": "Failed to delete relationship."}))
+            if output_format == OutputFormat.JSON:
+                console.print(format_output({"status": "error", "message": "Failed to delete relationship."}, output_format=output_format))
             else:
-                console.print("[bold red]Error:[/bold red] Failed to delete relationship (check logs for details).")
+                console.print(format_error("Failed to delete relationship (check logs for details)."))
             raise typer.Exit(code=1)
     except Exception as e:
         logger.error(f"Delete relationship failed in CLI: {e}", exc_info=True)
-        if json_output:
-            print(json.dumps({"status": "error", "message": str(e)}))
+        if output_format == OutputFormat.JSON:
+            console.print(format_output({"status": "error", "message": str(e)}, output_format=output_format))
         else:
-            console.print(f"[bold red]Error during delete operation:[/bold red] {e}")
+            console.print(format_error("Error during delete operation", str(e)))
         raise typer.Exit(code=1)
 
 
 @graph_app.command("traverse")
+@add_output_option
 def cli_traverse_graph(
     start_node_id: str = typer.Argument(
         ..., help="The full _id of the starting node (e.g., 'lessons_learned/123')."
@@ -260,9 +273,7 @@ def cli_traverse_graph(
     limit: int = typer.Option(
         100, "--limit", "-lim", help="Maximum number of results.", min=1
     ),
-    json_output: bool = typer.Option(
-        True, "--json-output", "-j", help="Output as JSON (default for traverse)."
-    ),
+    output_format: str = "json"
 ):
     """
     Explore relationships starting from a specific node.
@@ -273,6 +284,8 @@ def cli_traverse_graph(
 
     *HOW TO USE:* Provide the starting node ID and traversal parameters like
     direction and depth.
+    
+    Use --output/-o to choose between table, json, csv, or text formats.
     """
     logger.info(f"CLI: Traversing graph from '{start_node_id}'")
     db = get_db_connection()
@@ -280,9 +293,7 @@ def cli_traverse_graph(
     # Validate direction
     valid_directions = ["OUTBOUND", "INBOUND", "ANY"]
     if direction not in valid_directions:
-        console.print(
-            f"[bold red]Error:[/bold red] Invalid direction '{direction}'. Must be one of: {', '.join(valid_directions)}"
-        )
+        console.print(format_error(f"Invalid direction '{direction}'. Must be one of: {', '.join(valid_directions)}"))
         raise typer.Exit(code=1)
     
     try:
@@ -297,48 +308,75 @@ def cli_traverse_graph(
             limit=limit
         )
         
-        if json_output:
-            print(json.dumps(results, indent=2))
+        if output_format == OutputFormat.JSON:
+            console.print(format_output(results, output_format=output_format))
         else:
             # Display results in a readable format
             paths = results.get("paths", [])
             if not paths:
-                console.print("[yellow]No paths found.[/yellow] Check if the starting node exists and has connections.")
+                console.print(format_warning("No paths found. Check if the starting node exists and has connections."))
                 raise typer.Exit(code=0)
             
-            console.print(f"[bold green]Graph Traversal Results[/bold green] (found {len(paths)} paths)")
-            console.print(f"Starting from: [cyan]{start_node_id}[/cyan]")
-            console.print(f"Direction: [cyan]{direction}[/cyan], Depth: [cyan]{min_depth}-{max_depth}[/cyan]")
-            
-            # Display each path
-            for i, path in enumerate(paths):
-                console.print(f"\n[bold]Path {i+1}:[/bold]")
+            # For table format, show path summaries
+            if output_format == OutputFormat.TABLE:
+                console.print(format_info(f"Graph Traversal Results (found {len(paths)} paths)"))
+                console.print(format_info(f"Starting from: {start_node_id}"))
+                console.print(format_info(f"Direction: {direction}, Depth: {min_depth}-{max_depth}"))
                 
-                # Display vertices and edges in the path
-                vertices = path.get("vertices", [])
-                edges = path.get("edges", [])
-                
-                for j, vertex in enumerate(vertices):
-                    # Extract vertex info
-                    v_id = vertex.get("_id", "unknown")
-                    v_title = vertex.get("title", vertex.get("summary", "No title"))
+                # Display each path
+                for i, path in enumerate(paths):
+                    console.print(f"\n[bold]Path {i+1}:[/bold]")
                     
-                    console.print(f"  [cyan]Vertex {j+1}:[/cyan] {v_id} - {v_title}")
+                    # Display vertices and edges in the path
+                    vertices = path.get("vertices", [])
+                    edges = path.get("edges", [])
                     
-                    # Display connecting edge if there is one
-                    if j < len(edges):
-                        edge = edges[j]
-                        e_type = edge.get("type", "unknown")
-                        e_rationale = edge.get("rationale", "No rationale")
+                    for j, vertex in enumerate(vertices):
+                        # Extract vertex info
+                        v_id = vertex.get("_id", "unknown")
+                        v_title = vertex.get("title", vertex.get("summary", "No title"))
                         
-                        console.print(f"  └─ [yellow]Edge:[/yellow] {e_type} - {e_rationale}")
+                        console.print(f"  [cyan]Vertex {j+1}:[/cyan] {v_id} - {v_title}")
+                        
+                        # Display connecting edge if there is one
+                        if j < len(edges):
+                            edge = edges[j]
+                            e_type = edge.get("type", "unknown")
+                            e_rationale = edge.get("rationale", "No rationale")
+                            
+                            console.print(f"  └─ [yellow]Edge:[/yellow] {e_type} - {e_rationale}")
+            else:
+                # For CSV/text, create tabular summary
+                headers = ["Path", "Vertices", "Depth", "Start", "End"]
+                rows = []
+                
+                for i, path in enumerate(paths):
+                    vertices = path.get("vertices", [])
+                    start_vertex = vertices[0] if vertices else {}
+                    end_vertex = vertices[-1] if vertices else {}
+                    
+                    rows.append([
+                        f"Path {i+1}",
+                        str(len(vertices)),
+                        str(len(path.get("edges", []))),
+                        start_vertex.get("_id", "unknown"),
+                        end_vertex.get("_id", "unknown")
+                    ])
+                
+                formatted_output = format_output(
+                    rows,
+                    output_format=output_format,
+                    headers=headers,
+                    title="Graph Traversal Summary"
+                )
+                console.print(formatted_output)
             
     except Exception as e:
         logger.error(f"Graph traversal failed in CLI: {e}", exc_info=True)
-        if json_output:
-            print(json.dumps({"status": "error", "message": str(e)}))
+        if output_format == OutputFormat.JSON:
+            console.print(format_output({"status": "error", "message": str(e)}, output_format=output_format))
         else:
-            console.print(f"[bold red]Error during traversal:[/bold red] {e}")
+            console.print(format_error("Error during traversal", str(e)))
         raise typer.Exit(code=1)
 
 

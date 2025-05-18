@@ -28,6 +28,7 @@ import sys
 import time
 from typing import Dict, List, Any, Optional, Tuple, Union, Set
 from loguru import logger
+from arangodb.core.view_manager import ensure_arangosearch_view_optimized
 
 # Import dependency checker for graceful handling of missing dependencies
 try:
@@ -465,8 +466,8 @@ def ensure_memory_agent_collections(db: StandardDatabase) -> None:
         ensure_collection(db, MEMORY_MESSAGE_COLLECTION, is_edge_collection=False)
         ensure_collection(db, MEMORY_EDGE_COLLECTION, is_edge_collection=True)
         
-        # Create memory view
-        ensure_arangosearch_view(
+        # Create memory view using optimized manager
+        ensure_arangosearch_view_optimized(
             db,
             MEMORY_VIEW_NAME,
             MEMORY_COLLECTION,

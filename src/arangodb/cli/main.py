@@ -1,123 +1,270 @@
 """
-ArangoDB CLI Main Module
+Fixed Main CLI Entry Point with Consistent Interface
 
-This module provides the main entry point and CLI application for ArangoDB operations.
-It combines all command groups and handles common configuration and setup.
-
-Command Groups:
-- search: Search operations (BM25, semantic, hybrid, etc.)
-- crud: CRUD operations for documents (Create, Read, Update, Delete)
-- graph: Graph traversal and relationship management
-- memory: Memory agent operations for conversation storage
-- community: Community detection and management in the knowledge graph
-- compaction: Conversation compaction and summary management
-
-Sample Input:
-- CLI command: arangodb search bm25 "query text"
-- CLI command: arangodb memory store --conversation-id "abc123" --user-message "Hello" --agent-response "Hi"
-- CLI command: arangodb compaction create --conversation-id "abc123" --method "summarize"
-
-Expected Output:
-- Console-formatted tables or JSON output based on the specific command
+This module provides the main CLI entry point with all commands
+following the stellar template for perfect consistency.
 """
 
-import os
-import sys
 import typer
-from loguru import logger
-from rich.console import Console
 from typing import Optional
+from loguru import logger
 
-# Import command groups
-from arangodb.cli.search_commands import get_search_app
-from arangodb.cli.crud_commands import get_crud_app
-from arangodb.cli.graph_commands import get_graph_app
-from arangodb.cli.memory_commands import get_memory_app
-from arangodb.cli.community_commands import app as community_app
+from arangodb.core.utils.cli.formatters import console
+from arangodb.core.utils.cli.formatters import format_info, format_success
+
+# Import all command groups
+from arangodb.cli.crud_commands import crud_app
+from arangodb.cli.search_commands import search_app
+from arangodb.cli.memory_commands import memory_app
 from arangodb.cli.episode_commands import app as episode_app
+from arangodb.cli.community_commands import app as community_app
+from arangodb.cli.graph_commands import graph_app
+from arangodb.cli.compaction_commands import compaction_app
 from arangodb.cli.contradiction_commands import app as contradiction_app
-from arangodb.cli.search_config_commands import app as search_config_app
-from arangodb.cli.compaction_commands import get_compaction_app
+from arangodb.cli.temporal_commands import app as temporal_app
 
-# Import core utilities
-from arangodb.core.utils.log_utils import truncate_large_value
-
-# Initialize Rich console
-console = Console()
-
-# Create the main app
+# Create main app
 app = typer.Typer(
-    name="arangodb-cli",
-    help="Command-line interface for ArangoDB operations",
-    add_completion=False,
-    rich_markup_mode="markdown",  # Enable markdown in help text
+    name="arangodb",
+    help="ArangoDB Memory Bank CLI - Consistent and powerful interface",
+    context_settings={"help_option_names": ["-h", "--help"]}
 )
 
-# Add command groups
-search_app = get_search_app()
-app.add_typer(search_app, name="search")
+# Add all command groups
+app.add_typer(crud_app, name="crud", help="CRUD operations for any collection")
+app.add_typer(search_app, name="search", help="Search operations with multiple algorithms")
+app.add_typer(memory_app, name="memory", help="Memory and conversation management")
+app.add_typer(episode_app, name="episode", help="Episode management")
+app.add_typer(community_app, name="community", help="Community detection and management")
+app.add_typer(graph_app, name="graph", help="Graph relationship operations")
+app.add_typer(compaction_app, name="compaction", help="Conversation compaction operations")
+app.add_typer(contradiction_app, name="contradiction", help="Contradiction detection and resolution")
+app.add_typer(temporal_app, name="temporal", help="Temporal operations and queries")
 
-crud_app = get_crud_app()
-app.add_typer(crud_app, name="crud")
+# Add generic CRUD as top-level for convenience
+app.add_typer(crud_app, name="documents", help="Document operations (alias for crud)")
 
-graph_app = get_graph_app()
-app.add_typer(graph_app, name="graph")
-
-memory_app = get_memory_app()
-app.add_typer(memory_app, name="memory")
-
-app.add_typer(community_app, name="community")
-
-app.add_typer(episode_app, name="episode")
-
-app.add_typer(contradiction_app, name="contradiction")
-
-app.add_typer(search_config_app, name="search-config")
-
-# Add the new compaction commands
-compaction_app = get_compaction_app()
-app.add_typer(compaction_app, name="compaction")
-
-# --- Global Configuration & Logging Setup ---
+# Global options
 @app.callback()
-def main_callback(
-    log_level: str = typer.Option(
-        os.environ.get("LOG_LEVEL", "INFO").upper(),
-        "--log-level",
-        "-l",
-        help="Set logging level (DEBUG, INFO, WARNING, ERROR).",
-        envvar="LOG_LEVEL",
-    ),
+def main(
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable verbose output"),
+    version: bool = typer.Option(False, "--version", help="Show version"),
+    list_commands: bool = typer.Option(False, "--list-commands", help="List all available commands"),
 ):
-    """Main callback to configure logging for the CLI."""
-    # Allow standard logging levels
-    log_level = log_level.upper()
-    valid_levels = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
-    if log_level not in valid_levels:
-        print(
-            f"Warning: Invalid log level '{log_level}'. Defaulting to INFO.",
-            file=sys.stderr,
-        )
-        log_level = "INFO"
+    """
+    ArangoDB Memory Bank CLI
+    
+    A consistent, powerful CLI for interacting with ArangoDB memory systems.
+    Every command follows the same patterns for easy learning and usage.
+    
+    USAGE:
+        arangodb [OPTIONS] COMMAND [ARGS]...
+    
+    EXAMPLES:
+        arangodb crud list users --output json
+        arangodb search semantic --query "database concepts"
+        arangodb memory create --user "Question" --agent "Answer"
+    
+    For detailed help on any command:
+        arangodb COMMAND --help
+    """
+    if version:
+        console.print("ArangoDB CLI v2.0.0 (Stellar Edition)")
+        raise typer.Exit()
+    
+    if list_commands:
+        # Machine-readable command listing
+        commands = {
+            "crud": {
+                "description": "CRUD operations for any collection",
+                "subcommands": ["create", "read", "update", "delete", "list"]
+            },
+            "search": {
+                "description": "Search operations",
+                "subcommands": ["bm25", "semantic", "keyword", "tag", "graph"]
+            },
+            "memory": {
+                "description": "Memory management",
+                "subcommands": ["create", "list", "search", "get", "history"]
+            },
+            "episode": {
+                "description": "Episode management",
+                "subcommands": ["create", "list", "get", "update", "delete"]
+            },
+            "community": {
+                "description": "Community operations",
+                "subcommands": ["detect", "list", "get", "update"]
+            },
+            "graph": {
+                "description": "Graph operations",
+                "subcommands": ["traverse", "create", "delete"]
+            }
+        }
+        console.print_json(data=commands)
+        raise typer.Exit()
+    
+    if verbose:
+        logger.enable("arangodb")
+        console.print(format_info("Verbose logging enabled"))
 
-    logger.remove()  # Remove default handler
-    logger.add(
-        sys.stderr,
-        level=log_level,
-        format="{time:HH:mm:ss} | {level: <7} | {message}",
-        backtrace=False,
-        diagnose=False,  # Keep diagnose False for production CLI
-    )
+# Quick start command for new users
+@app.command("quickstart")
+def quickstart():
+    """
+    Interactive quickstart guide for new users.
     
-    # Initialize any global resources needed for the CLI
-    logger.debug("Initializing CLI environment...")
+    Demonstrates common CLI patterns and best practices.
+    """
+    console.print("\n[bold cyan]Welcome to ArangoDB CLI![/bold cyan]\n")
     
-    # Note: We will add caching initialization and other setup here
-    # as needed in future refactoring.
+    console.print("Here are the most common commands:\n")
     
-    logger.debug("CLI environment initialized.")
+    examples = [
+        ("List documents", "arangodb crud list users"),
+        ("Create document", 'arangodb crud create articles \'{"title": "Guide", "content": "..."}\''),
+        ("Search semantically", 'arangodb search semantic --query "machine learning"'),
+        ("Store memory", 'arangodb memory create --user "Question" --agent "Answer"'),
+        ("List episodes", "arangodb episode list"),
+    ]
+    
+    for desc, cmd in examples:
+        console.print(f"[green]{desc}:[/green]")
+        console.print(f"  [yellow]{cmd}[/yellow]\n")
+    
+    console.print("Every command supports:")
+    console.print("  • [cyan]--output json[/cyan] for machine-readable output")
+    console.print("  • [cyan]--output table[/cyan] for human-readable output (default)")
+    console.print("  • [cyan]--help[/cyan] for detailed documentation\n")
+    
+    console.print("Try: [yellow]arangodb crud list --help[/yellow]")
 
+# LLM helper command
+@app.command("llm-help")
+def llm_help(
+    command: Optional[str] = typer.Argument(None, help="Command to get help for"),
+    output: str = typer.Option("text", "--output", "-o", help="Output format"),
+):
+    """
+    Generate LLM-friendly command documentation.
+    
+    Provides structured documentation optimized for AI agents.
+    """
+    if not command:
+        # General structure
+        structure = {
+            "cli_name": "arangodb",
+            "pattern": "arangodb <resource> <action> [OPTIONS]",
+            "resources": ["crud", "search", "memory", "episode", "community", "graph"],
+            "common_options": {
+                "--output": "json or table",
+                "--limit": "number of results",
+                "--help": "detailed help"
+            },
+            "examples": [
+                "arangodb crud list users --output json",
+                "arangodb search semantic --query 'topic' --collection docs",
+                "arangodb memory create --user 'Q' --agent 'A'"
+            ]
+        }
+    else:
+        # Command-specific help
+        structure = {
+            "command": command,
+            "pattern": f"arangodb {command} <action> [OPTIONS]",
+            "actions": _get_command_actions(command),
+            "parameters": _get_command_parameters(command)
+        }
+    
+    if output == "json":
+        console.print_json(data=structure)
+    else:
+        console.print(structure)
+
+def _get_command_actions(command: str) -> list:
+    """Get available actions for a command"""
+    actions = {
+        "crud": ["create", "read", "update", "delete", "list"],
+        "search": ["bm25", "semantic", "keyword", "tag", "graph"],
+        "memory": ["create", "list", "search", "get", "history"],
+        "episode": ["create", "list", "get", "update", "delete"],
+        "community": ["detect", "list", "get", "update"],
+        "graph": ["traverse", "create", "delete"]
+    }
+    return actions.get(command, [])
+
+def _get_command_parameters(command: str) -> dict:
+    """Get common parameters for a command"""
+    params = {
+        "crud": {
+            "create": ["collection", "data", "--output", "--key", "--embed"],
+            "read": ["collection", "key", "--output"],
+            "update": ["collection", "key", "data", "--output", "--replace"],
+            "delete": ["collection", "key", "--output", "--force"],
+            "list": ["collection", "--output", "--limit", "--offset"]
+        },
+        "search": {
+            "all": ["--query", "--collection", "--output", "--limit"],
+            "semantic": ["--threshold"],
+            "tag": ["--tags", "--match-all"]
+        },
+        "memory": {
+            "create": ["--user", "--agent", "--conversation-id", "--output"],
+            "list": ["--output", "--limit", "--conversation-id"],
+            "search": ["--query", "--output", "--limit"]
+        }
+    }
+    return params.get(command, {})
+
+# Health check command
+@app.command("health")
+def health_check(output: str = typer.Option("text", "--output", "-o")):
+    """
+    Check CLI and database health.
+    
+    Verifies all systems are operational.
+    """
+    from arangodb.core.db_operations import get_db_connection
+    
+    health_status = {
+        "cli_version": "2.0.0",
+        "status": "healthy",
+        "checks": {
+            "cli": True,
+            "database": False,
+            "embedding": False
+        }
+    }
+    
+    # Check database
+    try:
+        db = get_db_connection()
+        collections = db.collections()
+        health_status["checks"]["database"] = True
+        health_status["database_collections"] = len(collections)
+    except Exception as e:
+        health_status["checks"]["database"] = False
+        health_status["database_error"] = str(e)
+    
+    # Check embedding service
+    try:
+        from arangodb.core.utils.embedding_utils import get_embedding
+        test_embedding = get_embedding("test")
+        health_status["checks"]["embedding"] = True
+        health_status["embedding_dimensions"] = len(test_embedding)
+    except Exception as e:
+        health_status["checks"]["embedding"] = False
+        health_status["embedding_error"] = str(e)
+    
+    # Overall status
+    health_status["status"] = "healthy" if all(health_status["checks"].values()) else "degraded"
+    
+    if output == "json":
+        console.print_json(data=health_status)
+    else:
+        console.print(format_success(f"CLI Status: {health_status['status']}"))
+        for check, status in health_status["checks"].items():
+            emoji = "✓" if status else "✗"
+            console.print(f"  {emoji} {check}: {'OK' if status else 'Failed'}")
 
 if __name__ == "__main__":
-    """Run the CLI application when executed directly."""
     app()

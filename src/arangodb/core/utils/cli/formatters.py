@@ -21,6 +21,7 @@ Example:
 import sys
 import json
 from enum import Enum
+from dataclasses import dataclass
 from typing import List, Optional, Union, Dict, Any, Callable
 
 # Check if rich is available
@@ -43,6 +44,32 @@ class OutputFormat(str, Enum):
     JSON = "json"
     TEXT = "text"
     CSV = "csv"
+
+@dataclass
+class CLIResponse:
+    """Standard CLI response structure"""
+    success: bool
+    message: str
+    data: Optional[Union[Dict, List]] = None
+    error: Optional[str] = None
+    metadata: Optional[Dict] = None
+    
+    def to_json(self) -> Dict:
+        """Convert response to JSON-ready dict"""
+        response = {
+            "success": self.success,
+            "message": self.message,
+        }
+        
+        # Add optional fields if present
+        if self.data is not None:
+            response["data"] = self.data
+        if self.error is not None:
+            response["error"] = self.error
+        if self.metadata is not None:
+            response["metadata"] = self.metadata
+            
+        return response
 
 
 # Define console

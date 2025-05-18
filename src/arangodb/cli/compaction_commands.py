@@ -34,7 +34,7 @@ from loguru import logger
 from pathlib import Path
 
 # Import CLI utilities
-from arangodb.core.utils.cli import (
+from arangodb.core.utils.cli.formatters import (
     console, 
     format_output, 
     add_output_option,
@@ -65,6 +65,7 @@ compaction_app = typer.Typer(
 )
 
 @compaction_app.command("create")
+@add_output_option
 def cli_create_compaction(
     conversation_id: Optional[str] = typer.Option(
         None, "--conversation-id", "-c", help="ID of the conversation to compact"
@@ -90,9 +91,7 @@ def cli_create_compaction(
         "-mo",
         help="Minimum token overlap between chunks"
     ),
-    json_output: bool = typer.Option(
-        False, "--json-output", "-j", help="Output results as JSON"
-    ),
+    output_format: str = "table"
 ):
     """
     Create a compact representation of a conversation or episode.
@@ -102,6 +101,8 @@ def cli_create_compaction(
     
     WHY: Compacted conversations take less space, are faster to retrieve,
     and can fit more context within LLM token limits.
+    
+    Use --output/-o to choose between table, json, csv, or text formats.
     
     EXAMPLES:
     
@@ -121,14 +122,16 @@ def cli_create_compaction(
     
     # Validation
     if not conversation_id and not episode_id:
-        console.print("[bold red]Error:[/bold red] Either conversation_id or episode_id must be provided")
+        console.print(format_error("Either conversation_id or episode_id must be provided"))
         raise typer.Exit(code=1)
     
     # Validate compaction method
     valid_methods = CONFIG["search"]["compaction"]["available_methods"]
     if compaction_method not in valid_methods:
-        console.print(f"[bold red]Error:[/bold red] Invalid compaction method: {compaction_method}")
-        console.print(f"Valid methods: {', '.join(valid_methods)}")
+        console.print(format_error(
+            f"Invalid compaction method: {compaction_method}",
+            f"Valid methods: {', '.join(valid_methods)}"
+        ))
         raise typer.Exit(code=1)
     
     # Get database connection
@@ -148,13 +151,16 @@ def cli_create_compaction(
         )
         
         # Display results
-        if json_output:
-            print(json.dumps(result, indent=2))
+        if output_format == OutputFormat.JSON:
+            console.print(format_output(result, output_format=output_format))
         else:
-            console.print("\n[bold green]Conversation Compaction Results:[/bold green]")
-            console.print(f"[bold cyan]Compaction ID:[/bold cyan] {result.get('_key', 'N/A')}")
-            console.print(f"[bold cyan]Method:[/bold cyan] {compaction_method}")
-            console.print(f"[bold cyan]Original Messages:[/bold cyan] {result.get('message_count', 0)}")
+            # Prepare data for table/CSV/text format
+            headers = ["Property", "Value"]
+            rows = [
+                ["Compaction ID", result.get('_key', 'N/A')],
+                ["Method", compaction_method],
+                ["Original Messages", str(result.get('message_count', 0))]
+            ]
             
             # Calculate reduction percentages
             metadata = result.get("metadata", {})
@@ -164,25 +170,40 @@ def cli_create_compaction(
             compacted_tokens = metadata.get("compacted_token_count", 0)
             token_reduction = (1 - (compacted_tokens / max(1, original_tokens))) * 100
             
-            console.print(f"[bold cyan]Character Reduction:[/bold cyan] {char_reduction:.1f}%")
-            console.print(f"[bold cyan]Token Reduction:[/bold cyan] {token_reduction:.1f}%")
+            rows.extend([
+                ["Character Reduction", f"{char_reduction:.1f}%"],
+                ["Token Reduction", f"{token_reduction:.1f}%"]
+            ])
             
             # Show workflow summary if available
             workflow = result.get("workflow_summary", {})
-            if workflow and not json_output:
-                console.print("\n[bold cyan]Workflow Info:[/bold cyan]")
-                console.print(f"Total Processing Time: {workflow.get('total_elapsed_time', 0):.2f} seconds")
-                console.print(f"Status: {workflow.get('status', 'Unknown')}")
+            if workflow:
+                rows.extend([
+                    ["Processing Time", f"{workflow.get('total_elapsed_time', 0):.2f} seconds"],
+                    ["Status", workflow.get('status', 'Unknown')]
+                ])
             
-            console.print("\n[bold cyan]Compacted Content:[/bold cyan]")
-            console.print(result.get('content', 'No content available'))
+            # Display table
+            formatted_output = format_output(
+                rows,
+                output_format=output_format,
+                headers=headers,
+                title="Conversation Compaction Results"
+            )
+            console.print(formatted_output)
+            
+            # Show content separately for table format
+            if output_format == OutputFormat.TABLE:
+                console.print("\n[bold cyan]Compacted Content:[/bold cyan]")
+                console.print(result.get('content', 'No content available'))
             
     except Exception as e:
         logger.error(f"Compaction failed: {e}", exc_info=True)
-        console.print(f"[bold red]Error during compaction:[/bold red] {e}")
+        console.print(format_error("Error during compaction", str(e)))
         raise typer.Exit(code=1)
 
 @compaction_app.command("search")
+@add_output_option
 def cli_search_compactions(
     query: str = typer.Argument(..., help="The search query text."),
     threshold: float = typer.Option(
@@ -208,9 +229,7 @@ def cli_search_compactions(
     episode_id: Optional[str] = typer.Option(
         None, "--episode-id", "-e", help="Filter by episode ID."
     ),
-    json_output: bool = typer.Option(
-        False, "--json-output", "-j", help="Output results as JSON array."
-    ),
+    output_format: str = "table"
 ):
     """
     Search for compacted conversation summaries using semantic similarity.
@@ -221,6 +240,8 @@ def cli_search_compactions(
 
     WHY TO USE: Provides a high-level view of entire conversations that are
     relevant to your query, with links to the original message details.
+    
+    Use --output/-o to choose between table, json, csv, or text formats.
     
     EXAMPLES:
     
@@ -256,44 +277,47 @@ def cli_search_compactions(
             episode_id=episode_id
         )
         
-        if json_output:
-            print(json.dumps(results_data.get("results", []), indent=2))
+        if output_format == OutputFormat.JSON:
+            console.print(format_output(results_data.get("results", []), output_format=output_format))
         else:
-            # Display results in a formatted table
-            table = Table(title=f"Compaction Search Results")
-            
-            table.add_column("ID", style="cyan")
-            table.add_column("Method", style="green")
-            table.add_column("Content Preview", style="white")
-            table.add_column("Score", style="magenta")
-            table.add_column("Messages", style="yellow")
+            # Prepare data for table/CSV/text format
+            headers = ["ID", "Method", "Content Preview", "Score", "Messages"]
+            rows = []
             
             for result in results_data.get("results", []):
                 # Format content preview (first 100 chars)
                 content = result.get("content", "")
                 preview = (content[:97] + "...") if len(content) > 100 else content
                 
-                # Add row to table
-                table.add_row(
+                rows.append([
                     result.get("_key", "N/A"),
                     result.get("compaction_method", "N/A"),
                     preview,
                     f"{result.get('similarity_score', 0):.4f}",
                     str(result.get("message_count", 0))
-                )
+                ])
             
-            console.print(table)
+            formatted_output = format_output(
+                rows,
+                output_format=output_format,
+                headers=headers,
+                title="Compaction Search Results"
+            )
+            console.print(formatted_output)
             
-            # Add summary footer
-            footer = f"Found {len(results_data.get('results', []))} results in {results_data.get('time', 0):.2f} seconds"
-            console.print(footer)
+            # Add summary footer for table format
+            if output_format == OutputFormat.TABLE:
+                console.print(format_info(
+                    f"Found {len(results_data.get('results', []))} results in {results_data.get('time', 0):.2f} seconds"
+                ))
             
     except Exception as e:
         logger.error(f"Compaction search failed: {e}", exc_info=True)
-        console.print(f"[bold red]Error during compaction search:[/bold red] {e}")
+        console.print(format_error("Error during compaction search", str(e)))
         raise typer.Exit(code=1)
 
 @compaction_app.command("get")
+@add_output_option
 def cli_get_compaction(
     compaction_id: str = typer.Argument(
         ..., help="The ID of the compaction to retrieve."
@@ -301,9 +325,7 @@ def cli_get_compaction(
     include_workflow: bool = typer.Option(
         False, "--include-workflow", "-w", help="Include workflow tracking information."
     ),
-    json_output: bool = typer.Option(
-        False, "--json-output", "-j", help="Output results as JSON."
-    ),
+    output_format: str = "table"
 ):
     """
     Retrieve a specific compacted conversation summary.
@@ -314,6 +336,8 @@ def cli_get_compaction(
     WHY TO USE: Provides the full content of a compacted summary along with
     its metadata and reference information.
     
+    Use --output/-o to choose between table, json, csv, or text formats.
+    
     EXAMPLES:
     
     Get a specific compaction by ID:
@@ -323,7 +347,7 @@ def cli_get_compaction(
     arangodb compaction get "cmp_123abc" --include-workflow
     
     Get compaction as JSON for further processing:
-    arangodb compaction get "cmp_123abc" --json-output
+    arangodb compaction get "cmp_123abc" --output json
     """
     logger.info(f"CLI: Retrieving compaction with ID: {compaction_id}")
     db = get_db_connection()
@@ -347,35 +371,61 @@ def cli_get_compaction(
             workflow_data = memory_agent.get_workflow_data(workflow_id)
             compaction["workflow_data"] = workflow_data
         
-        if json_output:
-            print(json.dumps(compaction, indent=2))
+        if output_format == OutputFormat.JSON:
+            console.print(format_output(compaction, output_format=output_format))
         else:
-            console.print("\n[bold green]Compacted Conversation Summary:[/bold green]")
-            console.print(f"[bold cyan]ID:[/bold cyan] {compaction.get('_key', 'N/A')}")
-            console.print(f"[bold cyan]Method:[/bold cyan] {compaction.get('compaction_method', 'N/A')}")
-            console.print(f"[bold cyan]Created:[/bold cyan] {compaction.get('created_at', 'N/A')}")
-            console.print(f"[bold cyan]Messages:[/bold cyan] {compaction.get('message_count', 0)}")
+            # Prepare data for table/CSV/text format
+            headers = ["Property", "Value"]
+            rows = [
+                ["ID", compaction.get('_key', 'N/A')],
+                ["Method", compaction.get('compaction_method', 'N/A')],
+                ["Created", compaction.get('created_at', 'N/A')],
+                ["Messages", str(compaction.get('message_count', 0))]
+            ]
             
+            # Add metadata
             if "metadata" in compaction:
                 metadata = compaction["metadata"]
-                console.print("\n[bold cyan]Metadata:[/bold cyan]")
-                console.print(f"Original Length: {metadata.get('original_content_length', 'N/A')} characters")
-                console.print(f"Compacted Length: {metadata.get('compacted_length', 'N/A')} characters")
-                console.print(f"Reduction: {metadata.get('reduction_ratio', 0) * 100:.1f}%")
+                rows.extend([
+                    ["Original Length", f"{metadata.get('original_content_length', 'N/A')} characters"],
+                    ["Compacted Length", f"{metadata.get('compacted_length', 'N/A')} characters"],
+                    ["Reduction", f"{metadata.get('reduction_ratio', 0) * 100:.1f}%"]
+                ])
                 
                 if "original_token_count" in metadata and "compacted_token_count" in metadata:
                     token_reduction = (1 - (metadata.get("compacted_token_count", 0) / 
                                           max(1, metadata.get("original_token_count", 1)))) * 100
-                    console.print(f"Token Reduction: {token_reduction:.1f}%")
+                    rows.append(["Token Reduction", f"{token_reduction:.1f}%"])
             
-            if include_workflow and "workflow_data" in compaction:
+            formatted_output = format_output(
+                rows,
+                output_format=output_format,
+                headers=headers,
+                title="Compacted Conversation Summary"
+            )
+            console.print(formatted_output)
+            
+            # Add workflow details if requested
+            if include_workflow and "workflow_data" in compaction and output_format == OutputFormat.TABLE:
                 workflow = compaction["workflow_data"]
-                console.print("\n[bold cyan]Workflow Details:[/bold cyan]")
-                console.print(f"Status: {workflow.get('status', 'Unknown')}")
-                console.print(f"Started: {workflow.get('start_time', 'N/A')}")
-                console.print(f"Completed: {workflow.get('end_time', 'N/A')}")
-                console.print(f"Duration: {workflow.get('elapsed_time', 0):.2f} seconds")
                 
+                workflow_rows = [
+                    ["Status", workflow.get('status', 'Unknown')],
+                    ["Started", workflow.get('start_time', 'N/A')],
+                    ["Completed", workflow.get('end_time', 'N/A')],
+                    ["Duration", f"{workflow.get('elapsed_time', 0):.2f} seconds"]
+                ]
+                
+                workflow_output = format_output(
+                    workflow_rows,
+                    output_format=output_format,
+                    headers=["Property", "Value"],
+                    title="Workflow Details"
+                )
+                console.print("")
+                console.print(workflow_output)
+                
+                # Show workflow steps
                 steps = workflow.get("steps", [])
                 if steps:
                     console.print("\n[bold cyan]Workflow Steps:[/bold cyan]")
@@ -391,15 +441,18 @@ def cli_get_compaction(
                         else:
                             console.print(f"⏳ {name}: {status}")
             
-            console.print("\n[bold cyan]Content:[/bold cyan]")
-            console.print(compaction.get('content', 'No content available'))
+            # Show content for table format
+            if output_format == OutputFormat.TABLE:
+                console.print("\n[bold cyan]Content:[/bold cyan]")
+                console.print(compaction.get('content', 'No content available'))
             
     except Exception as e:
         logger.error(f"Error retrieving compaction: {e}", exc_info=True)
-        console.print(f"[bold red]Error retrieving compaction:[/bold red] {e}")
+        console.print(format_error("Error retrieving compaction", str(e)))
         raise typer.Exit(code=1)
 
 @compaction_app.command("list")
+@add_output_option
 def cli_list_compactions(
     limit: int = typer.Option(
         10, "--limit", "-lim", help="Maximum number of results to return.", min=1
@@ -420,9 +473,7 @@ def cli_list_compactions(
     descending: bool = typer.Option(
         True, "--descending/--ascending", help="Sort in descending or ascending order."
     ),
-    json_output: bool = typer.Option(
-        False, "--json-output", "-j", help="Output results as JSON array."
-    ),
+    output_format: str = "table"
 ):
     """
     List compacted conversation summaries with optional filtering.
@@ -432,6 +483,8 @@ def cli_list_compactions(
     
     WHY TO USE: Provides an overview of what conversation compactions are available
     and helps you identify the ones you might want to retrieve in full.
+    
+    Use --output/-o to choose between table, json, csv, or text formats.
     
     EXAMPLES:
     
@@ -508,23 +561,18 @@ def cli_list_compactions(
         cursor = db.aql.execute(query, bind_vars=bind_vars)
         results = list(cursor)
         
-        if json_output:
-            print(json.dumps(results, indent=2))
+        if output_format == OutputFormat.JSON:
+            console.print(format_output(results, output_format=output_format))
         else:
-            # Display results in a formatted table
-            table = Table(title=f"Compacted Summaries" + (f" ({len(results)} results)" if results else ""))
-            
-            table.add_column("ID", style="cyan")
-            table.add_column("Method", style="green")
+            # Prepare headers based on filters
+            headers = ["ID", "Method"]
             if not conversation_id:
-                table.add_column("Conversation", style="blue")
+                headers.append("Conversation")
             if not episode_id:
-                table.add_column("Episode", style="yellow")
-            table.add_column("Messages", style="magenta")
-            table.add_column("Created", style="blue")
-            table.add_column("Reduction", style="green")
-            table.add_column("Preview", style="white")
+                headers.append("Episode")
+            headers.extend(["Messages", "Created", "Reduction", "Preview"])
             
+            rows = []
             for item in results:
                 row = [
                     item.get("_key", "N/A"),
@@ -555,16 +603,22 @@ def cli_list_compactions(
                     item.get("content_preview", "")[:50]
                 ])
                 
-                table.add_row(*row)
+                rows.append(row)
             
-            console.print(table)
+            formatted_output = format_output(
+                rows,
+                output_format=output_format,
+                headers=headers,
+                title=f"Compacted Summaries ({len(results)} results)"
+            )
+            console.print(formatted_output)
             
-            if not results:
+            if not results and output_format == OutputFormat.TABLE:
                 console.print("\n[bold yellow]No compactions found matching the specified criteria[/bold yellow]")
             
     except Exception as e:
         logger.error(f"Error listing compactions: {e}", exc_info=True)
-        console.print(f"[bold red]Error listing compactions:[/bold red] {e}")
+        console.print(format_error("Error listing compactions", str(e)))
         raise typer.Exit(code=1)
 
 def get_compaction_app():

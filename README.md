@@ -1,13 +1,26 @@
-# ArangoDB Memory Agent System
+# ArangoDB Memory Agent System (Beta)
 
 A powerful knowledge graph system for AI agents built on ArangoDB, featuring advanced search capabilities, temporal conversation tracking, and Graphiti-inspired memory management.
+
+**Current Version**: 0.1.0-beta  
+**Status**: Limited Beta Testing  
+**Release Date**: January 2025
+
+## 🆕 Beta Release
+
+This is a beta release with core functionality complete and ready for testing. Please review the following documentation before getting started:
+
+- [Beta Testing Guide](docs/guides/BETA_TESTING_GUIDE.md) - How to participate in beta testing
+- [Release Notes](docs/BETA_RELEASE_NOTES.md) - What's included in this release
+- [Capabilities & Limitations](docs/CAPABILITIES_AND_LIMITATIONS.md) - Current features and known limitations
 
 ## 📚 Documentation
 
 - [System Overview](docs/SYSTEM_OVERVIEW.md) - Architecture and capabilities
 - [API Documentation](docs/api/python_api.md) - Python API reference
-- [CLI Usage](docs/memory_bank/cli/CLI_USAGE.md) - Command-line interface guide
-- [Troubleshooting](docs/memory_bank/TROUBLESHOOTING.md) - Common issues and solutions
+- [CLI Usage](docs/guides/CLI_USAGE.md) - Command-line interface guide
+- [Temporal Model Guide](docs/guides/TEMPORAL_MODEL_GUIDE.md) - Bi-temporal features
+- [Troubleshooting](docs/guides/TROUBLESHOOTING.md) - Common issues and solutions
 
 ## 🚀 Quick Start
 

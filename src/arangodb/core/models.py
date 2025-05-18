@@ -7,6 +7,7 @@ These models ensure that LLM outputs conform to expected schemas.
 '''
 
 from typing import List, Dict, Optional, Any, Union
+from datetime import datetime
 from pydantic import BaseModel, Field
 
 # -----------------------------------------------------------------------------
@@ -21,6 +22,51 @@ class Message(BaseModel):
 class LLMResponse(BaseModel):
     '''Base class for all LLM response models.'''
     pass
+
+# -----------------------------------------------------------------------------
+# Bi-Temporal Base Models
+# -----------------------------------------------------------------------------
+
+class BiTemporalMixin(BaseModel):
+    '''Mixin for bi-temporal tracking of entities.'''
+    created_at: datetime = Field(..., description="When the record was created in the system (transaction time)")
+    valid_at: datetime = Field(..., description="When the fact became true in reality (valid time)")
+    invalid_at: Optional[datetime] = Field(None, description="When the fact became invalid (null if still valid)")
+
+class TemporalEntity(BiTemporalMixin):
+    '''Base class for all temporal entities in the system.'''
+    key: Optional[str] = Field(None, description="ArangoDB document key", alias="_key")
+    id: Optional[str] = Field(None, description="ArangoDB document ID", alias="_id")
+    
+    class Config:
+        json_encoders = {
+            datetime: lambda v: v.isoformat()
+        }
+        allow_population_by_field_name = True
+
+class TemporalValidation(BaseModel):
+    '''Model for temporal validation results.'''
+    is_valid: bool = Field(..., description="Whether the temporal state is valid")
+    overlaps: List[str] = Field(default_factory=list, description="List of overlapping entity keys")
+    conflicts: List[str] = Field(default_factory=list, description="List of conflicting entity keys")
+    validation_timestamp: datetime = Field(..., description="When the validation was performed")
+
+# -----------------------------------------------------------------------------
+# Temporal Operations Models
+# -----------------------------------------------------------------------------
+
+class TemporalInvalidation(BaseModel):
+    '''Model for invalidating temporal entities.'''
+    entity_key: str = Field(..., description="Key of the entity to invalidate")
+    invalid_at: datetime = Field(..., description="When the entity becomes invalid")
+    reason: str = Field(..., description="Reason for invalidation")
+    invalidated_by: Optional[str] = Field(None, description="Entity that caused the invalidation")
+
+class PointInTimeQuery(BaseModel):
+    '''Parameters for point-in-time queries.'''
+    timestamp: datetime = Field(..., description="The point in time to query")
+    include_invalid: bool = Field(False, description="Whether to include invalidated entities")
+    filters: Optional[Dict[str, Any]] = Field(None, description="Additional filters to apply")
 
 # -----------------------------------------------------------------------------
 # Search Result Models

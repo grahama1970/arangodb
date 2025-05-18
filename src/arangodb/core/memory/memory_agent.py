@@ -35,8 +35,27 @@ from arangodb.core.constants import (
     MESSAGE_TYPE_USER,
     MESSAGE_TYPE_AGENT,
     RELATIONSHIP_TYPE_NEXT,
-    EMBEDDING_FIELD,
     CONFIG
+)
+from arangodb.core.temporal_operations import (
+    create_temporal_entity,
+    ensure_temporal_fields,
+    point_in_time_query,
+    temporal_range_query
+)
+
+from arangodb.core.field_constants import (
+    TYPE_FIELD,
+    CONTENT_FIELD,
+    TIMESTAMP_FIELD,
+    EMBEDDING_FIELD,
+    CONVERSATION_ID_FIELD,
+    EPISODE_ID_FIELD,
+    METADATA_FIELD,
+    FROM_FIELD,
+    TO_FIELD,
+    VALID_FROM_FIELD,
+    VALID_TO_FIELD,
 )
 
 from arangodb.core.utils.embedding_utils import get_embedding
@@ -44,8 +63,6 @@ from arangodb.core.utils.workflow_tracking import WorkflowTracker
 
 # Import compact_conversation function
 from arangodb.core.memory.compact_conversation import compact_conversation
-# Import enhanced error handling
-from arangodb.core.memory.improved_error_handling import enhance_memory_agent
 
 class MemoryAgent:
     """
@@ -62,8 +79,6 @@ class MemoryAgent:
     """
     
     def __init__(self, db: StandardDatabase):
-        # Apply enhanced error handling
-        self = enhance_memory_agent(self)
         """
         Initialize the Memory Agent with a database connection.
         
@@ -150,7 +165,8 @@ class MemoryAgent:
         conversation_id: Optional[str] = None,
         episode_id: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None,
-        point_in_time: Optional[str] = None,
+        point_in_time: Optional[datetime] = None,
+        valid_at: Optional[datetime] = None,
         auto_embed: bool = True
     ) -> Dict[str, Any]:
         """
@@ -163,6 +179,7 @@ class MemoryAgent:
             episode_id: Optional episode ID to group conversations
             metadata: Optional additional metadata
             point_in_time: Override timestamp (uses current time if None)
+            valid_at: When the conversation actually occurred (defaults to point_in_time)
             auto_embed: Whether to automatically generate embeddings
             
         Returns:
@@ -174,20 +191,27 @@ class MemoryAgent:
             
         # Use current time if point_in_time not provided
         if not point_in_time:
-            point_in_time = datetime.now(timezone.utc).isoformat()
+            point_in_time = datetime.now(timezone.utc)
+            
+        # Valid time defaults to point_in_time
+        if not valid_at:
+            valid_at = point_in_time
             
         # Process user message
         user_msg_doc = {
-            "type": MESSAGE_TYPE_USER,
-            "content": user_message,
-            "conversation_id": conversation_id,
-            "timestamp": point_in_time,
-            "metadata": metadata or {}
+            TYPE_FIELD: MESSAGE_TYPE_USER,
+            CONTENT_FIELD: user_message,
+            CONVERSATION_ID_FIELD: conversation_id,
+            TIMESTAMP_FIELD: point_in_time.isoformat(),
+            METADATA_FIELD: metadata or {}
         }
         
         # Add episode_id if provided
         if episode_id:
-            user_msg_doc["episode_id"] = episode_id
+            user_msg_doc[EPISODE_ID_FIELD] = episode_id
+            
+        # Add temporal fields
+        user_msg_doc = ensure_temporal_fields(user_msg_doc, valid_at)
             
         # Generate embedding for user message if auto_embed
         if auto_embed:
@@ -206,16 +230,19 @@ class MemoryAgent:
             
         # Process agent response
         agent_msg_doc = {
-            "type": MESSAGE_TYPE_AGENT,
-            "content": agent_response,
-            "conversation_id": conversation_id,
-            "timestamp": point_in_time,
-            "metadata": metadata or {}
+            TYPE_FIELD: MESSAGE_TYPE_AGENT,
+            CONTENT_FIELD: agent_response,
+            CONVERSATION_ID_FIELD: conversation_id,
+            TIMESTAMP_FIELD: point_in_time.isoformat(),
+            METADATA_FIELD: metadata or {}
         }
         
         # Add episode_id if provided
         if episode_id:
-            agent_msg_doc["episode_id"] = episode_id
+            agent_msg_doc[EPISODE_ID_FIELD] = episode_id
+            
+        # Add temporal fields
+        agent_msg_doc = ensure_temporal_fields(agent_msg_doc, valid_at)
             
         # Generate embedding for agent response if auto_embed
         if auto_embed:
@@ -239,20 +266,23 @@ class MemoryAgent:
             
         # Create relationship between messages
         edge_doc = {
-            "_from": user_msg_id,
-            "_to": agent_msg_id,
-            "type": RELATIONSHIP_TYPE_NEXT,
-            "valid_from": point_in_time,
-            "valid_to": "9999-12-31T23:59:59Z",  # Far future
-            "timestamp": point_in_time,
-            "metadata": {
-                "conversation_id": conversation_id
+            FROM_FIELD: user_msg_id,
+            TO_FIELD: agent_msg_id,
+            TYPE_FIELD: RELATIONSHIP_TYPE_NEXT,
+            VALID_FROM_FIELD: point_in_time.isoformat(),
+            VALID_TO_FIELD: "9999-12-31T23:59:59Z",  # Far future
+            TIMESTAMP_FIELD: point_in_time.isoformat(),
+            METADATA_FIELD: {
+                CONVERSATION_ID_FIELD: conversation_id
             }
         }
         
         # Add episode_id to edge if provided
         if episode_id:
-            edge_doc["metadata"]["episode_id"] = episode_id
+            edge_doc[METADATA_FIELD][EPISODE_ID_FIELD] = episode_id
+            
+        # Add temporal fields to edge
+        edge_doc = ensure_temporal_fields(edge_doc, valid_at)
             
         try:
             edge_result = self.db.collection(MEMORY_EDGE_COLLECTION).insert(edge_doc)
@@ -498,3 +528,237 @@ class MemoryAgent:
         except Exception as e:
             logger.error(f"Error retrieving workflow data: {e}")
             return {}
+    
+    def search(
+        self,
+        query: str,
+        conversation_id: Optional[str] = None,
+        n_results: int = 10,
+        point_in_time: Optional[datetime] = None
+    ) -> List[Dict[str, Any]]:
+        """
+        Search for relevant memories using semantic similarity.
+        
+        Args:
+            query: Search query text
+            conversation_id: Optional filter by conversation ID
+            n_results: Number of results to return
+            point_in_time: Optional temporal filter - returns records valid at this time
+            
+        Returns:
+            List of matching message documents with scores
+        """
+        try:
+            # Generate embedding for the query
+            query_embedding = get_embedding(query)
+            
+            # Check if we can use vector search (no filters)
+            can_use_vector_search = (conversation_id is None and point_in_time is None)
+            
+            if can_use_vector_search:
+                # Try APPROX_NEAR_COSINE for simple queries without filters
+                logger.info("Using APPROX_NEAR_COSINE vector search")
+                
+                # Use collection directly for vector search
+                aql = f"""
+                FOR doc IN {MEMORY_MESSAGE_COLLECTION}
+                    LET score = APPROX_NEAR_COSINE(doc.embedding, @query_embedding)
+                    SORT score DESC
+                    LIMIT @n_results
+                    RETURN MERGE(doc, {{
+                        score: score
+                    }})
+                """
+                
+                bind_vars = {
+                    "query_embedding": query_embedding,
+                    "n_results": n_results
+                }
+                
+                try:
+                    cursor = self.db.aql.execute(aql, bind_vars=bind_vars)
+                    results = list(cursor)
+                    
+                    # Normalize scores from [-1, 1] to [0, 1] for consistency
+                    for result in results:
+                        result['score'] = (result['score'] + 1) / 2
+                    
+                    return results
+                    
+                except Exception as vector_error:
+                    logger.warning(f"Vector search failed: {vector_error}, falling back to text search")
+                    # Fall through to text search
+            
+            # Use text search for complex queries with filters
+            # or as fallback if vector search fails
+            logger.info("Using text search with BM25")
+            aql = f"""
+            FOR doc IN {MEMORY_VIEW_NAME}
+                SEARCH ANALYZER(doc.content IN TOKENS(@query, "text_en"), "text_en")
+            """
+            
+            # Add filters
+            bind_vars = {
+                "query": query
+            }
+            
+            filters = []
+            if conversation_id:
+                filters.append("doc.conversation_id == @conversation_id")
+                bind_vars["conversation_id"] = conversation_id
+                
+            if point_in_time:
+                # Add temporal filters for bi-temporal model
+                # Document must be:
+                # 1. Created before or at the point in time
+                # 2. Valid at the point in time
+                # 3. Not invalidated before the point in time
+                filters.append("doc.created_at <= @point_in_time")
+                filters.append("doc.valid_at <= @point_in_time")
+                filters.append("(doc.invalid_at == null OR doc.invalid_at > @point_in_time)")
+                bind_vars["point_in_time"] = point_in_time.isoformat()
+                
+            if filters:
+                aql += " FILTER " + " AND ".join(filters)
+                
+            # Sort by relevance and limit results
+            aql += f"""
+                SORT BM25(doc) DESC
+                LIMIT @n_results
+                RETURN MERGE(doc, {{
+                    score: BM25(doc)
+                }})
+            """
+            bind_vars["n_results"] = n_results
+            
+            # Execute query
+            cursor = self.db.aql.execute(aql, bind_vars=bind_vars)
+            return list(cursor)
+            
+        except Exception as e:
+            logger.error(f"Error searching memories: {e}")
+            raise
+    
+    def get_conversation_history(
+        self,
+        conversation_id: str,
+        n_results: int = 50,
+        chronological: bool = True
+    ) -> List[Dict[str, Any]]:
+        """
+        Get conversation history for a specific conversation.
+        
+        Args:
+            conversation_id: ID of the conversation
+            n_results: Maximum number of messages to return
+            chronological: If True, sort oldest first; if False, newest first
+            
+        Returns:
+            List of messages in the conversation
+        """
+        try:
+            return self.retrieve_messages(
+                conversation_id=conversation_id,
+                limit=n_results,
+                include_metadata=True
+            )
+        except Exception as e:
+            logger.error(f"Error retrieving conversation history: {e}")
+            raise
+    
+    def search_at_time(
+        self,
+        query: str,
+        timestamp: datetime,
+        search_type: str = "hybrid",
+        conversation_id: Optional[str] = None,
+        limit: int = 10
+    ) -> List[Dict[str, Any]]:
+        """
+        Search for messages valid at a specific point in time.
+        
+        Args:
+            query: The search query
+            timestamp: The point in time to search at
+            search_type: Type of search (semantic, bm25, hybrid)
+            conversation_id: Optional conversation ID filter
+            limit: Maximum number of results
+            
+        Returns:
+            List of search results valid at the specified time
+        """
+        # Use the point_in_time parameter of the search method
+        return self.search(
+            query=query,
+            conversation_id=conversation_id,
+            n_results=limit,
+            point_in_time=timestamp
+        )
+    
+    def get_conversation_at_time(
+        self,
+        conversation_id: str,
+        timestamp: datetime,
+        include_invalid: bool = False
+    ) -> List[Dict[str, Any]]:
+        """
+        Get the state of a conversation at a specific point in time.
+        
+        Args:
+            conversation_id: The conversation ID
+            timestamp: The point in time to retrieve the conversation at
+            include_invalid: Whether to include invalidated messages
+            
+        Returns:
+            List of messages valid at the specified time
+        """
+        filters = {'conversation_id': conversation_id}
+        
+        results = point_in_time_query(
+            self.db,
+            MEMORY_MESSAGE_COLLECTION,
+            timestamp,
+            filters=filters
+        )
+        
+        # Sort by timestamp for proper ordering
+        results.sort(key=lambda x: x.get('timestamp', ''))
+        
+        return results
+    
+    def get_temporal_range(
+        self,
+        start_time: datetime,
+        end_time: datetime,
+        conversation_id: Optional[str] = None,
+        filters: Optional[Dict[str, Any]] = None
+    ) -> List[Dict[str, Any]]:
+        """
+        Get messages within a temporal range.
+        
+        Args:
+            start_time: Start of the time range
+            end_time: End of the time range
+            conversation_id: Optional conversation ID filter
+            filters: Additional filters to apply
+            
+        Returns:
+            List of messages within the time range
+        """
+        # Build filters
+        query_filters = filters or {}
+        if conversation_id:
+            query_filters['conversation_id'] = conversation_id
+            
+        results = temporal_range_query(
+            self.db,
+            MEMORY_MESSAGE_COLLECTION,
+            start_time,
+            end_time,
+            filters=query_filters
+        )
+        
+        # Sort by timestamp
+        results.sort(key=lambda x: x.get('timestamp', ''))
+        
+        return results

@@ -1,15 +1,9 @@
 """
-ArangoDB CLI Layer
+ArangoDB CLI Package
 
-This module provides command-line interface tools for ArangoDB operations,
-built on top of the core business logic layer.
-
-Components:
-- Core CLI app with Typer
-- Command groups for search, CRUD, and graph operations
-- Memory agent CLI commands
-- Pretty display formatting with Rich
-- Input/output handling and validation
+Provides consistent command-line interface following stellar template.
 """
 
-__version__ = "0.1.0"
+from arangodb.cli.main import app
+
+__all__ = ["app"]

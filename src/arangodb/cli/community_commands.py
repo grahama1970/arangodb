@@ -23,7 +23,7 @@ from typing import Optional
 from loguru import logger
 
 # Import CLI utilities
-from arangodb.core.utils.cli import (
+from arangodb.core.utils.cli.formatters import (
     console, 
     format_output, 
     add_output_option,
