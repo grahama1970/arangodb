@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Basic Force Layout Test</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        
+        #graph-container {
+            width: 100vw;
+            height: 100vh;
+            background-color: white;
+            position: relative;
+        }
+        
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .links line {
+            stroke: #999;
+            stroke-opacity: 0.6;
+        }
+        
+        .nodes circle {
+            stroke: #fff;
+            stroke-width: 1.5px;
+            cursor: pointer;
+        }
+        
+        .node-label {
+            font-size: 12px;
+            pointer-events: none;
+            user-select: none;
+        }
+        
+        .tooltip {
+            position: absolute;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            border-radius: 4px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            font-size: 14px;
+            max-width: 300px;
+        }
+        
+        .controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+        
+        .control-label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 5px;
+            color: #495057;
+        }
+        
+        .control-slider {
+            width: 200px;
+        }
+        
+        .control-value {
+            display: inline-block;
+            width: 50px;
+            text-align: right;
+            font-size: 14px;
+            color: #6c757d;
+        }
+        
+        .control-btn {
+            padding: 8px 16px;
+            border: 1px solid #dee2e6;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .control-btn:hover {
+            background-color: #f8f9fa;
+            border-color: #adb5bd;
+        }
+        
+        .control-btn.active {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+        
+        .legend {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .legend-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .legend-label {
+            font-size: 14px;
+            color: #495057;
+        }
+    </style>
+</head>
+<body>
+    <div id="graph-container">
+        <div class="tooltip" id="tooltip"></div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label class="control-label">Link Distance</label>
+                <input type="range" id="link-distance" class="control-slider" min="30" max="200" value="80">
+                <span class="control-value" id="link-distance-value">80</span>
+            </div>
+            
+            <div class="control-group">
+                <label class="control-label">Charge Force</label>
+                <input type="range" id="charge-force" class="control-slider" min="-500" max="-50" value="-200">
+                <span class="control-value" id="charge-force-value">-200</span>
+            </div>
+            
+            <div class="control-group">
+                <label class="control-label">Collision Radius</label>
+                <input type="range" id="collision-radius" class="control-slider" min="5" max="50" value="15">
+                <span class="control-value" id="collision-radius-value">15</span>
+            </div>
+            
+            <div class="control-group">
+                <button class="control-btn" id="toggle-physics">Pause Physics</button>
+                <button class="control-btn" id="reset-view">Reset View</button>
+            </div>
+            
+            <div class="control-group">
+                <button class="control-btn" id="toggle-labels">Hide Labels</button>
+            </div>
+        </div>
+        
+        <div class="legend" id="legend">
+            <!-- Legend will be populated dynamically -->
+        </div>
+    </div>
+    
+    <script>
+        // Graph data will be injected here
+        const graphData = {"nodes": [{"id": "node_0", "name": "Node 0", "group": "service", "importance": 0.39005163385688657, "connections": 1, "size": 10}, {"id": "node_1", "name": "Node 1", "group": "service", "importance": 0.293611033079578, "connections": 4, "size": 25}, {"id": "node_2", "name": "Node 2", "group": "user", "importance": 0.5899841749312669, "connections": 2, "size": 15}, {"id": "node_3", "name": "Node 3", "group": "database", "importance": 0.32621363510406287, "connections": 4, "size": 25}, {"id": "node_4", "name": "Node 4", "group": "application", "importance": 0.362617150416235, "connections": 3, "size": 20}, {"id": "node_5", "name": "Node 5", "group": "application", "importance": 0.42304293759302947, "connections": 3, "size": 20}, {"id": "node_6", "name": "Node 6", "group": "service", "importance": 0.34209827240590707, "connections": 1, "size": 10}, {"id": "node_7", "name": "Node 7", "group": "user", "importance": 0.565179077321801, "connections": 5, "size": 30}, {"id": "node_8", "name": "Node 8", "group": "database", "importance": 0.5924883430273911, "connections": 5, "size": 30}, {"id": "node_9", "name": "Node 9", "group": "user", "importance": 0.5849115455287074, "connections": 4, "size": 25}, {"id": "node_10", "name": "Node 10", "group": "database", "importance": 0.8010690089500261, "connections": 3, "size": 20}, {"id": "node_11", "name": "Node 11", "group": "user", "importance": 0.8726670278721838, "connections": 6, "size": 35}, {"id": "node_12", "name": "Node 12", "group": "application", "importance": 0.7309654471423738, "connections": 4, "size": 25}, {"id": "node_13", "name": "Node 13", "group": "application", "importance": 0.46113906250456604, "connections": 3, "size": 20}, {"id": "node_14", "name": "Node 14", "group": "database", "importance": 0.7209154651868415, "connections": 2, "size": 15}, {"id": "node_15", "name": "Node 15", "group": "database", "importance": 0.5735452630137794, "connections": 4, "size": 25}, {"id": "node_16", "name": "Node 16", "group": "resource", "importance": 0.8241172169167047, "connections": 4, "size": 25}, {"id": "node_17", "name": "Node 17", "group": "application", "importance": 0.6057385692272754, "connections": 1, "size": 10}, {"id": "node_18", "name": "Node 18", "group": "database", "importance": 0.3995393736097632, "connections": 0, "size": 5}, {"id": "node_19", "name": "Node 19", "group": "service", "importance": 0.3011479952275446, "connections": 1, "size": 10}], "links": [{"source": "node_9", "target": "node_15", "type": "calls", "weight": 0.5214429251522914, "value": 0.5214429251522914}, {"source": "node_12", "target": "node_15", "type": "calls", "weight": 0.8234534247851487, "value": 0.8234534247851487}, {"source": "node_11", "target": "node_16", "type": "depends_on", "weight": 0.36785868453984216, "value": 0.36785868453984216}, {"source": "node_11", "target": "node_3", "type": "depends_on", "weight": 0.7333392982738288, "value": 0.7333392982738288}, {"source": "node_16", "target": "node_1", "type": "owns", "weight": 0.156412682098571, "value": 0.156412682098571}, {"source": "node_7", "target": "node_19", "type": "calls", "weight": 0.2996817152081407, "value": 0.2996817152081407}, {"source": "node_8", "target": "node_7", "type": "depends_on", "weight": 0.1866522070083617, "value": 0.1866522070083617}, {"source": "node_7", "target": "node_3", "type": "owns", "weight": 0.9041924767850976, "value": 0.9041924767850976}, {"source": "node_13", "target": "node_11", "type": "owns", "weight": 0.456283651497404, "value": 0.456283651497404}, {"source": "node_8", "target": "node_11", "type": "depends_on", "weight": 0.8590523748017366, "value": 0.8590523748017366}, {"source": "node_1", "target": "node_4", "type": "depends_on", "weight": 0.16099694578338952, "value": 0.16099694578338952}, {"source": "node_8", "target": "node_12", "type": "calls", "weight": 0.5374977548785353, "value": 0.5374977548785353}, {"source": "node_5", "target": "node_9", "type": "references", "weight": 0.14476534806581368, "value": 0.14476534806581368}, {"source": "node_10", "target": "node_5", "type": "calls", "weight": 0.444630316411313, "value": 0.444630316411313}, {"source": "node_10", "target": "node_1", "type": "owns", "weight": 0.2598589548859541, "value": 0.2598589548859541}, {"source": "node_7", "target": "node_2", "type": "owns", "weight": 0.8450937111043468, "value": 0.8450937111043468}, {"source": "node_10", "target": "node_3", "type": "references", "weight": 0.3203630195720195, "value": 0.3203630195720195}, {"source": "node_8", "target": "node_13", "type": "owns", "weight": 0.7703011074480617, "value": 0.7703011074480617}, {"source": "node_2", "target": "node_17", "type": "references", "weight": 0.5208153946764752, "value": 0.5208153946764752}, {"source": "node_9", "target": "node_6", "type": "calls", "weight": 0.5817675066440957, "value": 0.5817675066440957}, {"source": "node_14", "target": "node_11", "type": "depends_on", "weight": 0.5877067525479637, "value": 0.5877067525479637}, {"source": "node_16", "target": "node_4", "type": "calls", "weight": 0.8589882580939147, "value": 0.8589882580939147}, {"source": "node_16", "target": "node_12", "type": "calls", "weight": 0.1025915907006357, "value": 0.1025915907006357}, {"source": "node_0", "target": "node_11", "type": "depends_on", "weight": 0.5751239709725089, "value": 0.5751239709725089}, {"source": "node_3", "target": "node_13", "type": "depends_on", "weight": 0.6881327854901007, "value": 0.6881327854901007}, {"source": "node_9", "target": "node_15", "type": "references", "weight": 0.5154788240215351, "value": 0.5154788240215351}, {"source": "node_14", "target": "node_7", "type": "references", "weight": 0.5648477042303451, "value": 0.5648477042303451}, {"source": "node_15", "target": "node_4", "type": "calls", "weight": 0.41190191607865767, "value": 0.41190191607865767}, {"source": "node_1", "target": "node_8", "type": "calls", "weight": 0.32511926679698677, "value": 0.32511926679698677}, {"source": "node_12", "target": "node_5", "type": "references", "weight": 0.22844591693706523, "value": 0.22844591693706523}], "metadata": {"node_count": 20, "edge_count": 30, "node_types": ["resource", "service", "application", "database", "user"], "edge_types": ["calls", "references", "owns", "depends_on"]}};
+        const config = {"width": 1200, "height": 800, "physics_enabled": true, "show_labels": true, "enable_zoom": true, "enable_drag": true, "node_color_field": "group", "node_size_field": "connections", "link_width_field": "weight"};
+        
+        // Color scale
+        const color = d3.scaleOrdinal(d3.schemeCategory10);
+        
+        // Set up dimensions
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        
+        // Create SVG
+        const svg = d3.select("#graph-container")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height);
+        
+        // Add zoom behavior
+        const g = svg.append("g");
+        
+        const zoom = d3.zoom()
+            .scaleExtent([0.1, 10])
+            .on("zoom", (event) => {
+                g.attr("transform", event.transform);
+            });
+        
+        svg.call(zoom);
+        
+        // Initialize force simulation
+        const simulation = d3.forceSimulation()
+            .force("link", d3.forceLink()
+                .id(d => d.id)
+                .distance(80))
+            .force("charge", d3.forceManyBody()
+                .strength(-200))
+            .force("center", d3.forceCenter(width / 2, height / 2))
+            .force("collision", d3.forceCollide().radius(15));
+        
+        // Create arrow markers for directed edges
+        svg.append("defs").selectAll("marker")
+            .data(["arrowhead"])
+            .enter().append("marker")
+            .attr("id", d => d)
+            .attr("viewBox", "0 -5 10 10")
+            .attr("refX", 25)
+            .attr("refY", 0)
+            .attr("markerWidth", 8)
+            .attr("markerHeight", 8)
+            .attr("orient", "auto")
+            .append("path")
+            .attr("d", "M0,-5L10,0L0,5")
+            .attr("fill", "#999");
+        
+        // Add links
+        const link = g.append("g")
+            .attr("class", "links")
+            .selectAll("line")
+            .data(graphData.links)
+            .enter().append("line")
+            .attr("stroke-width", d => Math.sqrt(d.value || 1))
+            .attr("marker-end", "url(#arrowhead)");
+        
+        // Add nodes
+        const node = g.append("g")
+            .attr("class", "nodes")
+            .selectAll("g")
+            .data(graphData.nodes)
+            .enter().append("g")
+            .call(d3.drag()
+                .on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended));
+        
+        // Add circles to nodes
+        node.append("circle")
+            .attr("r", d => d.size || 8)
+            .attr("fill", d => color(d.group || 0));
+        
+        // Add labels to nodes
+        const label = node.append("text")
+            .attr("class", "node-label")
+            .attr("dx", 12)
+            .attr("dy", 4)
+            .text(d => d.name || d.id)
+            .style("font-size", "12px")
+            .style("fill", "#333");
+        
+        // Add tooltips
+        const tooltip = d3.select("#tooltip");
+        
+        node.on("mouseover", (event, d) => {
+            tooltip.html(`
+                <strong>${d.name || d.id}</strong><br>
+                ${d.group ? `Group: ${d.group}<br>` : ''}
+                ${d.type ? `Type: ${d.type}<br>` : ''}
+                ${Object.keys(d).filter(k => !['id', 'name', 'group', 'type', 'x', 'y', 'vx', 'vy', 'fx', 'fy'].includes(k))
+                    .map(k => `${k}: ${d[k]}`).join('<br>')}
+            `)
+            .style("left", (event.pageX + 10) + "px")
+            .style("top", (event.pageY - 28) + "px")
+            .style("opacity", 1);
+        })
+        .on("mouseout", () => {
+            tooltip.style("opacity", 0);
+        });
+        
+        // Update simulation
+        simulation
+            .nodes(graphData.nodes)
+            .on("tick", ticked);
+        
+        simulation.force("link")
+            .links(graphData.links);
+        
+        function ticked() {
+            link
+                .attr("x1", d => d.source.x)
+                .attr("y1", d => d.source.y)
+                .attr("x2", d => d.target.x)
+                .attr("y2", d => d.target.y);
+            
+            node.attr("transform", d => `translate(${d.x},${d.y})`);
+        }
+        
+        // Drag functions
+        function dragstarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+        
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+        
+        function dragended(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+        
+        // Controls functionality
+        const linkDistanceSlider = d3.select("#link-distance");
+        const chargeForceSlider = d3.select("#charge-force");
+        const collisionRadiusSlider = d3.select("#collision-radius");
+        
+        linkDistanceSlider.on("input", function() {
+            const value = +this.value;
+            d3.select("#link-distance-value").text(value);
+            simulation.force("link").distance(value);
+            simulation.alpha(0.3).restart();
+        });
+        
+        chargeForceSlider.on("input", function() {
+            const value = +this.value;
+            d3.select("#charge-force-value").text(value);
+            simulation.force("charge").strength(value);
+            simulation.alpha(0.3).restart();
+        });
+        
+        collisionRadiusSlider.on("input", function() {
+            const value = +this.value;
+            d3.select("#collision-radius-value").text(value);
+            simulation.force("collision").radius(value);
+            simulation.alpha(0.3).restart();
+        });
+        
+        // Toggle physics
+        let physicsEnabled = true;
+        d3.select("#toggle-physics").on("click", function() {
+            physicsEnabled = !physicsEnabled;
+            if (physicsEnabled) {
+                simulation.alpha(0.3).restart();
+                d3.select(this).text("Pause Physics");
+            } else {
+                simulation.stop();
+                d3.select(this).text("Resume Physics");
+            }
+        });
+        
+        // Reset view
+        d3.select("#reset-view").on("click", function() {
+            svg.transition()
+                .duration(750)
+                .call(zoom.transform, d3.zoomIdentity);
+        });
+        
+        // Toggle labels
+        let labelsVisible = true;
+        d3.select("#toggle-labels").on("click", function() {
+            labelsVisible = !labelsVisible;
+            label.style("display", labelsVisible ? "block" : "none");
+            d3.select(this).text(labelsVisible ? "Hide Labels" : "Show Labels");
+        });
+        
+        // Generate legend
+        const groups = [...new Set(graphData.nodes.map(d => d.group))].filter(Boolean);
+        const legend = d3.select("#legend");
+        
+        if (groups.length > 0) {
+            legend.selectAll(".legend-item")
+                .data(groups)
+                .enter().append("div")
+                .attr("class", "legend-item")
+                .html(d => `
+                    <div class="legend-color" style="background-color: ${color(d)}"></div>
+                    <div class="legend-label">${d}</div>
+                `);
+        } else {
+            legend.style("display", "none");
+        }
+        
+        // Handle window resize
+        window.addEventListener("resize", () => {
+            const newWidth = window.innerWidth;
+            const newHeight = window.innerHeight;
+            svg.attr("width", newWidth).attr("height", newHeight);
+            simulation.force("center", d3.forceCenter(newWidth / 2, newHeight / 2));
+            simulation.alpha(0.3).restart();
+        });
+    </script>
+</body>
+</html>

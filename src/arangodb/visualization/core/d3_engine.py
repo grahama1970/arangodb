@@ -150,6 +150,60 @@ class D3VisualizationEngine:
         with open(template_path, 'r', encoding='utf-8') as f:
             return f.read()
     
+    def _process_graph_data(self, graph_data: Dict[str, Any], config: VisualizationConfig) -> Dict[str, Any]:
+        """Process graph data based on configuration
+        
+        Args:
+            graph_data: Raw graph data
+            config: Visualization configuration
+            
+        Returns:
+            Processed graph data
+        """
+        processed = {
+            "nodes": [],
+            "links": []
+        }
+        
+        # Process nodes
+        for node in graph_data.get("nodes", []):
+            processed_node = dict(node)
+            
+            # Apply size scaling if specified
+            if config.node_size_field and config.node_size_field in node:
+                value = node[config.node_size_field]
+                # Scale value to reasonable size (5-30 pixels)
+                if isinstance(value, (int, float)):
+                    processed_node["size"] = 5 + (value * 5)  # Basic scaling
+            else:
+                processed_node["size"] = 8  # Default size
+            
+            # Set group for coloring if specified
+            if config.node_color_field and config.node_color_field in node:
+                processed_node["group"] = node[config.node_color_field]
+            
+            processed["nodes"].append(processed_node)
+        
+        # Process links
+        for link in graph_data.get("links", []):
+            processed_link = dict(link)
+            
+            # Apply width scaling if specified
+            if config.link_width_field and config.link_width_field in link:
+                value = link[config.link_width_field]
+                if isinstance(value, (int, float)):
+                    processed_link["value"] = value
+            elif "value" not in link:
+                processed_link["value"] = 1  # Default value
+            
+            processed["links"].append(processed_link)
+        
+        # Include metadata if present
+        if "metadata" in graph_data:
+            processed["metadata"] = graph_data["metadata"]
+        
+        return processed
+    
     def _get_base_template(self) -> str:
         """Get the base HTML template structure"""
         return """<!DOCTYPE html>
@@ -198,21 +252,34 @@ class D3VisualizationEngine:
         """
         logger.info("Generating force-directed layout")
         
-        # To be implemented in Task 2
-        # For now, return a placeholder
-        template = self._get_base_template()
+        # Load the force template
+        template_path = self.template_dir / "force.html"
         
-        script = f"""
-        // Force-directed layout placeholder
-        const data = {json.dumps(graph_data)};
-        console.log('Force layout data loaded:', data);
-        // Implementation will be added in Task 2
-        """
+        if template_path.exists():
+            with open(template_path, 'r', encoding='utf-8') as f:
+                template = f.read()
+        else:
+            logger.warning("Force template not found, using base template")
+            template = self._get_base_template()
         
-        html = template.format(
-            title=config.title or "Force-Directed Graph",
-            script=script
-        )
+        # Apply node and link transformations based on config
+        processed_data = self._process_graph_data(graph_data, config)
+        
+        # Replace template variables
+        html = template.replace("{{ title or \"Force-Directed Graph\" }}", config.title or "Force-Directed Graph")
+        html = html.replace("{{ graph_data | tojson | safe }}", json.dumps(processed_data))
+        html = html.replace("{{ config | tojson | safe }}", json.dumps({
+            "width": config.width,
+            "height": config.height,
+            "physics_enabled": config.physics_enabled,
+            "show_labels": config.show_labels,
+            "enable_zoom": config.enable_zoom,
+            "enable_drag": config.enable_drag,
+            "node_color_field": config.node_color_field,
+            "node_size_field": config.node_size_field,
+            "link_width_field": config.link_width_field,
+            **config.custom_settings
+        }))
         
         return html
     

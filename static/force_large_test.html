@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Large Graph Performance Test</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        
+        #graph-container {
+            width: 100vw;
+            height: 100vh;
+            background-color: white;
+            position: relative;
+        }
+        
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .links line {
+            stroke: #999;
+            stroke-opacity: 0.6;
+        }
+        
+        .nodes circle {
+            stroke: #fff;
+            stroke-width: 1.5px;
+            cursor: pointer;
+        }
+        
+        .node-label {
+            font-size: 12px;
+            pointer-events: none;
+            user-select: none;
+        }
+        
+        .tooltip {
+            position: absolute;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            border-radius: 4px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            font-size: 14px;
+            max-width: 300px;
+        }
+        
+        .controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+        
+        .control-label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 5px;
+            color: #495057;
+        }
+        
+        .control-slider {
+            width: 200px;
+        }
+        
+        .control-value {
+            display: inline-block;
+            width: 50px;
+            text-align: right;
+            font-size: 14px;
+            color: #6c757d;
+        }
+        
+        .control-btn {
+            padding: 8px 16px;
+            border: 1px solid #dee2e6;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .control-btn:hover {
+            background-color: #f8f9fa;
+            border-color: #adb5bd;
+        }
+        
+        .control-btn.active {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+        
+        .legend {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .legend-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .legend-label {
+            font-size: 14px;
+            color: #495057;
+        }
+    </style>
+</head>
+<body>
+    <div id="graph-container">
+        <div class="tooltip" id="tooltip"></div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label class="control-label">Link Distance</label>
+                <input type="range" id="link-distance" class="control-slider" min="30" max="200" value="80">
+                <span class="control-value" id="link-distance-value">80</span>
+            </div>
+            
+            <div class="control-group">
+                <label class="control-label">Charge Force</label>
+                <input type="range" id="charge-force" class="control-slider" min="-500" max="-50" value="-200">
+                <span class="control-value" id="charge-force-value">-200</span>
+            </div>
+            
+            <div class="control-group">
+                <label class="control-label">Collision Radius</label>
+                <input type="range" id="collision-radius" class="control-slider" min="5" max="50" value="15">
+                <span class="control-value" id="collision-radius-value">15</span>
+            </div>
+            
+            <div class="control-group">
+                <button class="control-btn" id="toggle-physics">Pause Physics</button>
+                <button class="control-btn" id="reset-view">Reset View</button>
+            </div>
+            
+            <div class="control-group">
+                <button class="control-btn" id="toggle-labels">Hide Labels</button>
+            </div>
+        </div>
+        
+        <div class="legend" id="legend">
+            <!-- Legend will be populated dynamically -->
+        </div>
+    </div>
+    
+    <script>
+        // Graph data will be injected here
+        const graphData = {"nodes": [{"id": "node_0", "name": "Node 0", "group": "database", "importance": 0.30573077395472315, "connections": 7, "size": 8}, {"id": "node_1", "name": "Node 1", "group": "service", "importance": 0.38725943601182955, "connections": 3, "size": 8}, {"id": "node_2", "name": "Node 2", "group": "application", "importance": 0.40161632947536097, "connections": 1, "size": 8}, {"id": "node_3", "name": "Node 3", "group": "database", "importance": 0.2560125441319123, "connections": 8, "size": 8}, {"id": "node_4", "name": "Node 4", "group": "database", "importance": 0.33793972435048336, "connections": 1, "size": 8}, {"id": "node_5", "name": "Node 5", "group": "user", "importance": 0.8918836730190818, "connections": 5, "size": 8}, {"id": "node_6", "name": "Node 6", "group": "user", "importance": 0.3308400549587741, "connections": 4, "size": 8}, {"id": "node_7", "name": "Node 7", "group": "user", "importance": 0.4839755723061816, "connections": 3, "size": 8}, {"id": "node_8", "name": "Node 8", "group": "resource", "importance": 0.5851917262348856, "connections": 3, "size": 8}, {"id": "node_9", "name": "Node 9", "group": "user", "importance": 0.862728448178694, "connections": 1, "size": 8}, {"id": "node_10", "name": "Node 10", "group": "user", "importance": 0.9775490688970795, "connections": 6, "size": 8}, {"id": "node_11", "name": "Node 11", "group": "resource", "importance": 0.8375877965749193, "connections": 4, "size": 8}, {"id": "node_12", "name": "Node 12", "group": "service", "importance": 0.4970822479530571, "connections": 0, "size": 8}, {"id": "node_13", "name": "Node 13", "group": "user", "importance": 0.8497479109140689, "connections": 2, "size": 8}, {"id": "node_14", "name": "Node 14", "group": "service", "importance": 0.5068864685874179, "connections": 5, "size": 8}, {"id": "node_15", "name": "Node 15", "group": "resource", "importance": 0.3108906704205887, "connections": 2, "size": 8}, {"id": "node_16", "name": "Node 16", "group": "user", "importance": 0.1414992983477822, "connections": 3, "size": 8}, {"id": "node_17", "name": "Node 17", "group": "resource", "importance": 0.2709906410381049, "connections": 3, "size": 8}, {"id": "node_18", "name": "Node 18", "group": "resource", "importance": 0.3725241225635577, "connections": 5, "size": 8}, {"id": "node_19", "name": "Node 19", "group": "user", "importance": 0.21174194913892408, "connections": 8, "size": 8}, {"id": "node_20", "name": "Node 20", "group": "resource", "importance": 0.8109752114073215, "connections": 2, "size": 8}, {"id": "node_21", "name": "Node 21", "group": "application", "importance": 0.43434472160952875, "connections": 1, "size": 8}, {"id": "node_22", "name": "Node 22", "group": "database", "importance": 0.9357227210814674, "connections": 2, "size": 8}, {"id": "node_23", "name": "Node 23", "group": "user", "importance": 0.35618041696455616, "connections": 5, "size": 8}, {"id": "node_24", "name": "Node 24", "group": "application", "importance": 0.598978693478701, "connections": 6, "size": 8}, {"id": "node_25", "name": "Node 25", "group": "user", "importance": 0.6340341940438982, "connections": 3, "size": 8}, {"id": "node_26", "name": "Node 26", "group": "user", "importance": 0.8632957508457751, "connections": 2, "size": 8}, {"id": "node_27", "name": "Node 27", "group": "user", "importance": 0.682356940836975, "connections": 3, "size": 8}, {"id": "node_28", "name": "Node 28", "group": "user", "importance": 0.7858781200794449, "connections": 4, "size": 8}, {"id": "node_29", "name": "Node 29", "group": "application", "importance": 0.510998455304392, "connections": 5, "size": 8}, {"id": "node_30", "name": "Node 30", "group": "database", "importance": 0.3468203068149023, "connections": 5, "size": 8}, {"id": "node_31", "name": "Node 31", "group": "resource", "importance": 0.3421326261862111, "connections": 9, "size": 8}, {"id": "node_32", "name": "Node 32", "group": "service", "importance": 0.7942481834162024, "connections": 4, "size": 8}, {"id": "node_33", "name": "Node 33", "group": "database", "importance": 0.5204276568562757, "connections": 4, "size": 8}, {"id": "node_34", "name": "Node 34", "group": "application", "importance": 0.9328564922384809, "connections": 2, "size": 8}, {"id": "node_35", "name": "Node 35", "group": "application", "importance": 0.1016771178828414, "connections": 5, "size": 8}, {"id": "node_36", "name": "Node 36", "group": "application", "importance": 0.3979400598600422, "connections": 6, "size": 8}, {"id": "node_37", "name": "Node 37", "group": "application", "importance": 0.6761831620713176, "connections": 4, "size": 8}, {"id": "node_38", "name": "Node 38", "group": "application", "importance": 0.2502582978709741, "connections": 3, "size": 8}, {"id": "node_39", "name": "Node 39", "group": "application", "importance": 0.37101661719673595, "connections": 3, "size": 8}, {"id": "node_40", "name": "Node 40", "group": "user", "importance": 0.869424277996936, "connections": 5, "size": 8}, {"id": "node_41", "name": "Node 41", "group": "user", "importance": 0.4009634573362232, "connections": 5, "size": 8}, {"id": "node_42", "name": "Node 42", "group": "database", "importance": 0.6953487341018332, "connections": 2, "size": 8}, {"id": "node_43", "name": "Node 43", "group": "resource", "importance": 0.8937258406078308, "connections": 3, "size": 8}, {"id": "node_44", "name": "Node 44", "group": "application", "importance": 0.7498486415373515, "connections": 1, "size": 8}, {"id": "node_45", "name": "Node 45", "group": "application", "importance": 0.3678690255122933, "connections": 1, "size": 8}, {"id": "node_46", "name": "Node 46", "group": "resource", "importance": 0.28165553407630584, "connections": 6, "size": 8}, {"id": "node_47", "name": "Node 47", "group": "service", "importance": 0.24923375636907263, "connections": 5, "size": 8}, {"id": "node_48", "name": "Node 48", "group": "service", "importance": 0.6907403900760289, "connections": 5, "size": 8}, {"id": "node_49", "name": "Node 49", "group": "user", "importance": 0.10504525407825183, "connections": 6, "size": 8}, {"id": "node_50", "name": "Node 50", "group": "database", "importance": 0.8249006617681682, "connections": 1, "size": 8}, {"id": "node_51", "name": "Node 51", "group": "resource", "importance": 0.6279891941162876, "connections": 5, "size": 8}, {"id": "node_52", "name": "Node 52", "group": "service", "importance": 0.15129621794004425, "connections": 1, "size": 8}, {"id": "node_53", "name": "Node 53", "group": "database", "importance": 0.9215535158674046, "connections": 5, "size": 8}, {"id": "node_54", "name": "Node 54", "group": "service", "importance": 0.21391880200719887, "connections": 2, "size": 8}, {"id": "node_55", "name": "Node 55", "group": "resource", "importance": 0.5037052653627084, "connections": 8, "size": 8}, {"id": "node_56", "name": "Node 56", "group": "user", "importance": 0.8668164498091459, "connections": 3, "size": 8}, {"id": "node_57", "name": "Node 57", "group": "user", "importance": 0.7428655703841751, "connections": 4, "size": 8}, {"id": "node_58", "name": "Node 58", "group": "service", "importance": 0.28672796797930855, "connections": 5, "size": 8}, {"id": "node_59", "name": "Node 59", "group": "service", "importance": 0.6799270513460327, "connections": 3, "size": 8}, {"id": "node_60", "name": "Node 60", "group": "user", "importance": 0.14359888141931448, "connections": 4, "size": 8}, {"id": "node_61", "name": "Node 61", "group": "database", "importance": 0.759019734289368, "connections": 4, "size": 8}, {"id": "node_62", "name": "Node 62", "group": "user", "importance": 0.1794358773266872, "connections": 3, "size": 8}, {"id": "node_63", "name": "Node 63", "group": "database", "importance": 0.4794299446909911, "connections": 5, "size": 8}, {"id": "node_64", "name": "Node 64", "group": "user", "importance": 0.3955705722088536, "connections": 2, "size": 8}, {"id": "node_65", "name": "Node 65", "group": "user", "importance": 0.5881243665375008, "connections": 3, "size": 8}, {"id": "node_66", "name": "Node 66", "group": "database", "importance": 0.34510278107892123, "connections": 2, "size": 8}, {"id": "node_67", "name": "Node 67", "group": "application", "importance": 0.643461241947396, "connections": 3, "size": 8}, {"id": "node_68", "name": "Node 68", "group": "resource", "importance": 0.43261728471206207, "connections": 4, "size": 8}, {"id": "node_69", "name": "Node 69", "group": "application", "importance": 0.652090042760108, "connections": 3, "size": 8}, {"id": "node_70", "name": "Node 70", "group": "application", "importance": 0.75368340770578, "connections": 6, "size": 8}, {"id": "node_71", "name": "Node 71", "group": "database", "importance": 0.1700466491457508, "connections": 7, "size": 8}, {"id": "node_72", "name": "Node 72", "group": "user", "importance": 0.20170681147786454, "connections": 5, "size": 8}, {"id": "node_73", "name": "Node 73", "group": "user", "importance": 0.31474972114133754, "connections": 6, "size": 8}, {"id": "node_74", "name": "Node 74", "group": "application", "importance": 0.9981919147209728, "connections": 4, "size": 8}, {"id": "node_75", "name": "Node 75", "group": "application", "importance": 0.699062366692435, "connections": 4, "size": 8}, {"id": "node_76", "name": "Node 76", "group": "application", "importance": 0.6193609628909468, "connections": 3, "size": 8}, {"id": "node_77", "name": "Node 77", "group": "user", "importance": 0.6608420440333158, "connections": 3, "size": 8}, {"id": "node_78", "name": "Node 78", "group": "resource", "importance": 0.8284874963410114, "connections": 3, "size": 8}, {"id": "node_79", "name": "Node 79", "group": "user", "importance": 0.7480422669715314, "connections": 6, "size": 8}, {"id": "node_80", "name": "Node 80", "group": "application", "importance": 0.5860640892695095, "connections": 3, "size": 8}, {"id": "node_81", "name": "Node 81", "group": "application", "importance": 0.293319857580177, "connections": 4, "size": 8}, {"id": "node_82", "name": "Node 82", "group": "resource", "importance": 0.786738851516371, "connections": 7, "size": 8}, {"id": "node_83", "name": "Node 83", "group": "user", "importance": 0.9755340978634062, "connections": 5, "size": 8}, {"id": "node_84", "name": "Node 84", "group": "service", "importance": 0.7778040664210033, "connections": 3, "size": 8}, {"id": "node_85", "name": "Node 85", "group": "service", "importance": 0.6417013453341495, "connections": 3, "size": 8}, {"id": "node_86", "name": "Node 86", "group": "application", "importance": 0.5831198616761893, "connections": 3, "size": 8}, {"id": "node_87", "name": "Node 87", "group": "service", "importance": 0.3812126177427422, "connections": 5, "size": 8}, {"id": "node_88", "name": "Node 88", "group": "resource", "importance": 0.5837423734431249, "connections": 6, "size": 8}, {"id": "node_89", "name": "Node 89", "group": "service", "importance": 0.30806222190587884, "connections": 5, "size": 8}, {"id": "node_90", "name": "Node 90", "group": "application", "importance": 0.5870956855197057, "connections": 5, "size": 8}, {"id": "node_91", "name": "Node 91", "group": "user", "importance": 0.5647316088232369, "connections": 4, "size": 8}, {"id": "node_92", "name": "Node 92", "group": "resource", "importance": 0.8719997066999995, "connections": 1, "size": 8}, {"id": "node_93", "name": "Node 93", "group": "user", "importance": 0.3206045577231046, "connections": 3, "size": 8}, {"id": "node_94", "name": "Node 94", "group": "database", "importance": 0.20945396014648354, "connections": 7, "size": 8}, {"id": "node_95", "name": "Node 95", "group": "service", "importance": 0.49207732229071155, "connections": 6, "size": 8}, {"id": "node_96", "name": "Node 96", "group": "database", "importance": 0.18587567837632885, "connections": 7, "size": 8}, {"id": "node_97", "name": "Node 97", "group": "application", "importance": 0.8127185873124919, "connections": 7, "size": 8}, {"id": "node_98", "name": "Node 98", "group": "resource", "importance": 0.18022887383788866, "connections": 6, "size": 8}, {"id": "node_99", "name": "Node 99", "group": "application", "importance": 0.8327411840796228, "connections": 2, "size": 8}], "links": [{"source": "node_80", "target": "node_52", "type": "owns", "weight": 0.9414683368289123, "value": 1}, {"source": "node_87", "target": "node_10", "type": "references", "weight": 0.5376002222119729, "value": 1}, {"source": "node_19", "target": "node_40", "type": "owns", "weight": 0.4153550439855267, "value": 1}, {"source": "node_91", "target": "node_14", "type": "references", "weight": 0.8201392891339911, "value": 1}, {"source": "node_82", "target": "node_9", "type": "references", "weight": 0.3799296294166503, "value": 1}, {"source": "node_88", "target": "node_90", "type": "references", "weight": 0.6083300528795297, "value": 1}, {"source": "node_17", "target": "node_93", "type": "depends_on", "weight": 0.2766074851846017, "value": 1}, {"source": "node_59", "target": "node_29", "type": "depends_on", "weight": 0.38868010766319583, "value": 1}, {"source": "node_75", "target": "node_69", "type": "depends_on", "weight": 0.40217379963786704, "value": 1}, {"source": "node_70", "target": "node_55", "type": "owns", "weight": 0.8017969613431669, "value": 1}, {"source": "node_26", "target": "node_48", "type": "owns", "weight": 0.3681548701651661, "value": 1}, {"source": "node_96", "target": "node_58", "type": "owns", "weight": 0.3500788850512321, "value": 1}, {"source": "node_21", "target": "node_41", "type": "calls", "weight": 0.8784709787761792, "value": 1}, {"source": "node_49", "target": "node_40", "type": "calls", "weight": 0.9922378057360101, "value": 1}, {"source": "node_36", "target": "node_33", "type": "references", "weight": 0.9060944375007025, "value": 1}, {"source": "node_47", "target": "node_31", "type": "calls", "weight": 0.8956698023613949, "value": 1}, {"source": "node_58", "target": "node_86", "type": "calls", "weight": 0.3954077714169363, "value": 1}, {"source": "node_30", "target": "node_32", "type": "references", "weight": 0.46451603487380766, "value": 1}, {"source": "node_86", "target": "node_32", "type": "depends_on", "weight": 0.5097553768001398, "value": 1}, {"source": "node_81", "target": "node_14", "type": "owns", "weight": 0.9739134474517844, "value": 1}, {"source": "node_55", "target": "node_18", "type": "owns", "weight": 0.8143435863448683, "value": 1}, {"source": "node_47", "target": "node_46", "type": "owns", "weight": 0.5931506062186753, "value": 1}, {"source": "node_68", "target": "node_1", "type": "references", "weight": 0.16758112822717108, "value": 1}, {"source": "node_68", "target": "node_96", "type": "depends_on", "weight": 0.8045363436173456, "value": 1}, {"source": "node_35", "target": "node_24", "type": "owns", "weight": 0.5163133202419048, "value": 1}, {"source": "node_3", "target": "node_71", "type": "calls", "weight": 0.46653426496947037, "value": 1}, {"source": "node_96", "target": "node_39", "type": "owns", "weight": 0.6257905957547956, "value": 1}, {"source": "node_71", "target": "node_8", "type": "calls", "weight": 0.27081948661063027, "value": 1}, {"source": "node_83", "target": "node_28", "type": "references", "weight": 0.30129559752527274, "value": 1}, {"source": "node_37", "target": "node_85", "type": "owns", "weight": 0.9793708229016516, "value": 1}, {"source": "node_20", "target": "node_80", "type": "references", "weight": 0.5807287022825124, "value": 1}, {"source": "node_79", "target": "node_60", "type": "references", "weight": 0.31529995942113753, "value": 1}, {"source": "node_49", "target": "node_35", "type": "depends_on", "weight": 0.7260732206100821, "value": 1}, {"source": "node_40", "target": "node_53", "type": "calls", "weight": 0.7724334651770621, "value": 1}, {"source": "node_75", "target": "node_78", "type": "depends_on", "weight": 0.4050258041089412, "value": 1}, {"source": "node_49", "target": "node_91", "type": "calls", "weight": 0.9780813992662837, "value": 1}, {"source": "node_28", "target": "node_88", "type": "depends_on", "weight": 0.45297729335372106, "value": 1}, {"source": "node_42", "target": "node_49", "type": "calls", "weight": 0.7166250878178548, "value": 1}, {"source": "node_70", "target": "node_10", "type": "depends_on", "weight": 0.867675860593477, "value": 1}, {"source": "node_30", "target": "node_57", "type": "calls", "weight": 0.9241030783289857, "value": 1}, {"source": "node_96", "target": "node_74", "type": "owns", "weight": 0.6095178443876027, "value": 1}, {"source": "node_23", "target": "node_39", "type": "depends_on", "weight": 0.9658950916127306, "value": 1}, {"source": "node_94", "target": "node_5", "type": "owns", "weight": 0.5583590914521236, "value": 1}, {"source": "node_55", "target": "node_61", "type": "calls", "weight": 0.7057116289017012, "value": 1}, {"source": "node_51", "target": "node_40", "type": "depends_on", "weight": 0.5340224237305058, "value": 1}, {"source": "node_63", "target": "node_88", "type": "owns", "weight": 0.6355649076561096, "value": 1}, {"source": "node_94", "target": "node_73", "type": "depends_on", "weight": 0.36985867069162126, "value": 1}, {"source": "node_51", "target": "node_6", "type": "calls", "weight": 0.6229288124641308, "value": 1}, {"source": "node_6", "target": "node_29", "type": "depends_on", "weight": 0.33167155232783263, "value": 1}, {"source": "node_33", "target": "node_11", "type": "calls", "weight": 0.3895418596550564, "value": 1}, {"source": "node_5", "target": "node_94", "type": "references", "weight": 0.5652416389697575, "value": 1}, {"source": "node_8", "target": "node_61", "type": "owns", "weight": 0.468807540201835, "value": 1}, {"source": "node_34", "target": "node_98", "type": "references", "weight": 0.6592449374447202, "value": 1}, {"source": "node_83", "target": "node_89", "type": "calls", "weight": 0.8607742896972885, "value": 1}, {"source": "node_48", "target": "node_89", "type": "owns", "weight": 0.7497682380759457, "value": 1}, {"source": "node_62", "target": "node_16", "type": "depends_on", "weight": 0.7350094112264383, "value": 1}, {"source": "node_37", "target": "node_83", "type": "depends_on", "weight": 0.7038302775632427, "value": 1}, {"source": "node_22", "target": "node_42", "type": "depends_on", "weight": 0.5382515542109736, "value": 1}, {"source": "node_70", "target": "node_35", "type": "depends_on", "weight": 0.416139324180375, "value": 1}, {"source": "node_24", "target": "node_56", "type": "depends_on", "weight": 0.7116755467475913, "value": 1}, {"source": "node_19", "target": "node_36", "type": "owns", "weight": 0.86855943842595, "value": 1}, {"source": "node_17", "target": "node_18", "type": "owns", "weight": 0.7478289986524514, "value": 1}, {"source": "node_60", "target": "node_72", "type": "depends_on", "weight": 0.3585046950514921, "value": 1}, {"source": "node_73", "target": "node_68", "type": "owns", "weight": 0.6590452033509411, "value": 1}, {"source": "node_51", "target": "node_70", "type": "depends_on", "weight": 0.3325234303582259, "value": 1}, {"source": "node_96", "target": "node_61", "type": "owns", "weight": 0.7715413663476856, "value": 1}, {"source": "node_4", "target": "node_3", "type": "owns", "weight": 0.14518512188340812, "value": 1}, {"source": "node_16", "target": "node_41", "type": "calls", "weight": 0.4962576229339549, "value": 1}, {"source": "node_53", "target": "node_77", "type": "calls", "weight": 0.2186428036851913, "value": 1}, {"source": "node_19", "target": "node_3", "type": "depends_on", "weight": 0.5255313273083148, "value": 1}, {"source": "node_75", "target": "node_79", "type": "references", "weight": 0.1841835757228883, "value": 1}, {"source": "node_29", "target": "node_77", "type": "references", "weight": 0.6508751778350761, "value": 1}, {"source": "node_82", "target": "node_95", "type": "owns", "weight": 0.36452138352696684, "value": 1}, {"source": "node_44", "target": "node_76", "type": "owns", "weight": 0.7935010213821011, "value": 1}, {"source": "node_10", "target": "node_93", "type": "references", "weight": 0.29611918769117274, "value": 1}, {"source": "node_36", "target": "node_2", "type": "calls", "weight": 0.6585748870949474, "value": 1}, {"source": "node_32", "target": "node_57", "type": "calls", "weight": 0.41899666631963073, "value": 1}, {"source": "node_43", "target": "node_7", "type": "references", "weight": 0.6950832154740739, "value": 1}, {"source": "node_84", "target": "node_0", "type": "owns", "weight": 0.4420327977951405, "value": 1}, {"source": "node_90", "target": "node_58", "type": "calls", "weight": 0.391700269133608, "value": 1}, {"source": "node_47", "target": "node_66", "type": "owns", "weight": 0.9113753664547971, "value": 1}, {"source": "node_46", "target": "node_94", "type": "calls", "weight": 0.5228084667394803, "value": 1}, {"source": "node_72", "target": "node_74", "type": "references", "weight": 0.557934906269281, "value": 1}, {"source": "node_62", "target": "node_81", "type": "depends_on", "weight": 0.7051798463820491, "value": 1}, {"source": "node_85", "target": "node_13", "type": "depends_on", "weight": 0.9514085970441213, "value": 1}, {"source": "node_31", "target": "node_82", "type": "references", "weight": 0.1558132677505172, "value": 1}, {"source": "node_64", "target": "node_18", "type": "depends_on", "weight": 0.5067973765250949, "value": 1}, {"source": "node_74", "target": "node_10", "type": "owns", "weight": 0.9106965546766448, "value": 1}, {"source": "node_18", "target": "node_38", "type": "owns", "weight": 0.8058012148418274, "value": 1}, {"source": "node_87", "target": "node_48", "type": "owns", "weight": 0.6653482443257102, "value": 1}, {"source": "node_85", "target": "node_91", "type": "references", "weight": 0.9655215655773349, "value": 1}, {"source": "node_97", "target": "node_69", "type": "owns", "weight": 0.35506544109973737, "value": 1}, {"source": "node_35", "target": "node_50", "type": "calls", "weight": 0.9735620139360256, "value": 1}, {"source": "node_88", "target": "node_54", "type": "owns", "weight": 0.8084570128420071, "value": 1}, {"source": "node_76", "target": "node_31", "type": "references", "weight": 0.8261513336059508, "value": 1}, {"source": "node_81", "target": "node_90", "type": "calls", "weight": 0.4847142226803639, "value": 1}, {"source": "node_13", "target": "node_87", "type": "calls", "weight": 0.9465073877359427, "value": 1}, {"source": "node_0", "target": "node_55", "type": "calls", "weight": 0.6492193683465621, "value": 1}, {"source": "node_38", "target": "node_83", "type": "depends_on", "weight": 0.8436076788915833, "value": 1}, {"source": "node_67", "target": "node_31", "type": "calls", "weight": 0.4903383020041371, "value": 1}, {"source": "node_28", "target": "node_36", "type": "owns", "weight": 0.3553916535360466, "value": 1}, {"source": "node_29", "target": "node_95", "type": "depends_on", "weight": 0.3458540754315878, "value": 1}, {"source": "node_3", "target": "node_19", "type": "calls", "weight": 0.738393226370787, "value": 1}, {"source": "node_45", "target": "node_82", "type": "depends_on", "weight": 0.9342263731061256, "value": 1}, {"source": "node_71", "target": "node_39", "type": "calls", "weight": 0.1062340876652994, "value": 1}, {"source": "node_71", "target": "node_96", "type": "depends_on", "weight": 0.8728526078107166, "value": 1}, {"source": "node_11", "target": "node_0", "type": "calls", "weight": 0.8672885603787844, "value": 1}, {"source": "node_27", "target": "node_89", "type": "references", "weight": 0.16145361585900952, "value": 1}, {"source": "node_53", "target": "node_23", "type": "calls", "weight": 0.23531062595317587, "value": 1}, {"source": "node_65", "target": "node_55", "type": "depends_on", "weight": 0.9689333404517563, "value": 1}, {"source": "node_3", "target": "node_71", "type": "owns", "weight": 0.8525937062092505, "value": 1}, {"source": "node_5", "target": "node_31", "type": "references", "weight": 0.3857617064813159, "value": 1}, {"source": "node_23", "target": "node_46", "type": "depends_on", "weight": 0.781411078468041, "value": 1}, {"source": "node_29", "target": "node_63", "type": "references", "weight": 0.18360439289165686, "value": 1}, {"source": "node_84", "target": "node_19", "type": "depends_on", "weight": 0.30526700410596297, "value": 1}, {"source": "node_56", "target": "node_64", "type": "references", "weight": 0.5546160750029362, "value": 1}, {"source": "node_86", "target": "node_97", "type": "owns", "weight": 0.606746187553055, "value": 1}, {"source": "node_78", "target": "node_8", "type": "depends_on", "weight": 0.8322416894882805, "value": 1}, {"source": "node_66", "target": "node_58", "type": "calls", "weight": 0.19750971797678196, "value": 1}, {"source": "node_93", "target": "node_87", "type": "calls", "weight": 0.10688733053306068, "value": 1}, {"source": "node_78", "target": "node_96", "type": "calls", "weight": 0.8888165740330071, "value": 1}, {"source": "node_55", "target": "node_98", "type": "depends_on", "weight": 0.48872089629382365, "value": 1}, {"source": "node_5", "target": "node_95", "type": "owns", "weight": 0.7820515785926206, "value": 1}, {"source": "node_94", "target": "node_58", "type": "depends_on", "weight": 0.18381474743921625, "value": 1}, {"source": "node_73", "target": "node_37", "type": "depends_on", "weight": 0.40307715351135964, "value": 1}, {"source": "node_33", "target": "node_48", "type": "owns", "weight": 0.17961879779799977, "value": 1}, {"source": "node_98", "target": "node_31", "type": "depends_on", "weight": 0.6490805216387984, "value": 1}, {"source": "node_60", "target": "node_48", "type": "owns", "weight": 0.5129135191866857, "value": 1}, {"source": "node_23", "target": "node_34", "type": "owns", "weight": 0.42944152964886173, "value": 1}, {"source": "node_97", "target": "node_28", "type": "calls", "weight": 0.4998771073736066, "value": 1}, {"source": "node_76", "target": "node_3", "type": "calls", "weight": 0.5005263879312011, "value": 1}, {"source": "node_11", "target": "node_3", "type": "references", "weight": 0.47182619905972567, "value": 1}, {"source": "node_24", "target": "node_41", "type": "references", "weight": 0.5512050586044405, "value": 1}, {"source": "node_30", "target": "node_1", "type": "depends_on", "weight": 0.9902347225389063, "value": 1}, {"source": "node_69", "target": "node_16", "type": "owns", "weight": 0.9776867348005077, "value": 1}, {"source": "node_14", "target": "node_94", "type": "calls", "weight": 0.5703999301110557, "value": 1}, {"source": "node_19", "target": "node_7", "type": "owns", "weight": 0.9131104710372008, "value": 1}, {"source": "node_38", "target": "node_77", "type": "depends_on", "weight": 0.7211800940530746, "value": 1}, {"source": "node_81", "target": "node_15", "type": "calls", "weight": 0.2541129991273293, "value": 1}, {"source": "node_63", "target": "node_82", "type": "calls", "weight": 0.16389322297214326, "value": 1}, {"source": "node_55", "target": "node_47", "type": "references", "weight": 0.6682386258555778, "value": 1}, {"source": "node_24", "target": "node_65", "type": "references", "weight": 0.10966249953300841, "value": 1}, {"source": "node_6", "target": "node_73", "type": "calls", "weight": 0.4147685423163966, "value": 1}, {"source": "node_84", "target": "node_46", "type": "calls", "weight": 0.14874554748094337, "value": 1}, {"source": "node_25", "target": "node_30", "type": "owns", "weight": 0.4839321941676724, "value": 1}, {"source": "node_61", "target": "node_75", "type": "calls", "weight": 0.7609151894275084, "value": 1}, {"source": "node_53", "target": "node_15", "type": "calls", "weight": 0.19058671825301138, "value": 1}, {"source": "node_79", "target": "node_95", "type": "owns", "weight": 0.5061331668476163, "value": 1}, {"source": "node_82", "target": "node_27", "type": "calls", "weight": 0.9257213983864305, "value": 1}, {"source": "node_1", "target": "node_22", "type": "references", "weight": 0.30623387336292535, "value": 1}, {"source": "node_31", "target": "node_71", "type": "references", "weight": 0.721588408357978, "value": 1}, {"source": "node_43", "target": "node_91", "type": "depends_on", "weight": 0.49708812487573006, "value": 1}, {"source": "node_41", "target": "node_79", "type": "calls", "weight": 0.8996588799208942, "value": 1}, {"source": "node_99", "target": "node_10", "type": "depends_on", "weight": 0.38737536710285014, "value": 1}, {"source": "node_31", "target": "node_10", "type": "owns", "weight": 0.4703521674516522, "value": 1}, {"source": "node_37", "target": "node_87", "type": "calls", "weight": 0.6822200020136345, "value": 1}, {"source": "node_94", "target": "node_97", "type": "owns", "weight": 0.5784464852572951, "value": 1}, {"source": "node_99", "target": "node_49", "type": "references", "weight": 0.5672014277298664, "value": 1}, {"source": "node_74", "target": "node_98", "type": "owns", "weight": 0.4456331025961009, "value": 1}, {"source": "node_95", "target": "node_24", "type": "owns", "weight": 0.16555425270206608, "value": 1}, {"source": "node_56", "target": "node_72", "type": "calls", "weight": 0.8013986796455927, "value": 1}, {"source": "node_49", "target": "node_35", "type": "owns", "weight": 0.1310204157915296, "value": 1}, {"source": "node_17", "target": "node_72", "type": "calls", "weight": 0.8512841857353635, "value": 1}, {"source": "node_68", "target": "node_89", "type": "depends_on", "weight": 0.3602382908685501, "value": 1}, {"source": "node_36", "target": "node_88", "type": "owns", "weight": 0.3892952856550924, "value": 1}, {"source": "node_57", "target": "node_98", "type": "references", "weight": 0.13407307072498728, "value": 1}, {"source": "node_31", "target": "node_92", "type": "references", "weight": 0.4645223923920271, "value": 1}, {"source": "node_27", "target": "node_5", "type": "calls", "weight": 0.388499475541242, "value": 1}, {"source": "node_71", "target": "node_32", "type": "calls", "weight": 0.1517533880525786, "value": 1}, {"source": "node_97", "target": "node_63", "type": "depends_on", "weight": 0.5160678306580541, "value": 1}, {"source": "node_46", "target": "node_19", "type": "depends_on", "weight": 0.13488111592404656, "value": 1}, {"source": "node_18", "target": "node_95", "type": "depends_on", "weight": 0.9514024362666444, "value": 1}, {"source": "node_24", "target": "node_79", "type": "owns", "weight": 0.9843110202362151, "value": 1}, {"source": "node_53", "target": "node_54", "type": "calls", "weight": 0.55447581262716, "value": 1}, {"source": "node_57", "target": "node_80", "type": "calls", "weight": 0.7852780119396381, "value": 1}, {"source": "node_67", "target": "node_23", "type": "references", "weight": 0.6381458418564179, "value": 1}, {"source": "node_14", "target": "node_67", "type": "calls", "weight": 0.47943103787215335, "value": 1}, {"source": "node_19", "target": "node_7", "type": "references", "weight": 0.7212208785748416, "value": 1}, {"source": "node_70", "target": "node_97", "type": "references", "weight": 0.5258923231963423, "value": 1}, {"source": "node_20", "target": "node_30", "type": "owns", "weight": 0.46036029982692184, "value": 1}, {"source": "node_90", "target": "node_65", "type": "depends_on", "weight": 0.9350813199844038, "value": 1}, {"source": "node_62", "target": "node_0", "type": "calls", "weight": 0.6670002154115136, "value": 1}, {"source": "node_51", "target": "node_89", "type": "depends_on", "weight": 0.19701450453500746, "value": 1}, {"source": "node_36", "target": "node_3", "type": "depends_on", "weight": 0.10484245411635378, "value": 1}, {"source": "node_55", "target": "node_59", "type": "depends_on", "weight": 0.21355527733376048, "value": 1}, {"source": "node_33", "target": "node_88", "type": "owns", "weight": 0.8535458276303524, "value": 1}, {"source": "node_6", "target": "node_0", "type": "calls", "weight": 0.9496525410423027, "value": 1}, {"source": "node_26", "target": "node_63", "type": "references", "weight": 0.3868511008855703, "value": 1}, {"source": "node_25", "target": "node_90", "type": "calls", "weight": 0.3345297710689175, "value": 1}, {"source": "node_73", "target": "node_43", "type": "calls", "weight": 0.4170713498634472, "value": 1}, {"source": "node_0", "target": "node_60", "type": "owns", "weight": 0.1151252005642206, "value": 1}, {"source": "node_79", "target": "node_83", "type": "depends_on", "weight": 0.9018109391998458, "value": 1}, {"source": "node_51", "target": "node_59", "type": "calls", "weight": 0.992570663737056, "value": 1}, {"source": "node_82", "target": "node_25", "type": "owns", "weight": 0.45914672828559344, "value": 1}, {"source": "node_0", "target": "node_72", "type": "owns", "weight": 0.9075137750793772, "value": 1}, {"source": "node_40", "target": "node_70", "type": "owns", "weight": 0.400726120596972, "value": 1}, {"source": "node_46", "target": "node_97", "type": "references", "weight": 0.9902887414840797, "value": 1}, {"source": "node_14", "target": "node_73", "type": "references", "weight": 0.2665839911648512, "value": 1}, {"source": "node_98", "target": "node_11", "type": "references", "weight": 0.30836711045346854, "value": 1}, {"source": "node_41", "target": "node_47", "type": "depends_on", "weight": 0.180811485073397, "value": 1}], "metadata": {"node_count": 100, "edge_count": 200, "node_types": ["resource", "service", "application", "database", "user"], "edge_types": ["calls", "references", "owns", "depends_on"]}};
+        const config = {"width": 1400, "height": 900, "physics_enabled": true, "show_labels": false, "enable_zoom": true, "enable_drag": true, "node_color_field": "group", "node_size_field": null, "link_width_field": null};
+        
+        // Color scale
+        const color = d3.scaleOrdinal(d3.schemeCategory10);
+        
+        // Set up dimensions
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        
+        // Create SVG
+        const svg = d3.select("#graph-container")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height);
+        
+        // Add zoom behavior
+        const g = svg.append("g");
+        
+        const zoom = d3.zoom()
+            .scaleExtent([0.1, 10])
+            .on("zoom", (event) => {
+                g.attr("transform", event.transform);
+            });
+        
+        svg.call(zoom);
+        
+        // Initialize force simulation
+        const simulation = d3.forceSimulation()
+            .force("link", d3.forceLink()
+                .id(d => d.id)
+                .distance(80))
+            .force("charge", d3.forceManyBody()
+                .strength(-200))
+            .force("center", d3.forceCenter(width / 2, height / 2))
+            .force("collision", d3.forceCollide().radius(15));
+        
+        // Create arrow markers for directed edges
+        svg.append("defs").selectAll("marker")
+            .data(["arrowhead"])
+            .enter().append("marker")
+            .attr("id", d => d)
+            .attr("viewBox", "0 -5 10 10")
+            .attr("refX", 25)
+            .attr("refY", 0)
+            .attr("markerWidth", 8)
+            .attr("markerHeight", 8)
+            .attr("orient", "auto")
+            .append("path")
+            .attr("d", "M0,-5L10,0L0,5")
+            .attr("fill", "#999");
+        
+        // Add links
+        const link = g.append("g")
+            .attr("class", "links")
+            .selectAll("line")
+            .data(graphData.links)
+            .enter().append("line")
+            .attr("stroke-width", d => Math.sqrt(d.value || 1))
+            .attr("marker-end", "url(#arrowhead)");
+        
+        // Add nodes
+        const node = g.append("g")
+            .attr("class", "nodes")
+            .selectAll("g")
+            .data(graphData.nodes)
+            .enter().append("g")
+            .call(d3.drag()
+                .on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended));
+        
+        // Add circles to nodes
+        node.append("circle")
+            .attr("r", d => d.size || 8)
+            .attr("fill", d => color(d.group || 0));
+        
+        // Add labels to nodes
+        const label = node.append("text")
+            .attr("class", "node-label")
+            .attr("dx", 12)
+            .attr("dy", 4)
+            .text(d => d.name || d.id)
+            .style("font-size", "12px")
+            .style("fill", "#333");
+        
+        // Add tooltips
+        const tooltip = d3.select("#tooltip");
+        
+        node.on("mouseover", (event, d) => {
+            tooltip.html(`
+                <strong>${d.name || d.id}</strong><br>
+                ${d.group ? `Group: ${d.group}<br>` : ''}
+                ${d.type ? `Type: ${d.type}<br>` : ''}
+                ${Object.keys(d).filter(k => !['id', 'name', 'group', 'type', 'x', 'y', 'vx', 'vy', 'fx', 'fy'].includes(k))
+                    .map(k => `${k}: ${d[k]}`).join('<br>')}
+            `)
+            .style("left", (event.pageX + 10) + "px")
+            .style("top", (event.pageY - 28) + "px")
+            .style("opacity", 1);
+        })
+        .on("mouseout", () => {
+            tooltip.style("opacity", 0);
+        });
+        
+        // Update simulation
+        simulation
+            .nodes(graphData.nodes)
+            .on("tick", ticked);
+        
+        simulation.force("link")
+            .links(graphData.links);
+        
+        function ticked() {
+            link
+                .attr("x1", d => d.source.x)
+                .attr("y1", d => d.source.y)
+                .attr("x2", d => d.target.x)
+                .attr("y2", d => d.target.y);
+            
+            node.attr("transform", d => `translate(${d.x},${d.y})`);
+        }
+        
+        // Drag functions
+        function dragstarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+        
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+        
+        function dragended(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+        
+        // Controls functionality
+        const linkDistanceSlider = d3.select("#link-distance");
+        const chargeForceSlider = d3.select("#charge-force");
+        const collisionRadiusSlider = d3.select("#collision-radius");
+        
+        linkDistanceSlider.on("input", function() {
+            const value = +this.value;
+            d3.select("#link-distance-value").text(value);
+            simulation.force("link").distance(value);
+            simulation.alpha(0.3).restart();
+        });
+        
+        chargeForceSlider.on("input", function() {
+            const value = +this.value;
+            d3.select("#charge-force-value").text(value);
+            simulation.force("charge").strength(value);
+            simulation.alpha(0.3).restart();
+        });
+        
+        collisionRadiusSlider.on("input", function() {
+            const value = +this.value;
+            d3.select("#collision-radius-value").text(value);
+            simulation.force("collision").radius(value);
+            simulation.alpha(0.3).restart();
+        });
+        
+        // Toggle physics
+        let physicsEnabled = true;
+        d3.select("#toggle-physics").on("click", function() {
+            physicsEnabled = !physicsEnabled;
+            if (physicsEnabled) {
+                simulation.alpha(0.3).restart();
+                d3.select(this).text("Pause Physics");
+            } else {
+                simulation.stop();
+                d3.select(this).text("Resume Physics");
+            }
+        });
+        
+        // Reset view
+        d3.select("#reset-view").on("click", function() {
+            svg.transition()
+                .duration(750)
+                .call(zoom.transform, d3.zoomIdentity);
+        });
+        
+        // Toggle labels
+        let labelsVisible = true;
+        d3.select("#toggle-labels").on("click", function() {
+            labelsVisible = !labelsVisible;
+            label.style("display", labelsVisible ? "block" : "none");
+            d3.select(this).text(labelsVisible ? "Hide Labels" : "Show Labels");
+        });
+        
+        // Generate legend
+        const groups = [...new Set(graphData.nodes.map(d => d.group))].filter(Boolean);
+        const legend = d3.select("#legend");
+        
+        if (groups.length > 0) {
+            legend.selectAll(".legend-item")
+                .data(groups)
+                .enter().append("div")
+                .attr("class", "legend-item")
+                .html(d => `
+                    <div class="legend-color" style="background-color: ${color(d)}"></div>
+                    <div class="legend-label">${d}</div>
+                `);
+        } else {
+            legend.style("display", "none");
+        }
+        
+        // Handle window resize
+        window.addEventListener("resize", () => {
+            const newWidth = window.innerWidth;
+            const newHeight = window.innerHeight;
+            svg.attr("width", newWidth).attr("height", newHeight);
+            simulation.force("center", d3.forceCenter(newWidth / 2, newHeight / 2));
+            simulation.alpha(0.3).restart();
+        });
+    </script>
+</body>
+</html>
