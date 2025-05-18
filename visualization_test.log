@@ -1,0 +1,18 @@
+2025-05-18 08:53:18.892 | INFO     | __main__:__init__:68 - D3VisualizationEngine initialized with template_dir: /home/graham/workspace/experiments/arangodb/src/arangodb/visualization/templates
+2025-05-18 08:53:18.892 | INFO     | __main__:generate_visualization:91 - Generating visualization with layout: force
+2025-05-18 08:53:18.892 | INFO     | __main__:generate_force_layout:199 - Generating force-directed layout
+2025-05-18 08:53:18.892 | INFO     | __main__:generate_visualization:109 - Visualization generated successfully for 3 nodes
+2025-05-18 08:53:18.892 | INFO     | __main__:generate_visualization:91 - Generating visualization with layout: tree
+2025-05-18 08:53:18.892 | INFO     | __main__:generate_tree_layout:229 - Generating hierarchical tree layout
+2025-05-18 08:53:18.892 | INFO     | __main__:generate_visualization:109 - Visualization generated successfully for 3 nodes
+2025-05-18 08:53:18.892 | INFO     | __main__:generate_visualization:91 - Generating visualization with layout: force
+2025-05-18 08:53:18.892 | ERROR    | __main__:_validate_graph_data:125 - Graph data must contain 'nodes' and 'links' keys
+2025-05-18 08:53:47.738 | INFO     | __main__:__init__:68 - D3VisualizationEngine initialized with template_dir: /home/graham/workspace/experiments/arangodb/src/arangodb/visualization/templates
+2025-05-18 08:53:47.738 | INFO     | __main__:generate_visualization:91 - Generating visualization with layout: force
+2025-05-18 08:53:47.738 | INFO     | __main__:generate_force_layout:199 - Generating force-directed layout
+2025-05-18 08:53:47.738 | INFO     | __main__:generate_visualization:109 - Visualization generated successfully for 3 nodes
+2025-05-18 08:53:47.738 | INFO     | __main__:generate_visualization:91 - Generating visualization with layout: tree
+2025-05-18 08:53:47.738 | INFO     | __main__:generate_tree_layout:229 - Generating hierarchical tree layout
+2025-05-18 08:53:47.738 | INFO     | __main__:generate_visualization:109 - Visualization generated successfully for 3 nodes
+2025-05-18 08:53:47.738 | INFO     | __main__:generate_visualization:91 - Generating visualization with layout: force
+2025-05-18 08:53:47.738 | ERROR    | __main__:_validate_graph_data:125 - Graph data must contain 'nodes' and 'links' keys

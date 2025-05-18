@@ -54,6 +54,11 @@ dependencies = [
     # API and cloud services
     "google-auth>=2.39.0",
     "google-auth-oauthlib>=1.2.2",
+    # API server and visualization
+    "fastapi>=0.115.0",
+    "uvicorn>=0.30.0",
+    "python-multipart>=0.0.20",
+    "httpx>=0.25.0",
     # Optional GPU support (commented out)
     # "faiss-gpu>=1.7.2",
     # "faiss-gpu-cu12[fix-cuda]",

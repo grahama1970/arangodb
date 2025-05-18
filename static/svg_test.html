@@ -1,0 +1,104 @@
+
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <title>D3 SVG Rendering Test</title>
+            <script src="https://d3js.org/d3.v7.min.js"></script>
+            <style>
+                body { font-family: Arial, sans-serif; padding: 20px; }
+                #graph { border: 1px solid #ccc; }
+                .node { fill: steelblue; stroke: white; stroke-width: 2px; }
+                .link { stroke: #999; stroke-opacity: 0.6; }
+            </style>
+        </head>
+        <body>
+            <h2>D3.js SVG Rendering Test</h2>
+            <svg id="graph" width="400" height="300"></svg>
+            <div id="status"></div>
+            <script>
+                const data = {
+  "nodes": [
+    {
+      "id": "1",
+      "name": "Main Concept",
+      "group": "concept",
+      "type": "concept"
+    },
+    {
+      "id": "2",
+      "name": "Related Idea",
+      "group": "idea",
+      "type": "idea"
+    },
+    {
+      "id": "3",
+      "name": "Implementation",
+      "group": "implementation",
+      "type": "implementation"
+    }
+  ],
+  "links": [
+    {
+      "source": "1",
+      "target": "2",
+      "value": 0.8,
+      "type": "relates_to",
+      "weight": 0.8
+    },
+    {
+      "source": "2",
+      "target": "3",
+      "value": 0.9,
+      "type": "implements",
+      "weight": 0.9
+    }
+  ],
+  "metadata": {
+    "node_count": 3,
+    "edge_count": 2,
+    "node_types": [
+      "concept",
+      "implementation",
+      "idea"
+    ],
+    "edge_types": [
+      "implements",
+      "relates_to"
+    ],
+    "node_attributes": [
+      "type"
+    ],
+    "edge_attributes": [
+      "weight"
+    ],
+    "max_in_degree": 1,
+    "max_out_degree": 1,
+    "highly_connected_nodes": [
+      "2",
+      "3"
+    ]
+  }
+};
+                
+                // Create a simple force simulation
+                const width = 400;
+                const height = 300;
+                
+                const svg = d3.select("#graph");
+                
+                // Add a test circle
+                svg.append("circle")
+                    .attr("cx", width/2)
+                    .attr("cy", height/2)
+                    .attr("r", 50)
+                    .attr("class", "node");
+                
+                // Update status
+                d3.select("#status").text("D3.js loaded successfully. Version: " + d3.version);
+                
+                console.log("Test data loaded:", data);
+            </script>
+        </body>
+        </html>
+        
