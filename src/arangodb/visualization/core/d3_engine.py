@@ -27,6 +27,7 @@ from dataclasses import dataclass, field
 
 # Type definitions for layout types
 LayoutType = Literal["force", "tree", "radial", "sankey"]
+TreeOrientation = Literal["horizontal", "vertical"]
 
 @dataclass
 class VisualizationConfig:
@@ -44,6 +45,12 @@ class VisualizationConfig:
     enable_zoom: bool = True
     enable_drag: bool = True
     llm_optimized: bool = False
+    # Tree-specific settings
+    tree_orientation: TreeOrientation = "horizontal"
+    node_radius: int = 8
+    node_color: str = "#steelblue"
+    link_color: str = "#999"
+    animations: bool = True
     custom_settings: Dict[str, Any] = field(default_factory=dict)
 
 
@@ -295,21 +302,34 @@ class D3VisualizationEngine:
         """
         logger.info("Generating hierarchical tree layout")
         
-        # To be implemented in Task 3
-        template = self._get_base_template()
+        # Load the tree template
+        template_path = self.template_dir / "tree.html"
         
-        script = f"""
-        // Tree layout placeholder
-        const data = {json.dumps(graph_data)};
-        console.log('Tree layout data loaded:', data);
-        // Implementation will be added in Task 3
-        """
+        if template_path.exists():
+            with open(template_path, 'r', encoding='utf-8') as f:
+                template = f.read()
+        else:
+            logger.warning("Tree template not found, using base template")
+            template = self._get_base_template()
         
-        html = template.format(
-            title=config.title or "Hierarchical Tree",
-            script=script
-        )
+        # Apply node and link transformations based on config
+        processed_data = self._process_graph_data(graph_data, config)
         
+        # Replace template variables
+        html = template.replace("{{ title or \"Hierarchical Tree\" }}", config.title or "Hierarchical Tree")
+        html = html.replace("{{ graph_data | tojson | safe }}", json.dumps(processed_data))
+        html = html.replace("{{ config | tojson | safe }}", json.dumps({
+            "width": config.width,
+            "height": config.height,
+            "orientation": config.tree_orientation,
+            "nodeRadius": config.node_radius,
+            "nodeColor": config.node_color,
+            "linkColor": config.link_color,
+            "showLabels": config.show_labels,
+            "animations": config.animations
+        }))
+        
+        logger.info("Tree layout generation complete")
         return html
     
     def generate_radial_layout(self, graph_data: Dict[str, Any], config: VisualizationConfig) -> str:

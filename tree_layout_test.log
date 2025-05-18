@@ -1,0 +1,22 @@
+2025-05-18 09:15:25.105 | INFO     | __main__:main:151 - Starting tree layout validation
+2025-05-18 09:15:25.105 | INFO     | d3_engine:__init__:75 - D3VisualizationEngine initialized with template_dir: /home/graham/workspace/experiments/arangodb/src/arangodb/visualization/templates
+2025-05-18 09:15:25.105 | INFO     | __main__:main:155 - Template directory: /home/graham/workspace/experiments/arangodb/src/arangodb/visualization/templates
+2025-05-18 09:15:25.105 | INFO     | __main__:main:160 - Tree template found at: /home/graham/workspace/experiments/arangodb/src/arangodb/visualization/templates/tree.html
+2025-05-18 09:15:25.105 | INFO     | d3_engine:generate_visualization:98 - Generating visualization with layout: tree
+2025-05-18 09:15:25.105 | INFO     | d3_engine:generate_tree_layout:303 - Generating hierarchical tree layout
+2025-05-18 09:15:25.106 | INFO     | d3_engine:generate_tree_layout:332 - Tree layout generation complete
+2025-05-18 09:15:25.106 | INFO     | d3_engine:generate_visualization:116 - Visualization generated successfully for 9 nodes
+2025-05-18 09:15:25.106 | WARNING  | __main__:validate_tree_layout:78 - Tree template not found in expected location
+2025-05-18 09:15:25.106 | INFO     | d3_engine:generate_visualization:98 - Generating visualization with layout: tree
+2025-05-18 09:15:25.106 | INFO     | d3_engine:generate_tree_layout:303 - Generating hierarchical tree layout
+2025-05-18 09:15:25.106 | INFO     | d3_engine:generate_tree_layout:332 - Tree layout generation complete
+2025-05-18 09:15:25.106 | INFO     | d3_engine:generate_visualization:116 - Visualization generated successfully for 9 nodes
+2025-05-18 09:15:25.106 | INFO     | d3_engine:generate_visualization:98 - Generating visualization with layout: tree
+2025-05-18 09:15:25.107 | INFO     | d3_engine:generate_tree_layout:303 - Generating hierarchical tree layout
+2025-05-18 09:15:25.107 | INFO     | d3_engine:generate_tree_layout:332 - Tree layout generation complete
+2025-05-18 09:15:25.107 | INFO     | d3_engine:generate_visualization:116 - Visualization generated successfully for 9 nodes
+2025-05-18 09:15:25.107 | INFO     | d3_engine:generate_visualization:98 - Generating visualization with layout: tree
+2025-05-18 09:15:25.107 | INFO     | d3_engine:generate_tree_layout:303 - Generating hierarchical tree layout
+2025-05-18 09:15:25.107 | INFO     | d3_engine:generate_tree_layout:332 - Tree layout generation complete
+2025-05-18 09:15:25.107 | INFO     | d3_engine:generate_visualization:116 - Visualization generated successfully for 9 nodes
+2025-05-18 09:15:25.107 | INFO     | __main__:validate_tree_layout:132 - Created test HTML file: /home/graham/workspace/experiments/arangodb/static/tree_test.html (25433 bytes)

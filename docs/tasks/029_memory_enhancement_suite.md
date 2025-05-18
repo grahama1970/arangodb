@@ -16,6 +16,10 @@
 
 This task implements cutting-edge memory system enhancements based on industry research, focusing on performance, scalability, and intelligence. The suite addresses key gaps identified in modern AI memory systems while building on ArangoDB Memory Bank's existing strengths.
 
+**IMPORTANT**: 
+1. Each sub-task MUST include creation of a verification report in `/docs/reports/` with actual, non-mocked ArangoDB queries and real performance results. See the Report Documentation Requirements section for details.
+2. Task 11 (Final Verification) enforces MANDATORY iteration on ALL incomplete tasks. The agent MUST continue working until 100% completion is achieved - no partial completion is acceptable.
+
 ## Research Summary
 
 Based on analysis of 2025 AI memory patterns:
@@ -26,11 +30,67 @@ Based on analysis of 2025 AI memory patterns:
 - Health monitoring prevents data quality degradation
 - Smart compaction preserves critical information
 
+## MANDATORY Research Process
+
+**CRITICAL REQUIREMENT**: For EACH task, the agent MUST:
+
+1. **Use `mcp__perplexity-ask__perplexity_ask`** to research:
+   - Current best practices (2024-2025)
+   - Production implementation patterns
+   - Common pitfalls and solutions
+   - Performance optimization techniques
+
+2. **Use `WebSearch`** to find:
+   - GitHub repositories with working code
+   - Real production examples
+   - Popular library implementations
+   - Benchmark comparisons
+
+3. **Document all findings** in task reports:
+   - Links to source repositories
+   - Code snippets that work
+   - Performance characteristics
+   - Integration patterns
+
+4. **DO NOT proceed without research**:
+   - No theoretical implementations
+   - No guessing at patterns
+   - Must have real code examples
+   - Must verify current best practices
+
+Example Research Queries:
+```
+perplexity_ask: "Python Redis caching best practices 2024 production"
+WebSearch: "site:github.com redis cache decorator python production"
+perplexity_ask: "GraphRAG implementation examples LangChain 2024"
+WebSearch: "event driven architecture python redis pubsub example"
+```
+
 ## Implementation Tasks (Ordered by Complexity/Usefulness)
 
 ### Task 1: Memory Caching Layer ⏳ Not Started
 
 **Priority**: HIGH | **Complexity**: LOW | **Impact**: IMMEDIATE
+
+**Research Requirements**:
+- [ ] Use `mcp__perplexity-ask__perplexity_ask` to find Redis caching patterns for Python
+- [ ] Use `WebSearch` to find production Redis cache implementations
+- [ ] Search GitHub for "python redis cache decorator" examples
+- [ ] Find real-world cache invalidation strategies
+- [ ] Locate performance benchmarking code for caching
+
+**Example Starting Code** (to be found via research):
+```python
+# Agent MUST use perplexity_ask and WebSearch to find:
+# 1. Redis connection pooling best practices
+# 2. Cache decorator implementations from popular repos
+# 3. TTL management patterns
+# 4. Cache key generation strategies
+# Example search queries:
+# - "site:github.com python redis cache decorator production"
+# - "redis cache invalidation patterns 2024"
+# - "python redis connection pool best practices"
+```
 
 **Implementation Steps**:
 - [ ] 1.1 Create cache infrastructure
@@ -75,7 +135,14 @@ Based on analysis of 2025 AI memory patterns:
   - Add `cache warm` command
   - Add cache statistics display
 
-- [ ] 1.7 Git commit caching layer
+- [ ] 1.7 Create verification report
+  - Create `/docs/reports/029_task_01_caching_layer.md`
+  - Document actual ArangoDB queries used
+  - Include real performance benchmarks
+  - Show cache hit/miss statistics
+  - Add code examples with real output
+
+- [ ] 1.8 Git commit caching layer
 
 **Technical Specifications**:
 - Use Redis 7.0+ with RedisJSON
@@ -102,6 +169,26 @@ Based on analysis of 2025 AI memory patterns:
 ### Task 2: Event-Driven Memory Capture ⏳ Not Started
 
 **Priority**: HIGH | **Complexity**: MEDIUM | **Impact**: HIGH
+
+**Research Requirements**:
+- [ ] Use `mcp__perplexity-ask__perplexity_ask` for "Redis PubSub Python patterns 2024"
+- [ ] Search GitHub for "event driven architecture python redis"
+- [ ] Find production event streaming examples
+- [ ] Research "python async event processing patterns"
+- [ ] Locate Kafka alternative implementations
+
+**Example Starting Code** (to be found via research):
+```python
+# Agent MUST find via perplexity_ask and WebSearch:
+# 1. Redis PubSub subscriber implementations
+# 2. Event schema validation examples
+# 3. Async event processing patterns
+# 4. Event deduplication strategies
+# Example repositories to search:
+# - "site:github.com redis pubsub python asyncio"
+# - "event sourcing python redis example"
+# - "python event driven microservices pattern"
+```
 
 **Implementation Steps**:
 - [ ] 2.1 Create event infrastructure
@@ -153,7 +240,14 @@ Based on analysis of 2025 AI memory patterns:
   - Add `event status` command
   - Add event replay functionality
 
-- [ ] 2.8 Git commit event system
+- [ ] 2.8 Create verification report
+  - Create `/docs/reports/029_task_02_event_system.md`
+  - Document real event consumption tests
+  - Show actual Redis PubSub integration
+  - Include memory storage verification
+  - Add performance metrics with real data
+
+- [ ] 2.9 Git commit event system
 
 **Technical Specifications**:
 - Redis PubSub for initial implementation
@@ -199,6 +293,27 @@ Based on analysis of 2025 AI memory patterns:
 ### Task 3: GraphRAG Engine Implementation ⏳ Not Started
 
 **Priority**: HIGH | **Complexity**: MEDIUM | **Impact**: HIGH
+
+**Research Requirements**:
+- [ ] Use `mcp__perplexity-ask__perplexity_ask` for "GraphRAG implementation Python 2024"
+- [ ] Search "LangChain GraphRAG example code"
+- [ ] Find "vector search graph traversal hybrid"
+- [ ] Research Microsoft GraphRAG patterns
+- [ ] Locate production GraphRAG implementations
+
+**Example Starting Code** (to be found via research):
+```python
+# Agent MUST research and find:
+# 1. GraphRAG scoring algorithms
+# 2. Vector + graph combination strategies
+# 3. Context window optimization code
+# 4. Graph expansion algorithms
+# Key searches:
+# - "site:github.com graphrag python implementation"
+# - "microsoft graphrag example code"
+# - "langchain graph vector hybrid search"
+# - "knowledge graph retrieval augmented generation"
+```
 
 **Implementation Steps**:
 - [ ] 3.1 Create GraphRAG infrastructure
@@ -250,7 +365,14 @@ Based on analysis of 2025 AI memory patterns:
   - Add debug output mode
   - Create visualization helpers
 
-- [ ] 3.8 Git commit GraphRAG engine
+- [ ] 3.8 Create verification report
+  - Create `/docs/reports/029_task_03_graphrag_engine.md`
+  - Document actual GraphRAG queries
+  - Show vector + graph combination results
+  - Compare with standard search accuracy
+  - Include real query performance data
+
+- [ ] 3.9 Git commit GraphRAG engine
 
 **Technical Specifications**:
 - Combine vector similarity with graph distance
@@ -295,6 +417,26 @@ def graphrag_search(query: str, config: GraphRAGConfig):
 ### Task 4: Cross-Reference Detection ⏳ Not Started
 
 **Priority**: MEDIUM | **Complexity**: MEDIUM | **Impact**: MEDIUM
+
+**Research Requirements**:
+- [ ] Search for "semantic similarity detection Python"
+- [ ] Find "entity coreference resolution examples"
+- [ ] Research "document cross-reference algorithms"
+- [ ] Use `mcp__perplexity-ask__perplexity_ask` for best practices
+- [ ] Locate similarity scoring implementations
+
+**Example Starting Code** (to be found via research):
+```python
+# Agent MUST find:
+# 1. Semantic similarity algorithms (cosine, jaccard)
+# 2. Entity mention detection code
+# 3. Temporal proximity patterns
+# 4. Graph-based reference detection
+# Search queries:
+# - "site:github.com cross reference detection nlp"
+# - "semantic similarity threshold optimization"
+# - "entity coreference resolution spacy"
+```
 
 **Implementation Steps**:
 - [ ] 4.1 Create cross-reference module
@@ -346,7 +488,14 @@ def graphrag_search(query: str, config: GraphRAGConfig):
   - Add `cross-ref validate` command
   - Add visualization options
 
-- [ ] 4.8 Git commit cross-references
+- [ ] 4.8 Create verification report
+  - Create `/docs/reports/029_task_04_cross_references.md`
+  - Document detected cross-references
+  - Show actual similarity scores
+  - Include precision/recall metrics
+  - Add real-world examples
+
+- [ ] 4.9 Git commit cross-references
 
 **Technical Specifications**:
 - Multiple detection strategies
@@ -384,6 +533,26 @@ REFERENCE_TYPES = {
 ### Task 5: Memory Health Monitoring ⏳ Not Started
 
 **Priority**: MEDIUM | **Complexity**: LOW | **Impact**: MEDIUM
+
+**Research Requirements**:
+- [ ] Find "Python health check patterns microservices"
+- [ ] Search "data quality monitoring examples"
+- [ ] Use `WebSearch` for "prometheus python integration"
+- [ ] Research "database health metrics collection"
+- [ ] Locate production monitoring dashboards
+
+**Example Starting Code** (to be found via research):
+```python
+# Agent MUST research:
+# 1. Health check endpoint patterns
+# 2. Metric collection with Prometheus
+# 3. Data integrity validation algorithms
+# 4. Alert threshold configuration
+# Key searches:
+# - "site:github.com python health monitoring"
+# - "prometheus metrics python best practices"
+# - "data quality checks implementation"
+```
 
 **Implementation Steps**:
 - [ ] 5.1 Create monitoring infrastructure
@@ -435,7 +604,14 @@ REFERENCE_TYPES = {
   - Add `health metrics` display
   - Create diagnostic reports
 
-- [ ] 5.8 Git commit monitoring
+- [ ] 5.8 Create verification report
+  - Create `/docs/reports/029_task_05_health_monitoring.md`
+  - Document health check results
+  - Show real consistency metrics
+  - Include alert examples
+  - Add memory health dashboard data
+
+- [ ] 5.9 Git commit monitoring
 
 **Technical Specifications**:
 - Health checks run every 5 minutes
@@ -489,6 +665,26 @@ HEALTH_CHECKS = {
 
 **Priority**: MEDIUM | **Complexity**: MEDIUM | **Impact**: MEDIUM
 
+**Research Requirements**:
+- [ ] Use `mcp__perplexity-ask__perplexity_ask` for "text summarization importance scoring"
+- [ ] Search "document compaction algorithms machine learning"
+- [ ] Find "importance-based text compression examples"
+- [ ] Research "LangChain memory compaction strategies"
+- [ ] Locate production summarization pipelines
+
+**Example Starting Code** (to be found via research):
+```python
+# Agent MUST find:
+# 1. Importance scoring algorithms for text
+# 2. Topic clustering for compaction
+# 3. Temporal decay functions
+# 4. Information retention metrics
+# Search targets:
+# - "site:github.com text compaction importance scoring"
+# - "langchain conversation memory compression"
+# - "document summarization with importance weights"
+```
+
 **Implementation Steps**:
 - [ ] 6.1 Create strategy framework
   - Create `/src/arangodb/core/memory/compaction_strategies.py`
@@ -539,7 +735,14 @@ HEALTH_CHECKS = {
   - Create evaluation commands
   - Add comparison tools
 
-- [ ] 6.8 Git commit enhanced compaction
+- [ ] 6.8 Create verification report
+  - Create `/docs/reports/029_task_06_compaction_strategies.md`
+  - Document compaction effectiveness
+  - Show importance scoring results
+  - Include before/after comparisons
+  - Add real retention metrics
+
+- [ ] 6.9 Git commit enhanced compaction
 
 **Technical Specifications**:
 - Pluggable strategy architecture
@@ -587,6 +790,26 @@ def calculate_importance(message: Dict) -> float:
 ### Task 7: Export/Import Memory Sharing ⏳ Not Started
 
 **Priority**: LOW | **Complexity**: MEDIUM | **Impact**: LOW
+
+**Research Requirements**:
+- [ ] Search "data export formats best practices"
+- [ ] Find "Python data serialization examples"
+- [ ] Use `WebSearch` for "privacy preserving data export"
+- [ ] Research "memory export import patterns AI"
+- [ ] Locate schema versioning implementations
+
+**Example Starting Code** (to be found via research):
+```python
+# Agent MUST research:
+# 1. JSON/Pickle/Parquet export patterns
+# 2. Schema versioning strategies
+# 3. PII detection and filtering
+# 4. Data validation on import
+# Key searches:
+# - "site:github.com data export import pipeline python"
+# - "privacy preserving data serialization"
+# - "schema evolution versioning patterns"
+```
 
 **Implementation Steps**:
 - [ ] 7.1 Create export framework
@@ -638,7 +861,14 @@ def calculate_importance(message: Dict) -> float:
   - Add validation commands
   - Create sharing commands
 
-- [ ] 7.8 Git commit export/import
+- [ ] 7.8 Create verification report
+  - Create `/docs/reports/029_task_07_export_import.md`
+  - Document export format examples
+  - Show import validation results
+  - Include privacy filter verification
+  - Add real data integrity checks
+
+- [ ] 7.9 Git commit export/import
 
 **Technical Specifications**:
 - Multiple export formats
@@ -682,6 +912,26 @@ def calculate_importance(message: Dict) -> float:
 ### Task 8: Performance Optimization ⏳ Not Started
 
 **Priority**: LOW | **Complexity**: HIGH | **Impact**: MEDIUM
+
+**Research Requirements**:
+- [ ] Use `mcp__perplexity-ask__perplexity_ask` for "Python performance profiling 2024"
+- [ ] Search "ArangoDB query optimization techniques"
+- [ ] Find "vector database performance tuning"
+- [ ] Research "Python memory optimization patterns"
+- [ ] Locate GPU acceleration examples
+
+**Example Starting Code** (to be found via research):
+```python
+# Agent MUST find:
+# 1. Python profiling tools and decorators
+# 2. ArangoDB index optimization patterns
+# 3. Batch processing implementations
+# 4. Memory pool management code
+# Critical searches:
+# - "site:github.com python performance optimization production"
+# - "arangodb query performance tuning"
+# - "vector search optimization techniques"
+```
 
 **Implementation Steps**:
 - [ ] 8.1 Create profiling framework
@@ -733,7 +983,14 @@ def calculate_importance(message: Dict) -> float:
   - Add analysis reports
   - Implement tuning wizard
 
-- [ ] 8.8 Git commit optimizations
+- [ ] 8.8 Create verification report
+  - Create `/docs/reports/029_task_08_performance.md`
+  - Document performance benchmarks
+  - Show before/after comparisons
+  - Include query optimization results
+  - Add load test metrics
+
+- [ ] 8.9 Git commit optimizations
 
 **Technical Specifications**:
 - Target: 10x current scale
@@ -829,7 +1086,14 @@ PERFORMANCE_TARGETS = {
   - Check error handling
   - Test merge operations
 
-- [ ] 9.8 Git commit test suite
+- [ ] 9.8 Create verification report
+  - Create `/docs/reports/029_task_09_testing.md`
+  - Document test coverage results
+  - Show integration test outcomes
+  - Include performance benchmarks
+  - Add chaos testing results
+
+- [ ] 9.9 Git commit test suite
 
 **Technical Specifications**:
 - 90%+ code coverage
@@ -929,7 +1193,14 @@ TEST_SUITES = {
   - Create changelogs
   - Add to website
 
-- [ ] 10.8 Git commit documentation
+- [ ] 10.8 Create verification report
+  - Create `/docs/reports/029_task_10_documentation.md`
+  - Document coverage of all features
+  - Show example output screenshots
+  - Include tutorial effectiveness
+  - Add migration guide verification
+
+- [ ] 10.9 Git commit documentation
 
 **Technical Specifications**:
 - Markdown documentation
@@ -987,6 +1258,7 @@ docs/
 | `export memory` | Export memories | `arangodb export memory --format json --privacy high` | Export file created |
 | `import memory` | Import memories | `arangodb import memory --file export.json --validate` | Import success report |
 | `performance profile` | Profile operations | `arangodb performance profile --operation search` | Performance metrics |
+| Task Matrix | Verify completion | Review `/docs/reports/029_task_*` and iterate | 100% completion required |
 
 ## Version Control Plan
 
@@ -1017,12 +1289,162 @@ docs/
 - [Haystack Memory](https://haystack.deepset.ai/components/memory)
 - [Semantic Kernel Memory](https://github.com/microsoft/semantic-kernel)
 
+### Task 11: Completion Verification and Iteration ⏳ Not Started
+
+**Priority**: CRITICAL | **Complexity**: LOW | **Impact**: CRITICAL
+
+**Implementation Steps**:
+- [ ] 11.1 Review all task reports
+  - Read all reports in `/docs/reports/029_task_*`
+  - Create checklist of incomplete features
+  - Identify failed tests or missing functionality
+  - Document specific issues preventing completion
+  - Prioritize fixes by impact
+
+- [ ] 11.2 Create task completion matrix
+  - Build comprehensive status table
+  - Mark each sub-task as COMPLETE/INCOMPLETE
+  - List specific failures for incomplete tasks
+  - Identify blocking dependencies
+  - Calculate overall completion percentage
+
+- [ ] 11.3 Iterate on incomplete tasks
+  - Return to first incomplete task
+  - Fix identified issues
+  - Re-run validation tests
+  - Update verification report
+  - Continue until task passes
+
+- [ ] 11.4 Re-validate completed tasks
+  - Ensure no regressions from fixes
+  - Run integration tests
+  - Verify cross-task compatibility
+  - Update affected reports
+  - Document any new limitations
+
+- [ ] 11.5 Final comprehensive validation
+  - Run all CLI commands
+  - Execute performance benchmarks
+  - Test all integrations
+  - Verify documentation accuracy
+  - Confirm all features work together
+
+- [ ] 11.6 Create final summary report
+  - Create `/docs/reports/029_final_summary.md`
+  - Include completion matrix
+  - Document all working features
+  - List any remaining limitations
+  - Provide usage recommendations
+
+- [ ] 11.7 Mark task complete only if ALL sub-tasks pass
+  - Verify 100% task completion
+  - Confirm all reports show success
+  - Ensure no critical issues remain
+  - Get final approval
+  - Update task status to ✅ Complete
+
+**Technical Specifications**:
+- Zero tolerance for incomplete features
+- Mandatory iteration until completion
+- All tests must pass
+- All reports must verify success
+- No theoretical completions allowed
+
+**Verification Method**:
+- Task completion matrix showing 100%
+- All reports confirming success
+- Rich table with final status:
+  - Task name: string
+  - Status: COMPLETE/INCOMPLETE
+  - Tests passed: all/partial
+  - Report verified: yes/no
+
+**Acceptance Criteria**:
+- ALL 11 tasks marked COMPLETE
+- ALL verification reports show success
+- ALL tests pass without mocking
+- ALL features work in production
+- NO incomplete functionality
+
+**CRITICAL ITERATION REQUIREMENT**:
+This task CANNOT be marked complete until ALL previous tasks (1-10) are verified as COMPLETE with passing tests and working functionality. The agent MUST continue iterating on incomplete tasks until 100% completion is achieved.
+
 ## Progress Tracking
 
 - Start date: TBD
 - Current phase: Planning
 - Expected completion: TBD
 - Completion criteria: All features working, tests passing, documented
+
+## Report Documentation Requirements
+
+Each sub-task MUST have a corresponding verification report in `/docs/reports/` following these requirements:
+
+### Report Structure:
+Each report must include:
+1. **Task Summary**: Brief description of what was implemented
+2. **Research Findings**: Links to repos, code examples found, best practices discovered
+3. **Non-Mocked Results**: Real ArangoDB queries and actual output
+4. **Performance Metrics**: Actual benchmarks with real data
+5. **Code Examples**: Working code with verified output
+6. **Verification Evidence**: Screenshots, logs, or metrics proving functionality
+7. **Limitations Found**: Any discovered issues or constraints
+8. **External Resources Used**: All GitHub repos, articles, and examples referenced
+
+### Report Naming Convention:
+`/docs/reports/029_task_XX_feature_name.md`
+
+Example content for a caching layer report:
+```markdown
+# Task 029.1: Memory Caching Layer Verification Report
+
+## Summary
+Implemented Redis-based caching for ArangoDB search operations with 45% performance improvement.
+
+## Real ArangoDB Queries Used
+```aql
+// Query before caching
+FOR doc IN messages
+  FILTER doc.content =~ "machine learning"
+  LIMIT 10
+  RETURN doc
+// Execution time: 234ms
+```
+
+## Actual Performance Results
+| Operation | Without Cache | With Cache | Improvement |
+|-----------|--------------|------------|-------------|
+| Semantic Search | 234ms | 128ms | 45.3% |
+| BM25 Search | 156ms | 43ms | 72.4% |
+| Graph Traverse | 345ms | 201ms | 41.7% |
+
+## Working Code Example
+```python
+# Actual test with real data
+result = memory_agent.search("machine learning", use_cache=True)
+print(f"Cache hit: {result.cache_hit}")
+print(f"Response time: {result.response_time}ms")
+# Output:
+# Cache hit: True
+# Response time: 43ms
+```
+
+## Verification Evidence
+- Screenshot of Redis cache statistics
+- ArangoDB query profiler output
+- Performance monitoring dashboard
+
+## Limitations Discovered
+- Cache invalidation requires manual trigger for now
+- Maximum cache size limited to 1GB
+```
+
+### Important Notes:
+- NEVER use mocked data or simulated results
+- ALL queries must be executed against real ArangoDB
+- Performance metrics must be from actual benchmarks
+- Code examples must be tested and working
+- Report only what actually works, not theoretical capabilities
 
 ## Context Management
 

@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title or "Hierarchical Tree" }}</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        
+        #graph-container {
+            width: 100vw;
+            height: 100vh;
+            background-color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .node circle {
+            fill: #fff;
+            stroke: steelblue;
+            stroke-width: 3px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .node circle.collapsed {
+            fill: lightsteelblue;
+        }
+        
+        .node circle:hover {
+            stroke: #ff7f00;
+            stroke-width: 4px;
+        }
+        
+        .node text {
+            font: 12px sans-serif;
+            pointer-events: none;
+            user-select: none;
+        }
+        
+        .node.root circle {
+            stroke: #2ca02c;
+            stroke-width: 4px;
+        }
+        
+        .link {
+            fill: none;
+            stroke: #ccc;
+            stroke-width: 2px;
+            transition: all 0.3s ease;
+        }
+        
+        .link.highlighted {
+            stroke: #ff7f00;
+            stroke-width: 3px;
+        }
+        
+        .controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+        
+        .control-label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 5px;
+            color: #495057;
+        }
+        
+        .control-btn {
+            padding: 8px 16px;
+            border: 1px solid #dee2e6;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            margin-right: 10px;
+        }
+        
+        .control-btn:hover {
+            background-color: #f8f9fa;
+            border-color: #adb5bd;
+        }
+        
+        .control-btn.active {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+        
+        .breadcrumb {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            font-size: 14px;
+        }
+        
+        .breadcrumb-item {
+            display: inline-block;
+            color: #007bff;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        
+        .breadcrumb-item:hover {
+            text-decoration: underline;
+        }
+        
+        .breadcrumb-separator {
+            margin: 0 8px;
+            color: #6c757d;
+        }
+        
+        .tooltip {
+            position: absolute;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            border-radius: 4px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            font-size: 14px;
+            max-width: 300px;
+            z-index: 1000;
+        }
+        
+        .node-label {
+            font-weight: 500;
+        }
+        
+        .node-details {
+            font-size: 11px;
+            fill: #6c757d;
+        }
+        
+        .orientation-toggle {
+            display: flex;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="graph-container">
+        <div class="breadcrumb" id="breadcrumb">
+            <span class="breadcrumb-item" data-id="root">Root</span>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label class="control-label">Orientation</label>
+                <div class="orientation-toggle">
+                    <button class="control-btn active" id="orientation-horizontal">Horizontal</button>
+                    <button class="control-btn" id="orientation-vertical">Vertical</button>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <button class="control-btn" id="expand-all">Expand All</button>
+                <button class="control-btn" id="collapse-all">Collapse All</button>
+            </div>
+            
+            <div class="control-group">
+                <button class="control-btn" id="reset-view">Reset View</button>
+                <button class="control-btn" id="fit-view">Fit to View</button>
+            </div>
+            
+            <div class="control-group">
+                <label class="control-label">Animation Speed</label>
+                <input type="range" id="animation-speed" min="0" max="1500" value="750" style="width: 100%;">
+                <span id="speed-value">750ms</span>
+            </div>
+        </div>
+        
+        <div class="tooltip" id="tooltip"></div>
+    </div>
+    
+    <script>
+        // Graph data will be injected here
+        const graphData = {{ graph_data | tojson | safe }};
+        const config = {{ config | tojson | safe }};
+        
+        // Set up dimensions
+        const margin = {top: 40, right: 120, bottom: 40, left: 120};
+        const width = window.innerWidth - margin.left - margin.right;
+        const height = window.innerHeight - margin.top - margin.bottom;
+        
+        // Create SVG
+        const svg = d3.select("#graph-container")
+            .append("svg")
+            .attr("width", "100%")
+            .attr("height", "100%");
+        
+        const g = svg.append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
+        
+        // Add zoom behavior
+        const zoom = d3.zoom()
+            .scaleExtent([0.1, 10])
+            .on("zoom", (event) => {
+                g.attr("transform", event.transform);
+            });
+        
+        svg.call(zoom);
+        
+        // Animation duration
+        let duration = 750;
+        const animationSpeed = document.getElementById("animation-speed");
+        animationSpeed.addEventListener("input", function() {
+            duration = +this.value;
+            document.getElementById("speed-value").textContent = duration + "ms";
+        });
+        
+        // Tree layout
+        let tree = d3.tree()
+            .size([height, width])
+            .separation((a, b) => (a.parent == b.parent ? 1 : 2) / a.depth);
+        
+        // Orientation toggle
+        let isHorizontal = true;
+        
+        document.getElementById("orientation-horizontal").addEventListener("click", function() {
+            isHorizontal = true;
+            this.classList.add("active");
+            document.getElementById("orientation-vertical").classList.remove("active");
+            tree.size([height, width]);
+            update(root);
+        });
+        
+        document.getElementById("orientation-vertical").addEventListener("click", function() {
+            isHorizontal = false;
+            this.classList.add("active");
+            document.getElementById("orientation-horizontal").classList.remove("active");
+            tree.size([width, height]);
+            update(root);
+        });
+        
+        // Convert flat data to hierarchy if needed
+        let root;
+        if (graphData.children || graphData.name) {
+            // Already hierarchical
+            root = d3.hierarchy(graphData);
+        } else {
+            // Need to convert from nodes/links to hierarchy
+            root = convertToHierarchy(graphData);
+        }
+        
+        root.x0 = height / 2;
+        root.y0 = 0;
+        
+        // Collapse after the second level
+        if (root.children) {
+            root.children.forEach(collapse);
+        }
+        
+        let i = 0; // For unique node IDs
+        
+        update(root);
+        
+        // Convert graph data to hierarchy
+        function convertToHierarchy(data) {
+            const nodes = data.nodes;
+            const links = data.links;
+            
+            // Find root node(s) - nodes with no incoming edges
+            const targets = new Set(links.map(l => l.target));
+            const roots = nodes.filter(n => !targets.has(n.id));
+            
+            if (roots.length === 0) {
+                // If no clear root, use first node
+                roots.push(nodes[0]);
+            }
+            
+            // Build adjacency list
+            const children = {};
+            links.forEach(link => {
+                if (!children[link.source]) {
+                    children[link.source] = [];
+                }
+                children[link.source].push(link.target);
+            });
+            
+            // Convert to hierarchy
+            function buildTree(nodeId, visited = new Set()) {
+                if (visited.has(nodeId)) return null;
+                visited.add(nodeId);
+                
+                const node = nodes.find(n => n.id === nodeId);
+                if (!node) return null;
+                
+                const treeNode = {
+                    id: node.id,
+                    name: node.name || node.id,
+                    data: node
+                };
+                
+                if (children[nodeId]) {
+                    const childNodes = children[nodeId]
+                        .map(childId => buildTree(childId, visited))
+                        .filter(n => n !== null);
+                    
+                    if (childNodes.length > 0) {
+                        treeNode.children = childNodes;
+                    }
+                }
+                
+                return treeNode;
+            }
+            
+            // If multiple roots, create synthetic root
+            if (roots.length > 1) {
+                return d3.hierarchy({
+                    id: "_root",
+                    name: "Root",
+                    children: roots.map(r => buildTree(r.id))
+                });
+            } else {
+                return d3.hierarchy(buildTree(roots[0].id));
+            }
+        }
+        
+        // Collapse function
+        function collapse(d) {
+            if (d.children) {
+                d._children = d.children;
+                d._children.forEach(collapse);
+                d.children = null;
+            }
+        }
+        
+        // Expand function
+        function expand(d) {
+            if (d._children) {
+                d.children = d._children;
+                d.children.forEach(expand);
+                d._children = null;
+            }
+        }
+        
+        // Update function
+        function update(source) {
+            // Compute the new tree layout
+            const treeData = tree(root);
+            const nodes = treeData.descendants();
+            const links = treeData.descendants().slice(1);
+            
+            // Normalize for fixed-depth
+            nodes.forEach(d => {
+                if (isHorizontal) {
+                    d.y = d.depth * 180;
+                } else {
+                    d.x = d.depth * 180;
+                }
+            });
+            
+            // Update breadcrumb
+            updateBreadcrumb(source);
+            
+            // Update nodes
+            const node = g.selectAll("g.node")
+                .data(nodes, d => d.id || (d.id = ++i));
+            
+            // Enter new nodes at parent's previous position
+            const nodeEnter = node.enter().append("g")
+                .attr("class", d => "node" + (d.depth === 0 ? " root" : ""))
+                .attr("transform", d => {
+                    if (isHorizontal) {
+                        return `translate(${source.y0},${source.x0})`;
+                    } else {
+                        return `translate(${source.x0},${source.y0})`;
+                    }
+                })
+                .on("click", click)
+                .on("mouseover", showTooltip)
+                .on("mouseout", hideTooltip);
+            
+            // Add Circle for nodes
+            nodeEnter.append("circle")
+                .attr("class", d => d._children ? "collapsed" : "")
+                .attr("r", 1e-6);
+            
+            // Add labels for nodes
+            nodeEnter.append("text")
+                .attr("class", "node-label")
+                .attr("dy", ".35em")
+                .attr("x", d => d.children || d._children ? -13 : 13)
+                .attr("text-anchor", d => d.children || d._children ? "end" : "start")
+                .text(d => d.data.name || d.data.id)
+                .style("fill-opacity", 1e-6);
+            
+            // Add details text
+            nodeEnter.append("text")
+                .attr("class", "node-details")
+                .attr("dy", "1.5em")
+                .attr("x", d => d.children || d._children ? -13 : 13)
+                .attr("text-anchor", d => d.children || d._children ? "end" : "start")
+                .text(d => d.data.type || "")
+                .style("fill-opacity", 1e-6);
+            
+            // UPDATE
+            const nodeUpdate = nodeEnter.merge(node);
+            
+            // Transition to proper position
+            nodeUpdate.transition()
+                .duration(duration)
+                .attr("transform", d => {
+                    if (isHorizontal) {
+                        return `translate(${d.y},${d.x})`;
+                    } else {
+                        return `translate(${d.x},${d.y})`;
+                    }
+                });
+            
+            // Update node attributes
+            nodeUpdate.select("circle")
+                .attr("r", 8)
+                .attr("class", d => d._children ? "collapsed" : "");
+            
+            nodeUpdate.select("text.node-label")
+                .style("fill-opacity", 1);
+            
+            nodeUpdate.select("text.node-details")
+                .style("fill-opacity", 0.7);
+            
+            // Remove exiting nodes
+            const nodeExit = node.exit().transition()
+                .duration(duration)
+                .attr("transform", d => {
+                    if (isHorizontal) {
+                        return `translate(${source.y},${source.x})`;
+                    } else {
+                        return `translate(${source.x},${source.y})`;
+                    }
+                })
+                .remove();
+            
+            nodeExit.select("circle")
+                .attr("r", 1e-6);
+            
+            nodeExit.selectAll("text")
+                .style("fill-opacity", 1e-6);
+            
+            // Update links
+            const link = g.selectAll("path.link")
+                .data(links, d => d.id);
+            
+            // Enter new links at parent's previous position
+            const linkEnter = link.enter().insert("path", "g")
+                .attr("class", "link")
+                .attr("d", d => {
+                    const o = {x: source.x0, y: source.y0};
+                    return diagonal(o, o);
+                });
+            
+            // UPDATE
+            const linkUpdate = linkEnter.merge(link);
+            
+            // Transition to new position
+            linkUpdate.transition()
+                .duration(duration)
+                .attr("d", d => diagonal(d, d.parent));
+            
+            // Remove exiting links
+            const linkExit = link.exit().transition()
+                .duration(duration)
+                .attr("d", d => {
+                    const o = {x: source.x, y: source.y};
+                    return diagonal(o, o);
+                })
+                .remove();
+            
+            // Store old positions for transition
+            nodes.forEach(d => {
+                d.x0 = d.x;
+                d.y0 = d.y;
+            });
+            
+            // Highlight path on hover
+            nodeUpdate.on("mouseover", function(event, d) {
+                highlightPath(d);
+                showTooltip(event, d);
+            })
+            .on("mouseout", function(event, d) {
+                unhighlightPath();
+                hideTooltip();
+            });
+        }
+        
+        // Diagonal path function
+        function diagonal(s, d) {
+            if (isHorizontal) {
+                return `M ${s.y} ${s.x}
+                        C ${(s.y + d.y) / 2} ${s.x},
+                          ${(s.y + d.y) / 2} ${d.x},
+                          ${d.y} ${d.x}`;
+            } else {
+                return `M ${s.x} ${s.y}
+                        C ${(s.x + d.x) / 2} ${s.y},
+                          ${(s.x + d.x) / 2} ${d.y},
+                          ${d.x} ${d.y}`;
+            }
+        }
+        
+        // Toggle children on click
+        function click(event, d) {
+            if (d.children) {
+                d._children = d.children;
+                d.children = null;
+            } else {
+                d.children = d._children;
+                d._children = null;
+            }
+            update(d);
+        }
+        
+        // Breadcrumb navigation
+        function updateBreadcrumb(node) {
+            const path = [];
+            let current = node;
+            
+            while (current.parent) {
+                path.unshift(current);
+                current = current.parent;
+            }
+            path.unshift(current); // Add root
+            
+            const breadcrumb = d3.select("#breadcrumb");
+            breadcrumb.selectAll(".breadcrumb-item").remove();
+            breadcrumb.selectAll(".breadcrumb-separator").remove();
+            
+            path.forEach((d, i) => {
+                if (i > 0) {
+                    breadcrumb.append("span")
+                        .attr("class", "breadcrumb-separator")
+                        .text(">");
+                }
+                
+                breadcrumb.append("span")
+                    .attr("class", "breadcrumb-item")
+                    .attr("data-id", d.id)
+                    .text(d.data.name || d.data.id)
+                    .on("click", () => focusNode(d));
+            });
+        }
+        
+        // Focus on specific node
+        function focusNode(d) {
+            // Expand path to node
+            let current = d;
+            while (current.parent) {
+                if (current.parent._children) {
+                    current.parent.children = current.parent._children;
+                    current.parent._children = null;
+                }
+                current = current.parent;
+            }
+            
+            // Collapse siblings
+            if (d.parent && d.parent.children) {
+                d.parent.children.forEach(sibling => {
+                    if (sibling !== d && sibling.children) {
+                        sibling._children = sibling.children;
+                        sibling.children = null;
+                    }
+                });
+            }
+            
+            update(d);
+            centerNode(d);
+        }
+        
+        // Center node in view
+        function centerNode(d) {
+            const transform = d3.zoomTransform(svg.node());
+            let x, y;
+            
+            if (isHorizontal) {
+                x = -d.y;
+                y = -d.x;
+            } else {
+                x = -d.x;
+                y = -d.y;
+            }
+            
+            svg.transition()
+                .duration(duration)
+                .call(zoom.transform, d3.zoomIdentity
+                    .translate(width / 2, height / 2)
+                    .scale(transform.k)
+                    .translate(x, y));
+        }
+        
+        // Highlight path to root
+        function highlightPath(node) {
+            const path = [];
+            let current = node;
+            
+            while (current.parent) {
+                path.push(current);
+                current = current.parent;
+            }
+            
+            g.selectAll("path.link")
+                .classed("highlighted", d => path.includes(d));
+        }
+        
+        function unhighlightPath() {
+            g.selectAll("path.link")
+                .classed("highlighted", false);
+        }
+        
+        // Tooltip functions
+        const tooltip = d3.select("#tooltip");
+        
+        function showTooltip(event, d) {
+            const data = d.data.data || d.data;
+            let content = `<strong>${data.name || data.id}</strong><br>`;
+            
+            if (data.type) content += `Type: ${data.type}<br>`;
+            if (data.group) content += `Group: ${data.group}<br>`;
+            
+            const childCount = (d.children ? d.children.length : 0) + 
+                             (d._children ? d._children.length : 0);
+            if (childCount > 0) {
+                content += `Children: ${childCount}<br>`;
+            }
+            
+            // Add custom properties
+            Object.keys(data).forEach(key => {
+                if (!['id', 'name', 'type', 'group', 'children', '_children', 'x', 'y', 'x0', 'y0'].includes(key)) {
+                    content += `${key}: ${data[key]}<br>`;
+                }
+            });
+            
+            tooltip.html(content)
+                .style("left", (event.pageX + 10) + "px")
+                .style("top", (event.pageY - 28) + "px")
+                .style("opacity", 1);
+        }
+        
+        function hideTooltip() {
+            tooltip.style("opacity", 0);
+        }
+        
+        // Control buttons
+        document.getElementById("expand-all").addEventListener("click", () => {
+            root.children.forEach(expand);
+            update(root);
+        });
+        
+        document.getElementById("collapse-all").addEventListener("click", () => {
+            root.children.forEach(collapse);
+            update(root);
+        });
+        
+        document.getElementById("reset-view").addEventListener("click", () => {
+            svg.transition()
+                .duration(750)
+                .call(zoom.transform, d3.zoomIdentity);
+        });
+        
+        document.getElementById("fit-view").addEventListener("click", () => {
+            const bounds = g.node().getBBox();
+            const fullWidth = width + margin.left + margin.right;
+            const fullHeight = height + margin.top + margin.bottom;
+            const widthScale = fullWidth / bounds.width;
+            const heightScale = fullHeight / bounds.height;
+            const scale = Math.min(widthScale, heightScale) * 0.9;
+            
+            const translate = [
+                fullWidth / 2 - scale * (bounds.x + bounds.width / 2),
+                fullHeight / 2 - scale * (bounds.y + bounds.height / 2)
+            ];
+            
+            svg.transition()
+                .duration(750)
+                .call(zoom.transform, d3.zoomIdentity
+                    .translate(translate[0], translate[1])
+                    .scale(scale));
+        });
+        
+        // Handle window resize
+        window.addEventListener("resize", () => {
+            const newWidth = window.innerWidth - margin.left - margin.right;
+            const newHeight = window.innerHeight - margin.top - margin.bottom;
+            
+            svg.attr("width", window.innerWidth)
+               .attr("height", window.innerHeight);
+            
+            tree.size(isHorizontal ? [newHeight, newWidth] : [newWidth, newHeight]);
+            update(root);
+        });
+    </script>
+</body>
+</html>
