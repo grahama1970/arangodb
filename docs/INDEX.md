@@ -35,7 +35,9 @@
 
 ### Development Guidelines
 - **[Global Coding Standards](GLOBAL_CODING_STANDARDS.md)** - Code standards
-- **[Task Guidelines](guides/TASK_GUIDELINES.md)** - Development process
+- **[Task Documentation](guides/TASK_DOCUMENTATION_OVERVIEW.md)** - Task documentation overview
+- **[Task List Template](guides/TASK_LIST_TEMPLATE_GUIDE.md)** - Creating new tasks
+- **[Quick Reference](guides/TASK_GUIDELINES_QUICK_REFERENCE.md)** - Task checklist
 - **[Validation Requirements](guides/VALIDATION_REQUIREMENTS.md)** - Testing
 
 ### Troubleshooting

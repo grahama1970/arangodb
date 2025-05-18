@@ -1107,7 +1107,68 @@ Based on extensive research, we will build a custom solution using:
   - Add health check for visualization dependencies
   - Document in CLI help system
 
-- [ ] 8.6 Git commit CLI integration
+- [ ] 8.6 Verify actual CLI functionality
+  - **CRITICAL**: Must execute actual CLI commands, not unit tests
+  - Test `python -m arangodb.cli visualize --help`
+  - Test `python -m arangodb.cli visualize from-file test.json`
+  - Test with both D3.js and ArangoDB format JSON files
+  - Verify all layout types work: force, tree, radial, sankey
+  - Test error conditions and edge cases
+  - Create screenshots of actual CLI usage
+  - Document exact command syntax and options
+
+- [ ] 8.7 Test real data scenarios
+  - Create test JSON files in both formats
+  - Run CLI with real ArangoDB export data
+  - Test with large graphs for performance
+  - Verify file generation works correctly
+  - Test --no-open-browser flag
+  - Test custom output paths
+  - Verify LLM integration with correct model names
+
+- [ ] 8.8 Create CLI verification report
+  - Create `/docs/reports/028_task_8_cli_testing.md`
+  - Document all actual CLI commands executed
+  - Include actual terminal output screenshots
+  - Show generated HTML files working
+  - Document any discovered issues
+  - List exact model names being used
+  - Include real error messages encountered
+
+- [ ] 8.9 Git commit CLI integration
+
+**CLI Testing Requirements** (MANDATORY):
+- Execute ALL CLI commands with real data
+- Test from-file with both D3.js and ArangoDB formats
+- Test from-query with actual AQL queries  
+- Test start-server and verify it runs
+- Verify error handling with invalid inputs
+- Document complete command outputs
+- Include any error messages verbatim
+- Test all parameter combinations
+- Verify integration with LLM services
+- Check data format conversions work correctly
+
+**Example CLI Tests That Must Be Run**:
+```bash
+# Test 1: From file with D3.js format
+arangodb visualization from-file test_data/d3_format.json
+
+# Test 2: From file with ArangoDB format
+arangodb visualization from-file test_data/arango_format.json
+
+# Test 3: From query
+arangodb visualization from-query "FOR v IN test_vertices RETURN v"
+
+# Test 4: With custom output
+arangodb visualization from-file data.json --output custom_output.html
+
+# Test 5: Server start
+arangodb visualization start-server --host 0.0.0.0 --port 8080
+
+# Test 6: Error handling
+arangodb visualization from-file nonexistent.json
+```
 
 **Technical Specifications**:
 - Integrate with existing Typer structure

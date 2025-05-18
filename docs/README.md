@@ -35,7 +35,10 @@ docs/
 ├── guides/               # How-to guides
 │   ├── BETA_TESTING_GUIDE.md # Beta testing guide
 │   ├── TEMPORAL_MODEL_GUIDE.md # Bi-temporal features
-│   ├── TASK_GUIDELINES.md # Development process
+│   ├── TASK_DOCUMENTATION_OVERVIEW.md # Task docs overview
+│   ├── TASK_LIST_TEMPLATE_GUIDE.md # Task creation template
+│   ├── TASK_GUIDELINES_QUICK_REFERENCE.md # Quick checklist
+│   ├── TASK_ITERATION_PROCESS.md # Bug iteration process
 │   └── TROUBLESHOOTING.md # Problem solving
 │
 ├── reports/              # Status reports
@@ -69,8 +72,9 @@ docs/
 
 ### Developers
 1. [Global Coding Standards](GLOBAL_CODING_STANDARDS.md) - Code style
-2. [Task Guidelines](guides/TASK_GUIDELINES.md) - Development process
-3. [Architecture Docs](architecture/) - Technical details
+2. [Task Documentation Overview](guides/TASK_DOCUMENTATION_OVERVIEW.md) - Task docs guide
+3. [Task List Template](guides/TASK_LIST_TEMPLATE_GUIDE.md) - Creating new tasks
+4. [Architecture Docs](architecture/) - Technical details
 
 ### Troubleshooting
 1. [General Guide](guides/TROUBLESHOOTING.md) - Common issues
@@ -95,7 +99,9 @@ docs/
 - **Install/Setup**: See [BETA_RELEASE_NOTES.md](BETA_RELEASE_NOTES.md)
 - **Learn Commands**: See [CLI_GUIDE.md](usage/CLI_GUIDE.md)
 - **Integrate**: See [agent_integration_guide.md](usage/agent_integration_guide.md)
-- **Develop**: See [TASK_GUIDELINES.md](guides/TASK_GUIDELINES.md)
+- **Develop**: See [TASK_DOCUMENTATION_OVERVIEW.md](guides/TASK_DOCUMENTATION_OVERVIEW.md)
+- **Create Tasks**: See [TASK_LIST_TEMPLATE_GUIDE.md](guides/TASK_LIST_TEMPLATE_GUIDE.md)
+- **Quick Reference**: See [TASK_GUIDELINES_QUICK_REFERENCE.md](guides/TASK_GUIDELINES_QUICK_REFERENCE.md)
 
 ## 🔍 Recent Updates
 - Consolidated CLI documentation into single guide

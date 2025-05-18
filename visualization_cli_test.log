@@ -1,0 +1,36 @@
+2025-05-18 09:41:37.504 | INFO     | __main__:main:130 - Starting visualization CLI tests
+2025-05-18 09:41:37.521 | INFO     | __main__:test_visualization_cli:35 - Help command test completed
+2025-05-18 09:41:37.534 | INFO     | __main__:test_visualization_cli:47 - Layouts command test completed
+2025-05-18 09:41:37.549 | INFO     | __main__:test_visualization_cli:59 - Examples command test completed
+2025-05-18 09:41:37.562 | ERROR    | __main__:test_visualization_cli:91 - Exception: 2
+2025-05-18 09:41:37.563 | INFO     | __main__:test_visualization_cli:99 - From file command test completed
+2025-05-18 09:41:37.586 | INFO     | __main__:test_visualization_cli:112 - Generate command help test completed
+2025-05-18 09:42:09.195 | INFO     | __main__:main:132 - Starting visualization CLI tests
+2025-05-18 09:42:09.211 | INFO     | __main__:test_visualization_cli:36 - Help command test completed
+2025-05-18 09:42:09.225 | INFO     | __main__:test_visualization_cli:48 - Layouts command test completed
+2025-05-18 09:42:09.239 | INFO     | __main__:test_visualization_cli:61 - Examples command test completed
+2025-05-18 09:42:09.252 | ERROR    | __main__:test_visualization_cli:93 - Exception: 2
+2025-05-18 09:42:09.252 | INFO     | __main__:test_visualization_cli:101 - From file command test completed
+2025-05-18 09:42:09.274 | INFO     | __main__:test_visualization_cli:114 - Generate command help test completed
+2025-05-18 09:42:30.712 | INFO     | __main__:main:134 - Starting visualization CLI tests
+2025-05-18 09:42:30.729 | INFO     | __main__:test_visualization_cli:36 - Help command test completed
+2025-05-18 09:42:30.742 | INFO     | __main__:test_visualization_cli:48 - Layouts command test completed
+2025-05-18 09:42:30.756 | INFO     | __main__:test_visualization_cli:61 - Examples command test completed
+2025-05-18 09:42:30.769 | ERROR    | __main__:test_visualization_cli:93 - Exception: 2
+2025-05-18 09:42:30.769 | ERROR    | __main__:test_visualization_cli:94 - Output: Usage: arangodb visualize from-file [OPTIONS] INPUT_FILE
+Try 'arangodb visualize from-file -h' for help.
+╭─ Error ──────────────────────────────────────────────────────────────────────╮
+│ Got unexpected extra arguments (false false)                                 │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+2025-05-18 09:42:30.791 | INFO     | __main__:test_visualization_cli:116 - Generate command help test completed
+2025-05-18 09:42:52.320 | INFO     | __main__:main:134 - Starting visualization CLI tests
+2025-05-18 09:42:52.336 | INFO     | __main__:test_visualization_cli:36 - Help command test completed
+2025-05-18 09:42:52.350 | INFO     | __main__:test_visualization_cli:48 - Layouts command test completed
+2025-05-18 09:42:52.364 | INFO     | __main__:test_visualization_cli:61 - Examples command test completed
+2025-05-18 09:42:52.378 | INFO     | arangodb.visualization.core.d3_engine:__init__:101 - D3VisualizationEngine initialized with template_dir: /home/graham/workspace/experiments/arangodb/src/arangodb/visualization/templates
+2025-05-18 09:42:52.378 | INFO     | arangodb.visualization.core.d3_engine:generate_visualization:124 - Generating visualization with layout: force
+2025-05-18 09:42:52.378 | INFO     | arangodb.visualization.core.d3_engine:generate_force_layout:286 - Generating force-directed layout
+2025-05-18 09:42:52.378 | INFO     | arangodb.visualization.core.d3_engine:generate_visualization:142 - Visualization generated successfully for 2 nodes
+2025-05-18 09:42:52.379 | INFO     | __main__:test_visualization_cli:103 - From file command test completed
+2025-05-18 09:42:52.401 | INFO     | __main__:test_visualization_cli:116 - Generate command help test completed

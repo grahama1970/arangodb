@@ -1,0 +1,34 @@
+2025-05-18 09:55:28.470 | INFO     | arangodb.visualization.core.llm_recommender:__init__:51 - LLMRecommender initialized with model: vertex_ai/gemini-2.5-flash
+2025-05-18 09:55:28.470 | INFO     | arangodb.visualization.core.d3_engine:__init__:106 - LLM recommender initialized
+2025-05-18 09:55:28.470 | INFO     | arangodb.visualization.core.performance_optimizer:__init__:55 - PerformanceOptimizer initialized
+2025-05-18 09:55:28.470 | INFO     | arangodb.visualization.core.d3_engine:__init__:116 - Performance optimizer initialized
+2025-05-18 09:55:28.470 | INFO     | arangodb.visualization.core.d3_engine:__init__:121 - D3VisualizationEngine initialized with template_dir: /home/graham/workspace/experiments/arangodb/src/arangodb/visualization/templates
+2025-05-18 09:55:28.470 | INFO     | arangodb.visualization.core.llm_recommender:__init__:51 - LLMRecommender initialized with model: vertex_ai/gemini-2.5-flash
+2025-05-18 09:55:28.470 | INFO     | arangodb.visualization.core.d3_engine:__init__:106 - LLM recommender initialized
+2025-05-18 09:55:28.470 | INFO     | arangodb.visualization.core.performance_optimizer:__init__:55 - PerformanceOptimizer initialized
+2025-05-18 09:55:28.470 | INFO     | arangodb.visualization.core.d3_engine:__init__:116 - Performance optimizer initialized
+2025-05-18 09:55:28.470 | INFO     | arangodb.visualization.core.d3_engine:__init__:121 - D3VisualizationEngine initialized with template_dir: /home/graham/workspace/experiments/arangodb/src/arangodb/visualization/templates
+2025-05-18 09:55:28.470 | INFO     | arangodb.visualization.core.d3_engine:generate_visualization:144 - Generating visualization with layout: force
+2025-05-18 09:55:28.470 | INFO     | arangodb.visualization.core.d3_engine:generate_force_layout:331 - Generating force-directed layout
+2025-05-18 09:55:28.471 | INFO     | arangodb.visualization.core.d3_engine:generate_visualization:187 - Visualization generated successfully for 1 nodes
+2025-05-18 09:55:28.471 | INFO     | arangodb.visualization.core.performance_optimizer:__init__:55 - PerformanceOptimizer initialized
+2025-05-18 09:55:28.471 | INFO     | arangodb.visualization.core.performance_optimizer:optimize_graph:69 - Optimizing graph: 100 nodes, 0 edges
+2025-05-18 09:55:28.471 | INFO     | arangodb.visualization.core.performance_optimizer:optimize_graph:73 - Graph within size limits, minimal optimization needed
+2025-05-18 09:57:15.898 | INFO     | arangodb.visualization.core.llm_recommender:__init__:51 - LLMRecommender initialized with model: vertex_ai/gemini-2.5-flash
+2025-05-18 09:57:15.899 | INFO     | arangodb.visualization.core.d3_engine:__init__:106 - LLM recommender initialized
+2025-05-18 09:57:15.899 | INFO     | arangodb.visualization.core.performance_optimizer:__init__:55 - PerformanceOptimizer initialized
+2025-05-18 09:57:15.899 | INFO     | arangodb.visualization.core.d3_engine:__init__:116 - Performance optimizer initialized
+2025-05-18 09:57:15.899 | INFO     | arangodb.visualization.core.d3_engine:__init__:121 - D3VisualizationEngine initialized with template_dir: /home/graham/workspace/experiments/arangodb/src/arangodb/visualization/templates
+2025-05-18 09:57:15.899 | INFO     | arangodb.visualization.core.data_transformer:transform_graph_data:78 - Transforming ArangoDB data to D3.js format
+2025-05-18 09:57:15.899 | INFO     | arangodb.visualization.core.data_transformer:transform_graph_data:122 - Transformed 1 nodes and 0 links
+2025-05-18 09:57:15.899 | INFO     | arangodb.visualization.core.llm_recommender:__init__:51 - LLMRecommender initialized with model: vertex_ai/gemini-2.5-flash
+2025-05-18 09:57:15.899 | INFO     | arangodb.visualization.core.d3_engine:__init__:106 - LLM recommender initialized
+2025-05-18 09:57:15.899 | INFO     | arangodb.visualization.core.performance_optimizer:__init__:55 - PerformanceOptimizer initialized
+2025-05-18 09:57:15.899 | INFO     | arangodb.visualization.core.d3_engine:__init__:116 - Performance optimizer initialized
+2025-05-18 09:57:15.899 | INFO     | arangodb.visualization.core.d3_engine:__init__:121 - D3VisualizationEngine initialized with template_dir: /home/graham/workspace/experiments/arangodb/src/arangodb/visualization/templates
+2025-05-18 09:57:15.899 | INFO     | arangodb.visualization.core.d3_engine:generate_visualization:144 - Generating visualization with layout: force
+2025-05-18 09:57:15.899 | INFO     | arangodb.visualization.core.d3_engine:generate_force_layout:331 - Generating force-directed layout
+2025-05-18 09:57:15.899 | INFO     | arangodb.visualization.core.d3_engine:generate_visualization:187 - Visualization generated successfully for 1 nodes
+2025-05-18 09:57:15.899 | INFO     | arangodb.visualization.core.performance_optimizer:__init__:55 - PerformanceOptimizer initialized
+2025-05-18 09:57:15.899 | INFO     | arangodb.visualization.core.performance_optimizer:optimize_graph:69 - Optimizing graph: 100 nodes, 0 edges
+2025-05-18 09:57:15.899 | INFO     | arangodb.visualization.core.performance_optimizer:optimize_graph:73 - Graph within size limits, minimal optimization needed

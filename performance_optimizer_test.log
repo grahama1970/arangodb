@@ -1,0 +1,8 @@
+2025-05-18 09:45:34.169 | INFO     | __main__:__init__:55 - PerformanceOptimizer initialized
+2025-05-18 09:45:34.170 | INFO     | __main__:optimize_graph:69 - Optimizing graph: 50 nodes, 98 edges
+2025-05-18 09:45:34.170 | INFO     | __main__:optimize_graph:73 - Graph within size limits, minimal optimization needed
+2025-05-18 09:45:34.170 | INFO     | __main__:<module>:497 - Small graph optimization: 50 nodes, 98 edges
+2025-05-18 09:45:34.186 | INFO     | __main__:optimize_graph:69 - Optimizing graph: 2000 nodes, 4999 edges
+2025-05-18 09:45:34.189 | INFO     | __main__:<module>:510 - Large graph optimization: 10 nodes, 720 edges
+2025-05-18 09:45:34.189 | INFO     | __main__:<module>:522 - Performance hints: {'use_webgl': False, 'disable_animations': False, 'reduce_labels': False, 'edge_opacity': 0.1388888888888889, 'force_iterations': 990, 'recommended_renderer': 'svg', 'lod_enabled': False, 'initial_zoom': 1.0, 'min_zoom': 0.5, 'max_zoom': 5}
+2025-05-18 09:45:34.189 | INFO     | __main__:<module>:533 - LOD levels: High zoom=3, Low zoom=0

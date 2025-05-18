@@ -1,0 +1,16 @@
+{
+  "vertices": [
+    {"_id": "entities/1", "_key": "1", "name": "Machine Learning", "type": "concept"},
+    {"_id": "entities/2", "_key": "2", "name": "Neural Networks", "type": "concept"},
+    {"_id": "entities/3", "_key": "3", "name": "Deep Learning", "type": "concept"},
+    {"_id": "entities/4", "_key": "4", "name": "Computer Vision", "type": "application"},
+    {"_id": "entities/5", "_key": "5", "name": "Natural Language Processing", "type": "application"}
+  ],
+  "edges": [
+    {"_from": "entities/1", "_to": "entities/2", "relationship": "includes"},
+    {"_from": "entities/1", "_to": "entities/3", "relationship": "includes"},
+    {"_from": "entities/3", "_to": "entities/4", "relationship": "applied_in"},
+    {"_from": "entities/3", "_to": "entities/5", "relationship": "applied_in"},
+    {"_from": "entities/2", "_to": "entities/3", "relationship": "evolved_to"}
+  ]
+}

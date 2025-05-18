@@ -25,6 +25,22 @@ from typing import Dict, Any, Optional, List, Literal
 from loguru import logger
 from dataclasses import dataclass, field
 
+# Import LLM recommender
+try:
+    from .llm_recommender import LLMRecommender, VisualizationRecommendation
+    LLM_AVAILABLE = True
+except ImportError:
+    LLM_AVAILABLE = False
+    logger.warning("LLM recommender not available")
+
+# Import performance optimizer
+try:
+    from .performance_optimizer import PerformanceOptimizer
+    OPTIMIZER_AVAILABLE = True
+except ImportError:
+    OPTIMIZER_AVAILABLE = False
+    logger.warning("Performance optimizer not available")
+
 # Type definitions for layout types
 LayoutType = Literal["force", "tree", "radial", "sankey"]
 TreeOrientation = Literal["horizontal", "vertical"]
@@ -51,26 +67,56 @@ class VisualizationConfig:
     node_color: str = "#steelblue"
     link_color: str = "#999"
     animations: bool = True
+    # Radial-specific settings
+    radius: int = 500
+    angle_span: List[float] = field(default_factory=lambda: [0, 2 * 3.14159])
+    # Sankey-specific settings
+    node_padding: int = 20
+    node_alignment: str = "justify"  # left, right, center, justify
     custom_settings: Dict[str, Any] = field(default_factory=dict)
 
 
 class D3VisualizationEngine:
     """Main visualization engine for generating D3.js visualizations from graph data"""
     
-    def __init__(self, template_dir: Optional[Path] = None, static_dir: Optional[Path] = None):
+    def __init__(self, template_dir: Optional[Path] = None, static_dir: Optional[Path] = None, use_llm: bool = True, optimize_performance: bool = True):
         """Initialize the visualization engine
         
         Args:
             template_dir: Directory containing HTML templates
             static_dir: Directory for static assets
+            use_llm: Whether to use LLM for recommendations
+            optimize_performance: Whether to optimize large graphs for performance
         """
         self.base_dir = Path(__file__).parent.parent
         self.template_dir = template_dir or self.base_dir / "templates"
         self.static_dir = static_dir or Path("/home/graham/workspace/experiments/arangodb/static")
+        self.use_llm = use_llm and LLM_AVAILABLE
+        self.optimize_performance = optimize_performance and OPTIMIZER_AVAILABLE
         
         # Create directories if they don't exist
         self.template_dir.mkdir(parents=True, exist_ok=True)
         self.static_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Initialize LLM recommender if available
+        self.llm_recommender = None
+        if self.use_llm:
+            try:
+                self.llm_recommender = LLMRecommender()
+                logger.info("LLM recommender initialized")
+            except Exception as e:
+                logger.warning(f"Failed to initialize LLM recommender: {e}")
+                self.use_llm = False
+        
+        # Initialize performance optimizer if available
+        self.performance_optimizer = None
+        if self.optimize_performance:
+            try:
+                self.performance_optimizer = PerformanceOptimizer()
+                logger.info("Performance optimizer initialized")
+            except Exception as e:
+                logger.warning(f"Failed to initialize performance optimizer: {e}")
+                self.optimize_performance = False
         
         logger.info(f"D3VisualizationEngine initialized with template_dir: {self.template_dir}")
     
@@ -100,6 +146,31 @@ class D3VisualizationEngine:
         # Validate input data
         if not self._validate_graph_data(graph_data):
             raise ValueError("Invalid graph data structure")
+        
+        # Apply performance optimization if enabled and needed
+        if self.performance_optimizer:
+            node_count = len(graph_data.get('nodes', []))
+            edge_count = len(graph_data.get('links', []))
+            
+            # Optimize large graphs
+            if node_count > 1000 or edge_count > 3000:
+                logger.info(f"Optimizing large graph: {node_count} nodes, {edge_count} edges")
+                optimized_data = self.performance_optimizer.optimize_graph(graph_data)
+                
+                # Extract performance hints if present
+                performance_hints = optimized_data.pop('performance_hints', {})
+                
+                # Apply optimized data
+                graph_data = optimized_data
+                
+                # Update config with performance hints
+                if performance_hints:
+                    if not config.custom_settings:
+                        config.custom_settings = {}
+                    config.custom_settings.update(performance_hints)
+                    logger.info(f"Applied performance hints: {performance_hints}")
+                
+                logger.info(f"Optimization complete: {len(graph_data.get('nodes', []))} nodes, {len(graph_data.get('links', []))} edges")
         
         # Select generation method based on layout type
         if layout == "force":
@@ -344,21 +415,35 @@ class D3VisualizationEngine:
         """
         logger.info("Generating radial layout")
         
-        # To be implemented in Task 4
-        template = self._get_base_template()
+        # Load the radial template
+        template_path = self.template_dir / "radial.html"
         
-        script = f"""
-        // Radial layout placeholder
-        const data = {json.dumps(graph_data)};
-        console.log('Radial layout data loaded:', data);
-        // Implementation will be added in Task 4
-        """
+        if template_path.exists():
+            with open(template_path, 'r', encoding='utf-8') as f:
+                template = f.read()
+        else:
+            logger.warning("Radial template not found, using base template")
+            template = self._get_base_template()
         
-        html = template.format(
-            title=config.title or "Radial Tree",
-            script=script
-        )
+        # Apply node and link transformations based on config
+        processed_data = self._process_graph_data(graph_data, config)
         
+        # Replace template variables
+        html = template.replace("{{ title or \"Radial Tree\" }}", config.title or "Radial Tree")
+        html = html.replace("{{ graph_data | tojson | safe }}", json.dumps(processed_data))
+        html = html.replace("{{ config | tojson | safe }}", json.dumps({
+            "width": config.width,
+            "height": config.height,
+            "radius": config.radius,
+            "angleSpan": config.angle_span,
+            "nodeRadius": config.node_radius,
+            "nodeColor": config.node_color,
+            "linkColor": config.link_color,
+            "showLabels": config.show_labels,
+            "animations": config.animations
+        }))
+        
+        logger.info("Radial layout generation complete")
         return html
     
     def generate_sankey_layout(self, graph_data: Dict[str, Any], config: VisualizationConfig) -> str:
@@ -373,22 +458,111 @@ class D3VisualizationEngine:
         """
         logger.info("Generating Sankey diagram")
         
-        # To be implemented in Task 5
-        template = self._get_base_template()
+        # Load the sankey template
+        template_path = self.template_dir / "sankey.html"
         
-        script = f"""
-        // Sankey layout placeholder
-        const data = {json.dumps(graph_data)};
-        console.log('Sankey layout data loaded:', data);
-        // Implementation will be added in Task 5
-        """
+        if template_path.exists():
+            with open(template_path, 'r', encoding='utf-8') as f:
+                template = f.read()
+        else:
+            logger.warning("Sankey template not found, using base template")
+            template = self._get_base_template()
         
-        html = template.format(
-            title=config.title or "Sankey Diagram",
-            script=script
-        )
+        # Apply node and link transformations based on config
+        processed_data = self._process_graph_data(graph_data, config)
         
+        # Ensure links have value property for Sankey
+        for link in processed_data.get("links", []):
+            if "value" not in link and "weight" in link:
+                link["value"] = link["weight"]
+            elif "value" not in link:
+                link["value"] = 1
+        
+        # Replace template variables
+        html = template.replace("{{ title or \"Sankey Diagram\" }}", config.title or "Sankey Diagram")
+        html = html.replace("{{ graph_data | tojson | safe }}", json.dumps(processed_data))
+        html = html.replace("{{ config | tojson | safe }}", json.dumps({
+            "width": config.width,
+            "height": config.height,
+            "nodePadding": config.node_padding,
+            "nodeAlignment": config.node_alignment,
+            "showLabels": config.show_labels,
+            "animations": config.animations
+        }))
+        
+        logger.info("Sankey diagram generation complete")
         return html
+    
+    def recommend_visualization(
+        self, 
+        graph_data: Dict[str, Any], 
+        query: Optional[str] = None
+    ) -> Optional[VisualizationRecommendation]:
+        """Get LLM recommendation for visualization type
+        
+        Args:
+            graph_data: Graph data to analyze
+            query: Optional user query for context
+            
+        Returns:
+            VisualizationRecommendation or None if LLM not available
+        """
+        if not self.llm_recommender:
+            logger.warning("LLM recommender not available")
+            return None
+        
+        try:
+            recommendation = self.llm_recommender.get_recommendation(graph_data, query)
+            logger.info(f"LLM recommended: {recommendation.layout_type} - {recommendation.title}")
+            return recommendation
+        except Exception as e:
+            logger.error(f"Failed to get LLM recommendation: {e}")
+            return None
+    
+    def generate_with_recommendation(
+        self, 
+        graph_data: Dict[str, Any], 
+        query: Optional[str] = None,
+        base_config: Optional[VisualizationConfig] = None
+    ) -> str:
+        """Generate visualization using LLM recommendation
+        
+        Args:
+            graph_data: Graph data to visualize
+            query: Optional user query for context
+            base_config: Base configuration to override with LLM suggestions
+            
+        Returns:
+            HTML string with recommended visualization
+        """
+        # Get recommendation
+        recommendation = self.recommend_visualization(graph_data, query)
+        
+        if recommendation:
+            # Create or update config with recommendation
+            if base_config:
+                config = base_config
+                config.layout = recommendation.layout_type
+                config.title = recommendation.title
+                # Apply any config overrides from LLM
+                for key, value in recommendation.config_overrides.items():
+                    if hasattr(config, key):
+                        setattr(config, key, value)
+            else:
+                config = VisualizationConfig(
+                    layout=recommendation.layout_type,
+                    title=recommendation.title,
+                    **recommendation.config_overrides
+                )
+            
+            logger.info(f"Using LLM recommendation: {recommendation.layout_type}")
+        else:
+            # Fallback to force layout if no recommendation
+            config = base_config or VisualizationConfig(layout="force")
+            logger.info("Using default force layout (no LLM recommendation)")
+        
+        # Generate visualization
+        return self.generate_visualization(graph_data, layout=config.layout, config=config)
 
 
 if __name__ == "__main__":

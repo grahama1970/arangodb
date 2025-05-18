@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title or "Radial Tree" }}</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        
+        #graph-container {
+            width: 100vw;
+            height: 100vh;
+            background-color: white;
+            position: relative;
+        }
+        
+        svg {
+            width: 100%;
+            height: 100%;
+            cursor: grab;
+        }
+        
+        svg.grabbing {
+            cursor: grabbing;
+        }
+        
+        .link {
+            fill: none;
+            stroke: #999;
+            stroke-opacity: 0.6;
+            stroke-width: 1.5px;
+            transition: stroke 0.3s ease, stroke-width 0.3s ease;
+        }
+        
+        .link:hover {
+            stroke: #666;
+            stroke-width: 2.5px;
+        }
+        
+        .node {
+            cursor: pointer;
+        }
+        
+        .node circle {
+            fill: #69b3a2;
+            stroke: #fff;
+            stroke-width: 2px;
+            transition: fill 0.3s ease, r 0.3s ease;
+        }
+        
+        .node:hover circle {
+            fill: #45a088;
+        }
+        
+        .node--root circle {
+            fill: #ff7f50;
+        }
+        
+        .node--internal circle {
+            fill: #4169e1;
+        }
+        
+        .node--leaf circle {
+            fill: #90ee90;
+        }
+        
+        .node text {
+            font-size: 11px;
+            fill: #333;
+            font-weight: 500;
+            text-shadow: 0 1px 0 #fff, 0 -1px 0 #fff, 1px 0 0 #fff, -1px 0 0 #fff;
+        }
+        
+        .node--internal text {
+            font-size: 13px;
+            font-weight: 600;
+        }
+        
+        .tooltip {
+            position: absolute;
+            text-align: left;
+            padding: 10px;
+            font-size: 12px;
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            border-radius: 5px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            max-width: 250px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .control-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+        }
+        
+        .control-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        
+        button {
+            padding: 5px 10px;
+            background: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: background 0.2s;
+        }
+        
+        button:hover {
+            background: #e0e0e0;
+        }
+        
+        button:active {
+            background: #d0d0d0;
+        }
+        
+        input[type="range"] {
+            width: 150px;
+        }
+        
+        .radius-display {
+            font-size: 11px;
+            color: #666;
+            text-align: right;
+        }
+        
+        .search-container {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .search-container input {
+            padding: 5px 10px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            width: 200px;
+        }
+        
+        .legend {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin: 5px 0;
+            font-size: 12px;
+        }
+        
+        .legend-circle {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 2px rgba(0,0,0,0.2);
+        }
+        
+        .highlighted {
+            stroke: #ff6b6b !important;
+            stroke-width: 3px !important;
+        }
+        
+        .dimmed {
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body>
+    <div id="graph-container"></div>
+    
+    <div class="search-container">
+        <input type="text" id="search" placeholder="Search nodes..." />
+    </div>
+    
+    <div class="controls">
+        <div class="control-group">
+            <label>Zoom</label>
+            <div class="control-buttons">
+                <button id="zoom-in">+</button>
+                <button id="zoom-out">-</button>
+                <button id="reset-zoom">Reset</button>
+                <button id="fit-to-view">Fit</button>
+            </div>
+        </div>
+        
+        <div class="control-group">
+            <label>Radius: <span id="radius-value">500</span>px</label>
+            <input type="range" id="radius-slider" min="200" max="800" value="500" />
+        </div>
+        
+        <div class="control-group">
+            <label>Angle Span</label>
+            <div class="control-buttons">
+                <button id="span-full">Full Circle</button>
+                <button id="span-half">Half Circle</button>
+                <button id="span-quarter">Quarter</button>
+            </div>
+        </div>
+        
+        <div class="control-group">
+            <label>Actions</label>
+            <div class="control-buttons">
+                <button id="collapse-all">Collapse All</button>
+                <button id="expand-all">Expand All</button>
+            </div>
+        </div>
+        
+        <div class="control-group">
+            <label>Layout</label>
+            <div class="control-buttons">
+                <button id="toggle-labels">Toggle Labels</button>
+                <button id="rotate-layout">Rotate</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="legend">
+        <div class="legend-item">
+            <div class="legend-circle" style="background-color: #ff7f50;"></div>
+            <span>Root Node</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-circle" style="background-color: #4169e1;"></div>
+            <span>Internal Node</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-circle" style="background-color: #90ee90;"></div>
+            <span>Leaf Node</span>
+        </div>
+    </div>
+    
+    <div class="tooltip"></div>
+    
+    <script>
+        // Get graph data and config from template
+        const graphData = {{ graph_data | tojson | safe }};
+        const config = {{ config | tojson | safe }};
+        
+        // Set dimensions
+        const width = config.width || window.innerWidth;
+        const height = config.height || window.innerHeight;
+        let radius = config.radius || 500;
+        const angleSpan = config.angleSpan || [0, 2 * Math.PI];
+        
+        // Create SVG
+        const svg = d3.select("#graph-container")
+            .append("svg")
+            .attr("viewBox", `0 0 ${width} ${height}`)
+            .attr("preserveAspectRatio", "xMidYMid meet");
+        
+        // Create zoom behavior
+        const zoom = d3.zoom()
+            .scaleExtent([0.1, 10])
+            .on("zoom", zoomed);
+        
+        svg.call(zoom);
+        
+        // Create main group for transformation
+        const g = svg.append("g")
+            .attr("transform", `translate(${width / 2}, ${height / 2})`);
+        
+        // Create groups for links and nodes
+        const linkGroup = g.append("g").attr("class", "links");
+        const nodeGroup = g.append("g").attr("class", "nodes");
+        
+        // Create tooltip
+        const tooltip = d3.select(".tooltip");
+        
+        // Convert graph data to hierarchy
+        function convertToHierarchy(data) {
+            const nodes = data.nodes;
+            const links = data.links;
+            
+            // Find root node(s)
+            const targets = new Set(links.map(l => l.target));
+            const roots = nodes.filter(n => !targets.has(n.id));
+            
+            if (roots.length === 0) {
+                roots.push(nodes[0]);
+            }
+            
+            // Build adjacency list
+            const children = {};
+            links.forEach(link => {
+                if (!children[link.source]) {
+                    children[link.source] = [];
+                }
+                children[link.source].push(link.target);
+            });
+            
+            // Convert to hierarchy
+            function buildTree(nodeId, visited = new Set()) {
+                if (visited.has(nodeId)) return null;
+                visited.add(nodeId);
+                
+                const node = nodes.find(n => n.id === nodeId);
+                if (!node) return null;
+                
+                const treeNode = {
+                    id: node.id,
+                    name: node.name || node.id,
+                    data: node
+                };
+                
+                if (children[nodeId]) {
+                    const childNodes = children[nodeId]
+                        .map(childId => buildTree(childId, visited))
+                        .filter(n => n !== null);
+                    
+                    if (childNodes.length > 0) {
+                        treeNode.children = childNodes;
+                    }
+                }
+                
+                return treeNode;
+            }
+            
+            // Create hierarchy
+            if (roots.length > 1) {
+                return d3.hierarchy({
+                    id: "_root",
+                    name: "Root",
+                    children: roots.map(r => buildTree(r.id))
+                });
+            } else {
+                return d3.hierarchy(buildTree(roots[0].id));
+            }
+        }
+        
+        // Create tree layout
+        const tree = d3.tree()
+            .size(angleSpan)
+            .separation((a, b) => (a.parent == b.parent ? 1 : 2) / a.depth);
+        
+        // Initialize with data
+        let root = convertToHierarchy(graphData);
+        let nodes = tree(root);
+        
+        // Variables for interaction
+        let showLabels = config.showLabels !== false;
+        let rotation = 0;
+        let currentAngleSpan = angleSpan;
+        
+        // Update function
+        function update() {
+            // Update tree layout
+            tree.size(currentAngleSpan);
+            nodes = tree(root);
+            
+            // Update links
+            const links = linkGroup.selectAll(".link")
+                .data(nodes.links(), d => d.target.data.id);
+            
+            links.exit().remove();
+            
+            const linkEnter = links.enter().append("path")
+                .attr("class", "link");
+            
+            links.merge(linkEnter)
+                .transition()
+                .duration(750)
+                .attr("d", d3.linkRadial()
+                    .angle(d => d.x + rotation)
+                    .radius(d => d.y * radius / (nodes.height || 1)));
+            
+            // Update nodes
+            const node = nodeGroup.selectAll(".node")
+                .data(nodes.descendants(), d => d.data.id);
+            
+            node.exit().remove();
+            
+            const nodeEnter = node.enter().append("g")
+                .attr("class", d => `node ${
+                    d.parent ? (d.children ? "node--internal" : "node--leaf") : "node--root"
+                }`)
+                .on("click", click)
+                .on("mouseover", (event, d) => {
+                    tooltip
+                        .html(formatTooltip(d))
+                        .style("left", `${event.pageX + 10}px`)
+                        .style("top", `${event.pageY - 10}px`)
+                        .style("opacity", 1);
+                    
+                    highlightPath(d);
+                })
+                .on("mouseout", () => {
+                    tooltip.style("opacity", 0);
+                    clearHighlight();
+                });
+            
+            nodeEnter.append("circle")
+                .attr("r", 5);
+            
+            nodeEnter.append("text")
+                .attr("dy", "0.31em")
+                .style("text-anchor", d => d.x < Math.PI === !d.children ? "start" : "end")
+                .text(d => d.data.name);
+            
+            const nodeUpdate = node.merge(nodeEnter);
+            
+            nodeUpdate.transition()
+                .duration(750)
+                .attr("transform", d => {
+                    const angle = d.x + rotation;
+                    const r = d.y * radius / (nodes.height || 1);
+                    return `
+                        rotate(${angle * 180 / Math.PI - 90})
+                        translate(${r}, 0)
+                    `;
+                });
+            
+            nodeUpdate.select("text")
+                .attr("x", d => d.x < Math.PI === !d.children ? 6 : -6)
+                .attr("transform", d => d.x >= Math.PI ? "rotate(180)" : null)
+                .style("display", showLabels ? "block" : "none");
+            
+            nodeUpdate.select("circle")
+                .attr("r", d => {
+                    if (!d.parent) return 8;
+                    return d.children ? 6 : 4;
+                });
+        }
+        
+        // Click handler for nodes
+        function click(event, d) {
+            if (d.children) {
+                d._children = d.children;
+                d.children = null;
+            } else {
+                d.children = d._children;
+                d._children = null;
+            }
+            update();
+        }
+        
+        // Highlight path to root
+        function highlightPath(d) {
+            const ancestors = d.ancestors();
+            
+            nodeGroup.selectAll(".node")
+                .classed("dimmed", true);
+            
+            nodeGroup.selectAll(".node")
+                .filter(node => ancestors.includes(node))
+                .classed("dimmed", false);
+            
+            linkGroup.selectAll(".link")
+                .classed("dimmed", true)
+                .classed("highlighted", false);
+            
+            linkGroup.selectAll(".link")
+                .filter(link => ancestors.includes(link.target) && ancestors.includes(link.source))
+                .classed("dimmed", false)
+                .classed("highlighted", true);
+        }
+        
+        // Clear highlight
+        function clearHighlight() {
+            nodeGroup.selectAll(".node")
+                .classed("dimmed", false);
+            
+            linkGroup.selectAll(".link")
+                .classed("dimmed", false)
+                .classed("highlighted", false);
+        }
+        
+        // Format tooltip content
+        function formatTooltip(d) {
+            const data = d.data.data || d.data;
+            let html = `<strong>${data.name || data.id}</strong><br/>`;
+            
+            if (data.type) html += `Type: ${data.type}<br/>`;
+            if (data.value) html += `Value: ${data.value}<br/>`;
+            if (d.depth !== undefined) html += `Depth: ${d.depth}<br/>`;
+            if (d.children) html += `Children: ${d.children.length}<br/>`;
+            
+            // Add any additional metadata
+            Object.entries(data).forEach(([key, value]) => {
+                if (!['id', 'name', 'type', 'value', 'children', '_children'].includes(key)) {
+                    html += `${key}: ${value}<br/>`;
+                }
+            });
+            
+            return html;
+        }
+        
+        // Zoom handler
+        function zoomed(event) {
+            g.attr("transform", event.transform);
+        }
+        
+        // Control handlers
+        d3.select("#zoom-in").on("click", () => {
+            svg.transition().duration(750).call(zoom.scaleBy, 1.3);
+        });
+        
+        d3.select("#zoom-out").on("click", () => {
+            svg.transition().duration(750).call(zoom.scaleBy, 0.7);
+        });
+        
+        d3.select("#reset-zoom").on("click", () => {
+            svg.transition().duration(750).call(
+                zoom.transform,
+                d3.zoomIdentity.translate(width / 2, height / 2)
+            );
+        });
+        
+        d3.select("#fit-to-view").on("click", () => {
+            const bounds = nodeGroup.node().getBBox();
+            const fullWidth = bounds.width;
+            const fullHeight = bounds.height;
+            const midX = bounds.x + fullWidth / 2;
+            const midY = bounds.y + fullHeight / 2;
+            
+            const scale = 0.8 / Math.max(fullWidth / width, fullHeight / height);
+            const translate = [width / 2 - scale * midX, height / 2 - scale * midY];
+            
+            svg.transition().duration(750).call(
+                zoom.transform,
+                d3.zoomIdentity.translate(translate[0], translate[1]).scale(scale)
+            );
+        });
+        
+        // Radius slider
+        d3.select("#radius-slider").on("input", function() {
+            radius = +this.value;
+            d3.select("#radius-value").text(radius);
+            update();
+        });
+        
+        // Angle span controls
+        d3.select("#span-full").on("click", () => {
+            currentAngleSpan = [0, 2 * Math.PI];
+            update();
+        });
+        
+        d3.select("#span-half").on("click", () => {
+            currentAngleSpan = [0, Math.PI];
+            update();
+        });
+        
+        d3.select("#span-quarter").on("click", () => {
+            currentAngleSpan = [0, Math.PI / 2];
+            update();
+        });
+        
+        // Collapse/Expand all
+        d3.select("#collapse-all").on("click", () => {
+            function collapse(d) {
+                if (d.children) {
+                    d._children = d.children;
+                    d._children.forEach(collapse);
+                    d.children = null;
+                }
+            }
+            root.children.forEach(collapse);
+            update();
+        });
+        
+        d3.select("#expand-all").on("click", () => {
+            function expand(d) {
+                if (d._children) {
+                    d.children = d._children;
+                    d.children.forEach(expand);
+                    d._children = null;
+                }
+                if (d.children) {
+                    d.children.forEach(expand);
+                }
+            }
+            expand(root);
+            update();
+        });
+        
+        // Toggle labels
+        d3.select("#toggle-labels").on("click", () => {
+            showLabels = !showLabels;
+            update();
+        });
+        
+        // Rotate layout
+        d3.select("#rotate-layout").on("click", () => {
+            rotation += Math.PI / 4;
+            update();
+        });
+        
+        // Search functionality
+        d3.select("#search").on("input", function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            if (searchTerm === "") {
+                clearHighlight();
+                return;
+            }
+            
+            const matches = nodes.descendants().filter(d => 
+                d.data.name.toLowerCase().includes(searchTerm) ||
+                d.data.id.toLowerCase().includes(searchTerm)
+            );
+            
+            nodeGroup.selectAll(".node")
+                .classed("dimmed", d => !matches.includes(d));
+            
+            linkGroup.selectAll(".link")
+                .classed("dimmed", true);
+            
+            matches.forEach(d => {
+                const ancestors = d.ancestors();
+                linkGroup.selectAll(".link")
+                    .filter(link => ancestors.includes(link.target) && ancestors.includes(link.source))
+                    .classed("dimmed", false);
+            });
+        });
+        
+        // Initialize
+        update();
+    </script>
+</body>
+</html>

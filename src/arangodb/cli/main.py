@@ -22,6 +22,7 @@ from arangodb.cli.graph_commands import graph_app
 from arangodb.cli.compaction_commands import compaction_app
 from arangodb.cli.contradiction_commands import app as contradiction_app
 from arangodb.cli.temporal_commands import app as temporal_app
+from arangodb.cli.visualization_commands import app as visualization_app
 
 # Create main app
 app = typer.Typer(
@@ -40,6 +41,7 @@ app.add_typer(graph_app, name="graph", help="Graph relationship operations")
 app.add_typer(compaction_app, name="compaction", help="Conversation compaction operations")
 app.add_typer(contradiction_app, name="contradiction", help="Contradiction detection and resolution")
 app.add_typer(temporal_app, name="temporal", help="Temporal operations and queries")
+app.add_typer(visualization_app, name="visualize", help="D3.js visualization generation")
 
 # Add generic CRUD as top-level for convenience
 app.add_typer(crud_app, name="documents", help="Document operations (alias for crud)")
