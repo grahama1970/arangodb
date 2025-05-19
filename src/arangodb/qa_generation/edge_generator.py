@@ -12,7 +12,7 @@ from loguru import logger
 import spacy
 from rapidfuzz import fuzz
 
-from .models import QAPair, QABatch
+from .models import QAPair, QABatch, QuestionType
 from ..core.db_connection_wrapper import DatabaseOperations
 from ..core.constants import CONFIG
 from ..core.field_constants import (
@@ -27,7 +27,7 @@ from ..core.temporal_operations import create_temporal_entity
 
 
 # Define the new relationship type constant
-RELATIONSHIP_TYPE_QA_DERIVED = "qa_derived"
+RELATIONSHIP_TYPE_QA_DERIVED = "QA_DERIVED"
 
 
 class QAEdgeGenerator:
@@ -66,7 +66,7 @@ class QAEdgeGenerator:
         try:
             self.edge_collection = CONFIG["graph"]["edge_collections"][0]  # Use primary edge collection
         except (KeyError, IndexError):
-            self.edge_collection = "test_relationships"  # Fallback for testing
+            self.edge_collection = "relationships"  # Fallback for testing
             
         self.entity_collection = "entities"  # Default entity collection
         
@@ -350,23 +350,26 @@ class QAEdgeGenerator:
         edge = {
             FROM_FIELD: from_entity["_id"],
             TO_FIELD: to_entity["_id"],
-            TYPE_FIELD: RELATIONSHIP_TYPE_QA_DERIVED,
+            TYPE_FIELD: RELATIONSHIP_TYPE_QA_DERIVED,  # Use "type", not "edge_type"
             
             # Q&A content
             "question": qa_pair.question,
             "answer": qa_pair.answer,
             "thinking": qa_pair.thinking,
-            "question_type": qa_pair.question_type.value,
+            "question_type": qa_pair.question_type.value if isinstance(qa_pair.question_type, QuestionType) else qa_pair.question_type,
             
             # Rationale and confidence
             "rationale": f"Q&A relationship between {from_entity['name']} and {to_entity['name']}: {qa_pair.question[:100]}...",
             CONFIDENCE_FIELD: edge_confidence,
-            "weight": self._calculate_weight(qa_pair.question_type.value, edge_confidence),
+            "weight": self._calculate_weight(
+                qa_pair.question_type.value if isinstance(qa_pair.question_type, QuestionType) else qa_pair.question_type, 
+                edge_confidence
+            ),
             
             # Context confidence and rationale (new fields)
             "context_confidence": context_confidence,
             "context_rationale": context_rationale,
-            "evidence_blocks": qa_pair.evidence_blocks,
+            "evidence_blocks": getattr(qa_pair, "evidence_blocks", []),
             "hierarchical_context": self._extract_hierarchical_context(source_document),
             
             # Temporal metadata
@@ -376,7 +379,7 @@ class QAEdgeGenerator:
             
             # Context tracking
             "source_document_id": source_document.get("_id"),
-            "source_section": qa_pair.source_section,
+            "source_section": getattr(qa_pair, "source_section", None),
             "batch_id": batch_id,
             
             # Review metadata
@@ -423,26 +426,27 @@ class QAEdgeGenerator:
             Confidence score (0-1)
         """
         # Start with validation score if available
-        if qa_pair.validation_score:
+        if hasattr(qa_pair, "validation_score") and qa_pair.validation_score is not None:
             base_confidence = qa_pair.validation_score
         else:
             # Default base confidence
             base_confidence = 0.7
         
         # Adjust based on evidence blocks
-        if qa_pair.evidence_blocks:
+        if hasattr(qa_pair, "evidence_blocks") and qa_pair.evidence_blocks:
             # More evidence blocks increases confidence
             evidence_factor = min(len(qa_pair.evidence_blocks) / 3, 1.0) * 0.1
             base_confidence += evidence_factor
         
         # Adjust based on citation validation
-        if qa_pair.citation_found:
+        if hasattr(qa_pair, "citation_found") and qa_pair.citation_found:
             base_confidence += 0.15
-        else:
+        elif hasattr(qa_pair, "citation_found"):
             base_confidence -= 0.2
         
         # Adjust based on source section presence
-        if qa_pair.source_section and source_document.get("_id", "").startswith(qa_pair.source_section):
+        if (hasattr(qa_pair, "source_section") and qa_pair.source_section and 
+            source_document.get("_id", "").startswith(qa_pair.source_section)):
             base_confidence += 0.05
         
         # Ensure within 0-1 range
@@ -469,27 +473,33 @@ class QAEdgeGenerator:
         """
         # Start with base rationale
         rationale_parts = [
-            f"Q&A extracted from document: {source_document.get('title', source_document.get('_id', 'Unknown'))}",
-            f"Section: {qa_pair.source_section}"
+            f"Q&A extracted from document: {source_document.get('title', source_document.get('_id', 'Unknown'))}"
         ]
         
+        # Add section information if available
+        if hasattr(qa_pair, "source_section") and qa_pair.source_section:
+            rationale_parts.append(f"Section: {qa_pair.source_section}")
+        
         # Add evidence information
-        if qa_pair.evidence_blocks:
+        if hasattr(qa_pair, "evidence_blocks") and qa_pair.evidence_blocks:
             rationale_parts.append(
                 f"Based on {len(qa_pair.evidence_blocks)} evidence blocks from source content"
             )
         
         # Add relationship context
+        question_type = qa_pair.question_type
+        question_type_value = question_type.value if isinstance(question_type, QuestionType) else question_type
+        
         rationale_parts.append(
-            f"Establishes {qa_pair.question_type.value.lower()} relationship between "
+            f"Establishes {question_type_value.lower()} relationship between "
             f"{from_entity['name']} and {to_entity['name']}"
         )
         
         # Add validation context
-        if qa_pair.validation_score:
+        if hasattr(qa_pair, "validation_score") and qa_pair.validation_score:
             rationale_parts.append(f"Validated with confidence score of {qa_pair.validation_score:.2f}")
         
-        if qa_pair.citation_found:
+        if hasattr(qa_pair, "citation_found") and qa_pair.citation_found:
             rationale_parts.append("Source citations verified and found in document")
         
         # Combine and ensure minimum length
@@ -547,16 +557,87 @@ class QAEdgeGenerator:
             hierarchy["document_id"] = source_document["_id"]
         
         return hierarchy
+    
+    async def process_qa_batch(
+        self,
+        qa_batch: QABatch,
+        source_document: Dict[str, Any]
+    ) -> Tuple[List[Dict[str, Any]], int]:
+        """
+        Process a batch of Q&A pairs to create edges.
+        
+        This is the main entry point for batch processing.
+        
+        Args:
+            qa_batch: Batch of Q&A pairs
+            source_document: Source document information
+            
+        Returns:
+            Tuple of (created edges, count of edges)
+        """
+        all_edges = []
+        batch_id = f"qa_batch_{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}"
+        
+        # Process each Q&A pair
+        for qa_pair in qa_batch.qa_pairs:
+            # Skip invalid or low-confidence pairs
+            if not hasattr(qa_pair, "validation_score") or not qa_pair.validation_score or qa_pair.validation_score < 0.7:
+                logger.warning(f"Skipping low-confidence Q&A: {qa_pair.question[:50]}...")
+                continue
+                
+            # Create edges
+            edges = self.create_qa_edges(qa_pair, source_document, batch_id)
+            all_edges.extend(edges)
+        
+        # Return results
+        return all_edges, len(all_edges)
+    
+    async def integrate_with_search_view(self, edge_ids: List[str]) -> bool:
+        """
+        Integrate new QA edges with existing search view.
+        
+        Args:
+            edge_ids: List of edge IDs to integrate
+            
+        Returns:
+            Success status
+        """
+        try:
+            # Get view name from config
+            view_name = self.db.db.config.get("search", {}).get("view_name", "SearchView")
+            
+            # Import the view manager
+            from arangodb.core.view_manager import add_qa_edges_to_view
+            
+            # Add QA edges to view
+            success = add_qa_edges_to_view(
+                db=self.db.db,
+                view_name=view_name,
+                edge_collection=self.edge_collection,
+                embedding_field=EMBEDDING_FIELD,
+                question_embedding_field="question_embedding"
+            )
+            
+            if success:
+                logger.info(f"Successfully integrated QA edges with search view {view_name}")
+            else:
+                logger.warning(f"Failed to integrate QA edges with search view {view_name}")
+            
+            return success
+            
+        except Exception as e:
+            logger.error(f"Failed to integrate with search view: {e}")
+            return False
 
 
 # Example usage
 if __name__ == "__main__":
+    import json
     from arango import ArangoClient
-    from ..core.db_connection_wrapper import DatabaseOperations
     
     # Initialize database
     client = ArangoClient(hosts="http://localhost:8529")
-    db = client.db("agent_memory", username="root", password="openSesame")
+    db = client.db("_system", username="root", password="")
     db_ops = DatabaseOperations(db)
     
     # Create edge generator
@@ -567,9 +648,10 @@ if __name__ == "__main__":
         question="How does Python handle memory management?",
         thinking="I need to explain Python's memory management approach...",
         answer="Python uses automatic garbage collection and reference counting.",
-        question_type="FACTUAL",
+        question_type=QuestionType.FACTUAL,
         confidence=0.92,
-        validation_score=0.95
+        validation_score=0.95,
+        citation_found=True
     )
     
     test_doc = {
@@ -580,8 +662,63 @@ if __name__ == "__main__":
     
     # Extract entities
     entities = edge_gen.extract_entities(test_qa)
-    print(f"Extracted entities: {entities}")
+    print(f"Extracted entities: {json.dumps(entities, indent=2)}")
     
     # Create edges
     edges = edge_gen.create_qa_edges(test_qa, test_doc)
     print(f"Created edges: {len(edges)}")
+    if edges:
+        print(f"Edge sample: {json.dumps(edges[0], indent=2)}")
+    
+    # List to track all validation failures
+    all_validation_failures = []
+    total_tests = 0
+    
+    # Test 1: Entity extraction
+    total_tests += 1
+    try:
+        print("\nTest 1: Entity extraction")
+        entities = edge_gen.extract_entities(test_qa)
+        assert len(entities) > 0, "Should extract at least one entity"
+        print(f"✅ Extracted {len(entities)} entities")
+    except Exception as e:
+        all_validation_failures.append(f"Entity extraction test failed: {str(e)}")
+    
+    # Test 2: Edge creation
+    total_tests += 1
+    try:
+        print("\nTest 2: Edge creation")
+        edges = edge_gen.create_qa_edges(test_qa, test_doc)
+        assert edges, "Should create at least one edge"
+        print(f"✅ Created {len(edges)} edges")
+    except Exception as e:
+        all_validation_failures.append(f"Edge creation test failed: {str(e)}")
+    
+    # Test 3: Context rationale
+    total_tests += 1
+    try:
+        print("\nTest 3: Context rationale")
+        if len(entities) >= 2:
+            rationale = edge_gen._generate_context_rationale(
+                qa_pair=test_qa,
+                source_document=test_doc,
+                from_entity=entities[0],
+                to_entity=entities[1]
+            )
+            assert len(rationale) >= 50, "Rationale should be at least 50 characters"
+            print(f"✅ Generated rationale: {rationale}")
+        else:
+            print("⚠️ Skipping rationale test due to lack of entities")
+    except Exception as e:
+        all_validation_failures.append(f"Context rationale test failed: {str(e)}")
+    
+    # Final validation result
+    if all_validation_failures:
+        print(f"\n❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
+        for failure in all_validation_failures:
+            print(f"  - {failure}")
+        sys.exit(1)  # Exit with error code
+    else:
+        print(f"\n✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
+        print("Q&A Edge Generator is validated and ready for use")
+        sys.exit(0)  # Exit with success code

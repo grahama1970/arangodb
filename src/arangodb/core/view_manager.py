@@ -218,6 +218,80 @@ def clear_view_cache(db_name: Optional[str] = None, view_name: Optional[str] = N
         logger.debug("Cleared entire view cache")
 
 
+def add_qa_edges_to_view(
+    db: StandardDatabase,
+    view_name: str,
+    edge_collection: str,
+    embedding_field: str = "embedding",
+    question_embedding_field: str = "question_embedding"
+) -> bool:
+    """
+    Add Q&A edges to an existing search view.
+    
+    Args:
+        db: Database instance
+        view_name: Name of the view to update
+        edge_collection: Name of the edge collection containing Q&A edges
+        embedding_field: Name of the embedding field
+        question_embedding_field: Name of the question embedding field
+        
+    Returns:
+        bool: True if the view was updated successfully, False otherwise
+    """
+    try:
+        logger.info(f"Adding Q&A edges from {edge_collection} to view {view_name}")
+        
+        # Check if view exists
+        existing_views = db.views()
+        view_exists = any(v['name'] == view_name for v in existing_views)
+        
+        if not view_exists:
+            logger.warning(f"View {view_name} does not exist")
+            return False
+        
+        # Get view properties
+        view = db.view(view_name)
+        properties = view
+        
+        # Check if the edge collection is already in the view
+        if "links" in properties and edge_collection in properties["links"]:
+            logger.info(f"Collection {edge_collection} is already in view {view_name}")
+            return True
+        
+        # Add the edge collection to the view
+        if "links" not in properties:
+            properties["links"] = {}
+        
+        properties["links"][edge_collection] = {
+            "fields": {
+                embedding_field: {"analyzers": ["identity"]},
+                question_embedding_field: {"analyzers": ["identity"]},
+                "question": {"analyzers": ["text_en"]},
+                "answer": {"analyzers": ["text_en"]},
+                "thinking": {"analyzers": ["text_en"]},
+                "type": {"analyzers": ["identity"]},
+                "review_status": {"analyzers": ["identity"]},
+                "question_type": {"analyzers": ["identity"]}
+            },
+            "includeAllFields": False,
+            "trackListPositions": False,
+            "storeValues": "none"
+        }
+        
+        # Update the view
+        db.update_view(view_name, properties)
+        
+        # Clear the cache for this view
+        clear_view_cache(db.db_name, view_name)
+        
+        logger.info(f"Successfully added Q&A edges to view {view_name}")
+        return True
+        
+    except Exception as e:
+        logger.error(f"Failed to add Q&A edges to view {view_name}: {e}")
+        return False
+
+
 if __name__ == "__main__":
     """Test view manager functionality."""
     import sys
