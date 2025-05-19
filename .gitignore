@@ -56,3 +56,4 @@ notebooks/
 .idea/
 
 **/.claude/settings.local.json
+.private/

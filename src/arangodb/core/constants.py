@@ -142,6 +142,7 @@ MESSAGE_TYPE_SYSTEM = "system"
 # Relationship types
 RELATIONSHIP_TYPE_NEXT = "next"
 RELATIONSHIP_TYPE_REFERS_TO = "refers_to"
+RELATIONSHIP_TYPE_QA_DERIVED = "qa_derived"
 
 # Define all data fields used in preview 
 ALL_DATA_FIELDS_PREVIEW = ["title", "content", "tags", "metadata"]

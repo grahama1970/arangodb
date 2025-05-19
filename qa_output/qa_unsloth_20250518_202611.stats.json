@@ -1,0 +1,11 @@
+{
+  "total_pairs": 2,
+  "valid_pairs": 2,
+  "documents": [
+    "test_doc_001"
+  ],
+  "question_types": {
+    "FACTUAL": 1,
+    "RELATIONSHIP": 1
+  }
+}

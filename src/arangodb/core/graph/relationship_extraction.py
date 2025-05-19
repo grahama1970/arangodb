@@ -12,6 +12,7 @@ Key features:
 3. Similarity-based relationship inference
 4. Relationship validation and confidence scoring
 5. Integration with temporal relationship model
+6. Entity extraction for Q&A integration
 
 For more information on relationship guidance, see:
 https://github.com/arangodb/arangodb-python/blob/main/docs/relationships.md
@@ -67,6 +68,95 @@ class RelationshipType(str, Enum):
     ELABORATES = "ELABORATES"
     EXAMPLE_OF = "EXAMPLE_OF"
     COMPARES = "COMPARES"
+    QA_DERIVED = "QA_DERIVED"
+
+
+class EntityExtractor:
+    """Entity extraction from text using pattern-based techniques.
+    
+    This class provides standalone entity extraction functionality based on regex patterns,
+    primarily intended for integration with the Q&A generation module.
+    """
+    
+    def __init__(self, db: Optional[StandardDatabase] = None):
+        """
+        Initialize the entity extractor.
+        
+        Args:
+            db: Optional ArangoDB database connection for entity resolution
+        """
+        self.db = db
+    
+    def extract_entities(self, text: str) -> List[Dict[str, Any]]:
+        """
+        Extract entities from text using pattern-based techniques.
+        
+        Args:
+            text: Text to extract entities from
+            
+        Returns:
+            List of extracted entity documents with name, type, and confidence
+        """
+        if not text or not text.strip():
+            logger.warning("Empty text provided for entity extraction")
+            return []
+        
+        # Extract entities using regex patterns
+        entities = []
+        
+        # Person pattern - proper nouns
+        person_pattern = r'([A-Z][a-z]+ [A-Z][a-z]+)'
+        person_matches = re.finditer(person_pattern, text)
+        for match in person_matches:
+            entity_name = match.group(1)
+            entities.append({
+                "name": entity_name,
+                "type": "PERSON",
+                "confidence": 0.7
+            })
+        
+        # Organization pattern - capitalized multi-word or specific endings
+        org_pattern = r'([A-Z][a-zA-Z]+ (?:Inc\.|Corp\.|LLC|Company|Association|University|Institute))|([A-Z][A-Za-z]+ [A-Z][A-Za-z]+ (?:Inc\.|Corp\.|LLC|Company|Association))'
+        org_matches = re.finditer(org_pattern, text)
+        for match in org_matches:
+            entity_name = match.group(0)
+            entities.append({
+                "name": entity_name,
+                "type": "ORGANIZATION",
+                "confidence": 0.75
+            })
+        
+        # Concept pattern - technical terms and multi-word concepts
+        concept_pattern = r'([a-z][a-z]+ (?:algorithm|framework|method|technique|system|process|model|architecture))'
+        concept_matches = re.finditer(concept_pattern, text, re.IGNORECASE)
+        for match in concept_matches:
+            entity_name = match.group(1)
+            entities.append({
+                "name": entity_name,
+                "type": "CONCEPT",
+                "confidence": 0.65
+            })
+        
+        # Technology pattern - programming languages, databases, platforms
+        tech_pattern = r'\b(Python|JavaScript|TypeScript|Java|Ruby|Go|ArangoDB|MongoDB|MySQL|PostgreSQL|AWS|Azure|Docker|Kubernetes)\b'
+        tech_matches = re.finditer(tech_pattern, text)
+        for match in tech_matches:
+            entity_name = match.group(1)
+            entities.append({
+                "name": entity_name,
+                "type": "TECHNOLOGY",
+                "confidence": 0.85
+            })
+        
+        # Deduplicate entities
+        unique_entities = {}
+        for entity in entities:
+            if entity["name"] not in unique_entities:
+                unique_entities[entity["name"]] = entity
+            elif entity["confidence"] > unique_entities[entity["name"]]["confidence"]:
+                unique_entities[entity["name"]] = entity
+        
+        return list(unique_entities.values())
 
 
 class RelationshipExtractor:
@@ -592,54 +682,9 @@ class RelationshipExtractor:
         Returns:
             List of extracted entity documents
         """
-        # Simple entity extraction using regex patterns
-        # In a production environment, this would use NER models
-        
-        # Extract potential entities based on patterns
-        entities = []
-        
-        # Person pattern - proper nouns
-        person_pattern = r'([A-Z][a-z]+ [A-Z][a-z]+)'
-        person_matches = re.finditer(person_pattern, text)
-        for match in person_matches:
-            entity_name = match.group(1)
-            entities.append({
-                "name": entity_name,
-                "type": "PERSON",
-                "confidence": 0.7
-            })
-        
-        # Organization pattern - capitalized multi-word or specific endings
-        org_pattern = r'([A-Z][a-zA-Z]+ (?:Inc\.|Corp\.|LLC|Company|Association|University|Institute))|([A-Z][A-Za-z]+ [A-Z][A-Za-z]+ (?:Inc\.|Corp\.|LLC|Company|Association))'
-        org_matches = re.finditer(org_pattern, text)
-        for match in person_matches:
-            entity_name = match.group(0)
-            entities.append({
-                "name": entity_name,
-                "type": "ORGANIZATION",
-                "confidence": 0.75
-            })
-        
-        # Concept pattern - technical terms and multi-word concepts
-        concept_pattern = r'([a-z][a-z]+ (?:algorithm|framework|method|technique|system|process|model|architecture))'
-        concept_matches = re.finditer(concept_pattern, text, re.IGNORECASE)
-        for match in concept_matches:
-            entity_name = match.group(1)
-            entities.append({
-                "name": entity_name,
-                "type": "CONCEPT",
-                "confidence": 0.65
-            })
-        
-        # Deduplicate entities
-        unique_entities = {}
-        for entity in entities:
-            if entity["name"] not in unique_entities:
-                unique_entities[entity["name"]] = entity
-            elif entity["confidence"] > unique_entities[entity["name"]]["confidence"]:
-                unique_entities[entity["name"]] = entity
-        
-        return list(unique_entities.values())
+        # Use the standalone EntityExtractor class for extraction
+        entity_extractor = EntityExtractor(self.db)
+        return entity_extractor.extract_entities(text)
 
 
 # Validation function
@@ -671,6 +716,40 @@ if __name__ == "__main__":
     if not db.has_collection("test_relationships"):
         db.create_collection("test_relationships", edge=True)
     
+    # Test 0: Entity Extraction
+    total_tests += 1
+    entity_extractor = EntityExtractor()
+    test_entity_text = """
+    Python is a popular programming language developed by Guido van Rossum.
+    Google LLC and Microsoft Corporation use it extensively.
+    ArangoDB offers a flexible data model for graph databases.
+    Machine learning algorithms can be implemented efficiently in Python.
+    """
+    
+    entities = entity_extractor.extract_entities(test_entity_text)
+    logger.info(f"Extracted {len(entities)} entities")
+    for entity in entities:
+        logger.info(f"  Entity: {entity['name']}, Type: {entity['type']}, Confidence: {entity['confidence']}")
+    
+    # Verify entity extraction
+    if not entities:
+        all_validation_failures.append("Test 0: No entities extracted from text")
+    else:
+        # Check for PERSON entity
+        has_person = any(e["type"] == "PERSON" for e in entities)
+        if not has_person:
+            all_validation_failures.append("Test 0: Failed to extract PERSON entity")
+        
+        # Check for TECHNOLOGY entity
+        has_tech = any(e["type"] == "TECHNOLOGY" for e in entities)
+        if not has_tech:
+            all_validation_failures.append("Test 0: Failed to extract TECHNOLOGY entity")
+        
+        # Check for CONCEPT entity 
+        has_concept = any(e["type"] == "CONCEPT" for e in entities)
+        if not has_concept:
+            all_validation_failures.append("Test 0: Failed to extract CONCEPT entity")
+            
     # Initialize relationship extractor
     relationship_extractor = RelationshipExtractor(
         db=db,

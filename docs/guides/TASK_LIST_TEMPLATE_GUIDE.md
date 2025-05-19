@@ -26,6 +26,14 @@ Each sub-task MUST generate a verification report with:
 - Evidence of functionality (screenshots, logs, metrics)
 - Discovered limitations and issues
 
+### 4. Non-Hallucinated Output Requirements ⚠️ NEW
+Every task report MUST contain:
+- **ACTUAL** code implementations (not pseudocode)
+- **REAL** command outputs (not mocked)
+- **VERIFIED** test results (not theoretical)
+- **EXECUTED** ArangoDB queries (not example queries)
+- **TIMESTAMPED** execution logs
+
 ## Standard Task List Template
 
 ```markdown
@@ -45,6 +53,7 @@ Brief context about the task's importance and relationship to the project.
 **IMPORTANT**: 
 1. Each sub-task MUST include creation of a verification report in `/docs/reports/` with actual, non-mocked queries and real performance results.
 2. Task [N] (Final Verification) enforces MANDATORY iteration on ALL incomplete tasks. The agent MUST continue working until 100% completion is achieved - no partial completion is acceptable.
+3. ALL outputs must be NON-HALLUCINATED - actual code, real test results, executed commands only.
 
 ## Research Summary
 
@@ -365,7 +374,7 @@ Force-Directed Graph Examples:
 - Expected completion: TBD
 - Completion criteria: All features working, tests passing, documented
 
-## Report Documentation Requirements
+## Report Documentation Requirements ⚠️ ENHANCED
 
 Each sub-task MUST have a corresponding verification report in `/docs/reports/` following these requirements:
 
@@ -379,6 +388,36 @@ Each report must include:
 6. **Verification Evidence**: Screenshots, logs, or metrics proving functionality
 7. **Limitations Found**: Any discovered issues or constraints
 8. **External Resources Used**: All GitHub repos, articles, and examples referenced
+
+### NON-HALLUCINATED Output Requirements ⚠️ NEW
+Reports MUST contain:
+- **Actual Code Implementation**:
+  ```python
+  # File: /src/exact/path/to/file.py
+  # Lines: 123-145 (real line numbers)
+  def real_function():
+      return "actual implementation"
+  ```
+
+- **Real Command Execution**:
+  ```bash
+  # Command run at: 2024-01-15 14:30:00
+  $ python -m arangodb.cli actual-command
+  # ACTUAL OUTPUT (not mocked):
+  Processing...
+  Result: Success
+  ```
+
+- **Executed ArangoDB Queries**:
+  ```aql
+  // Query executed at: 2024-01-15 14:35:00
+  FOR doc IN collection
+  FILTER doc.type == "real"
+  RETURN doc
+  
+  // ACTUAL RESULTS:
+  [{"_key": "abc123", "type": "real", ...}]
+  ```
 
 ### Report Naming Convention:
 `/docs/reports/[TASK_NUMBER]_task_[SUBTASK]_[feature_name].md`
@@ -402,6 +441,7 @@ FOR doc IN collection
   FILTER condition
   RETURN doc
 // Execution time: Xms
+// Result count: Y documents
 ```
 
 ## Actual Performance Results
@@ -416,6 +456,15 @@ result = function_call(params)
 print(f"Result: {result}")
 # Output:
 # Result: [actual output]
+```
+
+## Command Execution Log
+```bash
+# Executed at: 2024-01-15 15:00:00
+$ python -m arangodb.cli qa generate --document doc_001
+Generating Q&A pairs...
+Created 15 pairs with average confidence 0.87
+Time: 2.34 seconds
 ```
 
 ## Verification Evidence
@@ -439,6 +488,19 @@ print(f"Result: {result}")
 - Performance metrics must be from actual benchmarks
 - Code examples must be tested and working
 - Report only what actually works, not theoretical capabilities
+- Include timestamps for all executions
+- Show real errors and how they were resolved
+
+### Final Verification Checklist ⚠️ NEW
+Before marking task complete, verify:
+- [ ] All code is actual implementation (no pseudocode)
+- [ ] All commands were actually executed
+- [ ] All outputs are real (not mocked)
+- [ ] All queries show real database results
+- [ ] All errors are documented with resolutions
+- [ ] All performance metrics are measured
+- [ ] Report includes actual timestamps
+- [ ] External resources are properly linked
 
 ## Context Management
 
@@ -509,6 +571,12 @@ This task document serves as the comprehensive implementation guide. Update stat
 - Specific report structure
 - Research findings documentation
 - External resources tracking
+
+### 6. Non-Hallucinated Outputs ⚠️ NEW
+- Real code implementations only
+- Actual command execution logs
+- Verified test results
+- Timestamped evidence
 
 ## Mandatory CLI Testing Requirements
 
@@ -594,6 +662,10 @@ $ arangodb visualization from-file nonexistent.json
 12. **Unit tests only** - End-to-end CLI testing is MANDATORY
 13. **Missing data format tests** - Test all supported formats
 14. **Ignoring integration issues** - Test complete workflows
+15. **Accepting hallucinated outputs** - Require real, timestamped results ⚠️ NEW
+16. **Using pseudocode in reports** - Only actual code allowed ⚠️ NEW
+17. **Showing mock outputs** - All outputs must be real ⚠️ NEW
+18. **Forgetting final verification** - Must review all task outputs ⚠️ NEW
 
 ## Task List Creation Checklist
 
@@ -619,7 +691,60 @@ Before finalizing a task list, verify:
 - [ ] **End-to-end testing required**
 - [ ] **CLI test report format defined**
 - [ ] **Data format testing included**
+- [ ] **Non-hallucinated output requirements specified** ⚠️ NEW
+- [ ] **Final verification review mandated** ⚠️ NEW
+- [ ] **Real implementation examples required** ⚠️ NEW
+- [ ] **Timestamp requirements included** ⚠️ NEW
+
+## Agent Final Verification Process ⚠️ NEW
+
+After completing all tasks, the agent MUST:
+
+1. **Review Each Task Report**:
+   - Open `/docs/reports/[TASK]_task_*.md`
+   - Verify all code is real implementation
+   - Check all outputs are actual (not mocked)
+   - Confirm timestamps on all executions
+   - Ensure external resources are linked
+
+2. **Run Verification Tests**:
+   ```bash
+   # Actually execute these:
+   $ python -m pytest tests/[feature]/
+   $ python -m arangodb.cli [feature] verify
+   $ python scripts/validate_[feature].py
+   ```
+
+3. **Check for Hallucinations**:
+   - If code contains "TODO: implement" = incomplete
+   - If output shows "Mock result" = not real
+   - If results are too perfect = verify actual execution
+   - If no timestamps = probably theoretical
+
+4. **Document Any Gaps**:
+   ```markdown
+   ## Incomplete Items
+   1. Feature X: Not implemented because [reason]
+   2. Test Y: Failed with [actual error]
+   3. Query Z: Returns empty results
+   ```
+
+5. **Create Final Certification**:
+   ```markdown
+   ## Agent Certification
+   
+   I certify that:
+   - [ ] All code is actual implementation
+   - [ ] All outputs are from real executions
+   - [ ] All queries show real database results
+   - [ ] All timestamps are included
+   - [ ] No mocked or theoretical content
+   - [ ] All gaps are documented
+   
+   Date: [YYYY-MM-DD HH:MM:SS]
+   Agent Session: [session_id]
+   ```
 
 ---
 
-This guide ensures that task lists are comprehensive, research-based, and enforce complete implementation with real-world validation. Following this template will help agents successfully complete complex implementations without theoretical guesswork.
+This guide ensures that task lists are comprehensive, research-based, and enforce complete implementation with real-world validation. Following this template will help agents successfully complete complex implementations without theoretical guesswork or hallucinated outputs.

@@ -1,0 +1,40 @@
+[
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "What are the three main types of machine learning?"
+      },
+      {
+        "role": "assistant",
+        "content": "The three main types of machine learning are supervised learning, unsupervised learning, and reinforcement learning.",
+        "thinking": "I need to list the three types mentioned in the document: supervised learning, unsupervised learning, and reinforcement learning."
+      }
+    ],
+    "metadata": {
+      "question_type": "FACTUAL",
+      "confidence": 0.9,
+      "source_section": "intro_section",
+      "validation_score": 0.98
+    }
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "How does machine learning relate to artificial intelligence?"
+      },
+      {
+        "role": "assistant",
+        "content": "Machine learning is a subset of artificial intelligence that enables systems to learn from data without being explicitly programmed.",
+        "thinking": "The document states that machine learning is a subset of artificial intelligence, which means it's a part of the broader AI field."
+      }
+    ],
+    "metadata": {
+      "question_type": "RELATIONSHIP",
+      "confidence": 0.95,
+      "source_section": "intro_section",
+      "validation_score": 0.97
+    }
+  }
+]
