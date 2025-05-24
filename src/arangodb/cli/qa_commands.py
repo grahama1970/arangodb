@@ -46,7 +46,6 @@ app = typer.Typer()
 
 
 @app.command("generate", no_args_is_help=True)
-@add_output_option
 def generate_qa_pairs(
     document_id: str = typer.Argument(..., help="Document ID to generate Q&A from"),
     max_questions: int = typer.Option(
@@ -64,10 +63,10 @@ def generate_qa_pairs(
     output_file: Optional[Path] = typer.Option(
         None,
         "--output-file",
-        "-o",
+        "-f",
         help="Output file path (optional)"
     ),
-    output_format: OutputFormat = OutputFormat.JSON,
+    output_format: str = typer.Option("json", "--output", "-o", help="Output format (table or json)"),
     batch_size: int = typer.Option(
         10,
         "--batch-size",
@@ -125,7 +124,7 @@ def generate_qa_pairs(
             console.print(format_success(f"Q&A pairs saved to: {output_file}"))
         
         # Format output
-        if output_format == OutputFormat.TABLE:
+        if output_format == "table":
             # Create summary table
             from rich.table import Table
             table = Table(title="Q&A Generation Summary")
@@ -164,7 +163,6 @@ def generate_qa_pairs(
 
 
 @app.command("export", no_args_is_help=True)
-@add_output_option
 def export_qa_pairs(
     document_id: str = typer.Argument(..., help="Document ID to export Q&A from"),
     output_dir: Path = typer.Option(
@@ -184,7 +182,7 @@ def export_qa_pairs(
         "--split/--no-split",
         help="Split into train/val/test sets"
     ),
-    output_format: OutputFormat = OutputFormat.JSON
+    output_format: str = typer.Option("json", "--output", "-o", help="Output format (table or json)")
 ):
     """Export Q&A pairs in various formats for fine-tuning."""
     try:
@@ -204,7 +202,7 @@ def export_qa_pairs(
         )
         
         # Format output
-        if output_format == OutputFormat.TABLE:
+        if output_format == "table":
             from rich.table import Table
             table = Table(title="Export Summary")
             table.add_column("File", style="cyan")
@@ -230,7 +228,6 @@ def export_qa_pairs(
 
 
 @app.command("validate", no_args_is_help=True)
-@add_output_option
 def validate_qa_pairs(
     document_id: str = typer.Argument(..., help="Document ID to validate Q&A from"),
     threshold: float = typer.Option(
@@ -239,7 +236,7 @@ def validate_qa_pairs(
         "-t",
         help="RapidFuzz validation threshold"
     ),
-    output_format: OutputFormat = OutputFormat.JSON
+    output_format: str = typer.Option("json", "--output", "-o", help="Output format (table or json)")
 ):
     """Validate generated Q&A pairs against corpus."""
     try:
@@ -285,7 +282,7 @@ def validate_qa_pairs(
         }
         
         # Format output
-        if output_format == OutputFormat.TABLE:
+        if output_format == "table":
             from rich.table import Table
             table = Table(title="Validation Summary")
             table.add_column("Metric", style="cyan")
@@ -324,7 +321,6 @@ def validate_qa_pairs(
 
 
 @app.command("stats", no_args_is_help=False)
-@add_output_option
 def qa_statistics(
     document_id: Optional[str] = typer.Option(
         None,
@@ -332,7 +328,7 @@ def qa_statistics(
         "-d",
         help="Document ID for specific stats"
     ),
-    output_format: OutputFormat = OutputFormat.JSON
+    output_format: str = typer.Option("json", "--output", "-o", help="Output format (table or json)")
 ):
     """Show Q&A generation statistics."""
     try:
@@ -384,7 +380,7 @@ def qa_statistics(
             }
         
         # Format output
-        if output_format == OutputFormat.TABLE:
+        if output_format == "table":
             from rich.table import Table
             
             if document_id:

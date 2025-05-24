@@ -1,0 +1,11 @@
+{
+  "name": "arangodb",
+  "provides": [
+    "database",
+    "graph_storage",
+    "document_storage"
+  ],
+  "requires": [
+    "structured_data"
+  ]
+}

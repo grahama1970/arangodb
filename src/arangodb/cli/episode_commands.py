@@ -32,13 +32,12 @@ app = typer.Typer(name="episode", help="Manage conversation episodes")
 
 
 @app.command("create")
-@add_output_option
 def create_episode(
     name: str = typer.Argument(..., help="Name/title of the episode"),
     description: Optional[str] = typer.Option(None, "--description", "-d", help="Episode description"),
     user_id: Optional[str] = typer.Option(None, "--user", "-u", help="User ID for the episode"),
     session_id: Optional[str] = typer.Option(None, "--session", "-s", help="Session ID for the episode"),
-    output_format: str = "table"
+    output_format: str = typer.Option("table", "--output", "-o", help="Output format (table or json)")
 ):
     """Create a new episode for grouping conversations.
     
@@ -65,7 +64,7 @@ def create_episode(
         # Display result
         console.print(format_success(f"Created episode: {episode['_key']}"))
         
-        if output_format == OutputFormat.JSON:
+        if output_format == "json":
             console.print(format_output(episode, output_format=output_format))
         else:
             headers = ["Field", "Value"]
@@ -94,12 +93,11 @@ def create_episode(
 
 
 @app.command("list")
-@add_output_option
 def list_episodes(
     active_only: bool = typer.Option(False, "--active", "-a", help="Show only active episodes"),
     user_id: Optional[str] = typer.Option(None, "--user", "-u", help="Filter by user ID"),
     limit: int = typer.Option(10, "--limit", "-l", help="Maximum number of episodes to show"),
-    output_format: str = "table"
+    output_format: str = typer.Option("table", "--output", "-o", help="Output format (table or json)")
 ):
     """List episodes with optional filters.
     
@@ -122,7 +120,7 @@ def list_episodes(
             return
         
         # Display results
-        if output_format == OutputFormat.JSON:
+        if output_format == "json":
             console.print(format_output(episodes, output_format=output_format))
         else:
             headers = ["Key", "Name", "Status", "Start Time", "Entities", "Relations"]
@@ -154,12 +152,11 @@ def list_episodes(
 
 
 @app.command("search")
-@add_output_option
 def search_episodes(
     query: str = typer.Argument(..., help="Search query for episode names/descriptions"),
     user_id: Optional[str] = typer.Option(None, "--user", "-u", help="Filter by user ID"),
     limit: int = typer.Option(10, "--limit", "-l", help="Maximum number of results"),
-    output_format: str = "table"
+    output_format: str = typer.Option("table", "--output", "-o", help="Output format (table or json)")
 ):
     """Search episodes by text query.
     
@@ -180,7 +177,7 @@ def search_episodes(
             return
         
         # Display results
-        if output_format == OutputFormat.JSON:
+        if output_format == "json":
             console.print(format_output(episodes, output_format=output_format))
         else:
             headers = ["Key", "Name", "Description", "Start Time"]
@@ -211,10 +208,9 @@ def search_episodes(
 
 
 @app.command("get")
-@add_output_option
 def get_episode(
     episode_id: str = typer.Argument(..., help="Episode ID or key to retrieve"),
-    output_format: str = "table"
+    output_format: str = typer.Option("table", "--output", "-o", help="Output format (table or json)")
 ):
     """Get detailed information about a specific episode.
     
@@ -234,7 +230,7 @@ def get_episode(
         entities = episode_manager.get_episode_entities(episode_id)
         relationships = episode_manager.get_episode_relationships(episode_id)
         
-        if output_format == OutputFormat.JSON:
+        if output_format == "json":
             # Add entities and relationships to episode for JSON output
             episode["entities"] = entities
             episode["relationships"] = relationships
@@ -263,7 +259,7 @@ def get_episode(
             console.print(formatted_output)
             
             # Display entities if any (for table format only)
-            if entities and output_format == OutputFormat.TABLE:
+            if entities and output_format == "table":
                 console.print("\n[bold cyan]Linked Entities:[/bold cyan]")
                 entity_headers = ["Key", "Name", "Type"]
                 entity_rows = []
@@ -292,10 +288,9 @@ def get_episode(
 
 
 @app.command("end")
-@add_output_option
 def end_episode(
     episode_id: str = typer.Argument(..., help="Episode ID or key to end"),
-    output_format: str = "table"
+    output_format: str = typer.Option("table", "--output", "-o", help="Output format (table or json)")
 ):
     """Mark an episode as ended.
     
@@ -307,7 +302,7 @@ def end_episode(
         
         episode = episode_manager.end_episode(episode_id)
         
-        if output_format == OutputFormat.JSON:
+        if output_format == "json":
             console.print(format_output(episode, output_format=output_format))
         else:
             console.print(format_success(f"Ended episode: {episode['_key']}"))
@@ -319,11 +314,10 @@ def end_episode(
 
 
 @app.command("delete")
-@add_output_option
 def delete_episode(
     episode_id: str = typer.Argument(..., help="Episode ID or key to delete"),
     force: bool = typer.Option(False, "--force", "-f", help="Skip confirmation"),
-    output_format: str = "table"
+    output_format: str = typer.Option("table", "--output", "-o", help="Output format (table or json)")
 ):
     """Delete an episode and all its links.
     
@@ -353,7 +347,7 @@ def delete_episode(
         success = episode_manager.delete_episode(episode_id)
         
         if success:
-            if output_format == OutputFormat.JSON:
+            if output_format == "json":
                 console.print(format_output(
                     {"status": "success", "message": f"Deleted episode: {episode['_key']}"},
                     output_format=output_format

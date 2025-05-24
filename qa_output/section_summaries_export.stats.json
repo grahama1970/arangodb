@@ -1,0 +1,10 @@
+{
+  "total_pairs": 2,
+  "valid_pairs": 2,
+  "documents": [
+    "arangodb_overview"
+  ],
+  "question_types": {
+    "FACTUAL": 2
+  }
+}

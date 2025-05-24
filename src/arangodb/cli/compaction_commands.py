@@ -65,7 +65,6 @@ compaction_app = typer.Typer(
 )
 
 @compaction_app.command("create")
-@add_output_option
 def cli_create_compaction(
     conversation_id: Optional[str] = typer.Option(
         None, "--conversation-id", "-c", help="ID of the conversation to compact"
@@ -91,7 +90,7 @@ def cli_create_compaction(
         "-mo",
         help="Minimum token overlap between chunks"
     ),
-    output_format: str = "table"
+    output_format: str = typer.Option("table", "--output", "-o", help="Output format (table or json)")
 ):
     """
     Create a compact representation of a conversation or episode.
@@ -151,7 +150,7 @@ def cli_create_compaction(
         )
         
         # Display results
-        if output_format == OutputFormat.JSON:
+        if output_format == "json":
             console.print(format_output(result, output_format=output_format))
         else:
             # Prepare data for table/CSV/text format
@@ -193,7 +192,7 @@ def cli_create_compaction(
             console.print(formatted_output)
             
             # Show content separately for table format
-            if output_format == OutputFormat.TABLE:
+            if output_format == "table":
                 console.print("\n[bold cyan]Compacted Content:[/bold cyan]")
                 console.print(result.get('content', 'No content available'))
             
@@ -203,7 +202,6 @@ def cli_create_compaction(
         raise typer.Exit(code=1)
 
 @compaction_app.command("search")
-@add_output_option
 def cli_search_compactions(
     query: str = typer.Argument(..., help="The search query text."),
     threshold: float = typer.Option(
@@ -229,7 +227,7 @@ def cli_search_compactions(
     episode_id: Optional[str] = typer.Option(
         None, "--episode-id", "-e", help="Filter by episode ID."
     ),
-    output_format: str = "table"
+    output_format: str = typer.Option("table", "--output", "-o", help="Output format (table or json)")
 ):
     """
     Search for compacted conversation summaries using semantic similarity.
@@ -277,7 +275,7 @@ def cli_search_compactions(
             episode_id=episode_id
         )
         
-        if output_format == OutputFormat.JSON:
+        if output_format == "json":
             console.print(format_output(results_data.get("results", []), output_format=output_format))
         else:
             # Prepare data for table/CSV/text format
@@ -306,7 +304,7 @@ def cli_search_compactions(
             console.print(formatted_output)
             
             # Add summary footer for table format
-            if output_format == OutputFormat.TABLE:
+            if output_format == "table":
                 console.print(format_info(
                     f"Found {len(results_data.get('results', []))} results in {results_data.get('time', 0):.2f} seconds"
                 ))
@@ -317,7 +315,6 @@ def cli_search_compactions(
         raise typer.Exit(code=1)
 
 @compaction_app.command("get")
-@add_output_option
 def cli_get_compaction(
     compaction_id: str = typer.Argument(
         ..., help="The ID of the compaction to retrieve."
@@ -325,7 +322,7 @@ def cli_get_compaction(
     include_workflow: bool = typer.Option(
         False, "--include-workflow", "-w", help="Include workflow tracking information."
     ),
-    output_format: str = "table"
+    output_format: str = typer.Option("table", "--output", "-o", help="Output format (table or json)")
 ):
     """
     Retrieve a specific compacted conversation summary.
@@ -371,7 +368,7 @@ def cli_get_compaction(
             workflow_data = memory_agent.get_workflow_data(workflow_id)
             compaction["workflow_data"] = workflow_data
         
-        if output_format == OutputFormat.JSON:
+        if output_format == "json":
             console.print(format_output(compaction, output_format=output_format))
         else:
             # Prepare data for table/CSV/text format
@@ -406,7 +403,7 @@ def cli_get_compaction(
             console.print(formatted_output)
             
             # Add workflow details if requested
-            if include_workflow and "workflow_data" in compaction and output_format == OutputFormat.TABLE:
+            if include_workflow and "workflow_data" in compaction and output_format == "table":
                 workflow = compaction["workflow_data"]
                 
                 workflow_rows = [
@@ -442,7 +439,7 @@ def cli_get_compaction(
                             console.print(f"⏳ {name}: {status}")
             
             # Show content for table format
-            if output_format == OutputFormat.TABLE:
+            if output_format == "table":
                 console.print("\n[bold cyan]Content:[/bold cyan]")
                 console.print(compaction.get('content', 'No content available'))
             
@@ -452,7 +449,6 @@ def cli_get_compaction(
         raise typer.Exit(code=1)
 
 @compaction_app.command("list")
-@add_output_option
 def cli_list_compactions(
     limit: int = typer.Option(
         10, "--limit", "-lim", help="Maximum number of results to return.", min=1
@@ -473,7 +469,7 @@ def cli_list_compactions(
     descending: bool = typer.Option(
         True, "--descending/--ascending", help="Sort in descending or ascending order."
     ),
-    output_format: str = "table"
+    output_format: str = typer.Option("table", "--output", "-o", help="Output format (table or json)")
 ):
     """
     List compacted conversation summaries with optional filtering.
@@ -561,7 +557,7 @@ def cli_list_compactions(
         cursor = db.aql.execute(query, bind_vars=bind_vars)
         results = list(cursor)
         
-        if output_format == OutputFormat.JSON:
+        if output_format == "json":
             console.print(format_output(results, output_format=output_format))
         else:
             # Prepare headers based on filters
@@ -613,7 +609,7 @@ def cli_list_compactions(
             )
             console.print(formatted_output)
             
-            if not results and output_format == OutputFormat.TABLE:
+            if not results and output_format == "table":
                 console.print("\n[bold yellow]No compactions found matching the specified criteria[/bold yellow]")
             
     except Exception as e:

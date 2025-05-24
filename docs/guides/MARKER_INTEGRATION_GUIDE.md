@@ -455,143 +455,99 @@ async def generate_relationship_qa(self, doc_id: str) -> List[Dict]:
 }
 ```
 
-## 5. Complete Pipeline Example
+## 5. Implementation and Testing
 
-### Data Flow Visualization
+The integration has been implemented in the following key files:
 
-```mermaid
-%%{init: {
-  'theme': 'base',
-  'themeVariables': {
-    'primaryColor': '#4a5568',
-    'fontFamily': 'Arial',
-    'fontSize': '14px'
-  }
-}}%%
+1. `scripts/marker_integration.py` - Core integration class 
+2. `scripts/test_marker_relationship_extraction.py` - Test suite for the integration
+3. `arangodb/core/graph/relationship_extraction.py` - Relationship extraction logic
 
-graph TD
-    subgraph PDF["📄 PDF Document"]
-        P1["Page 1<br/><small>Headers, Text, Tables</small>"]
-        P2["Page 2<br/><small>Images, Equations</small>"]
-        P3["Page N<br/><small>References, Appendix</small>"]
-    end
-    
-    subgraph Extraction["📋 Marker Extraction"]
-        B1["📝 Text Blocks"]
-        B2["📊 Tables"]
-        B3["🖼️ Images"]
-        B4["📐 Equations"]
-        B5["📑 Sections"]
-    end
-    
-    subgraph Storage["🗄️ ArangoDB Collections"]
-        DO["document_objects<br/><small>Content Elements</small>"]
-        CR["content_relationships<br/><small>Graph Edges</small>"]
-        DM["documents<br/><small>Metadata</small>"]
-    end
-    
-    subgraph Relationships["🔗 Relationship Graph"]
-        N1((Text))
-        N2((Table))
-        N3((Image))
-        N4((Section))
-        
-        N1 -.->|REFERENCES| N2
-        N1 -.->|SIMILAR| N3
-        N4 -.->|PARENT_CHILD| N1
-        N2 -.->|ELABORATES| N3
-    end
-    
-    subgraph QA["❓ Q&A Pairs"]
-        Q1["Q: What does Table 1 show?<br/>A: Table 1 shows..."]
-        Q2["Q: How does X relate to Y?<br/>A: X relates to Y by..."]
-        Q3["Q: What is the main concept?<br/>A: The main concept is..."]
-    end
-    
-    P1 --> B1
-    P1 --> B2
-    P2 --> B3
-    P2 --> B4
-    P1 --> B5
-    
-    B1 --> DO
-    B2 --> DO
-    B3 --> DO
-    B4 --> DO
-    B5 --> DO
-    
-    DO --> N1
-    DO --> N2
-    DO --> N3
-    DO --> N4
-    
-    N1 --> Q1
-    N2 --> Q1
-    N3 --> Q2
-    N4 --> Q3
-    
-    CR -.-> Relationships
-    
-    classDef pdfClass fill:#e6f3ff,stroke:#2196F3,stroke-width:2px
-    classDef extractClass fill:#fff3e0,stroke:#FF9800,stroke-width:2px
-    classDef storageClass fill:#e8f5e9,stroke:#4CAF50,stroke-width:2px
-    classDef nodeClass fill:#f3e5f5,stroke:#9C27B0,stroke-width:2px
-    classDef qaClass fill:#fce4ec,stroke:#E91E63,stroke-width:2px
-    
-    class P1,P2,P3 pdfClass
-    class B1,B2,B3,B4,B5 extractClass
-    class DO,CR,DM storageClass
-    class N1,N2,N3,N4 nodeClass
-    class Q1,Q2,Q3 qaClass
-```
+### Integration Class (marker_integration.py)
 
-## 5. Complete Pipeline Example
+The `MarkerArangoDBIntegration` class provides the complete pipeline:
 
 ```python
-async def process_document_pipeline(pdf_path: str) -> str:
-    """Complete pipeline from PDF to Q&A training data."""
+class MarkerArangoDBIntegration:
+    """Integrates Marker PDF processing with ArangoDB storage and Q&A generation."""
     
-    # 1. Convert PDF with Marker
-    from marker.converters.pdf import PdfConverter
-    from marker.models import create_model_dict
+    def __init__(self, db_config: Dict[str, str] = None):
+        """Initialize with database configuration."""
+        # Setup ArangoDB
+        # Initialize relationship extractor
+        # Setup collections
     
-    converter = PdfConverter(artifact_dict=create_model_dict())
-    document = converter(pdf_path)
+    async def process_pdf(self, pdf_path: str, doc_id: str = None) -> Dict[str, Any]:
+        """Process a PDF through the complete pipeline."""
+        # 1. Convert PDF with Marker
+        # 2. Render to ArangoDB format
+        # 3. Store in ArangoDB
+        # 4. Create embeddings
+        # 5. Build relationships
+        # 6. Generate Q&A pairs
+        # Return summary of results
+```
+
+### Testing and Validation
+
+The `test_marker_relationship_extraction.py` script provides comprehensive testing:
+
+```python
+async def main():
+    """Run the relationship extraction tests."""
+    # 1. Setup test database
+    db = await setup_test_db()
     
-    # 2. Render to ArangoDB format
-    from marker.renderers.arangodb_json import ArangoDBRenderer
+    # 2. Import objects (real or synthetic)
+    objects = await import_marker_objects(db, marker_data)
     
-    renderer = ArangoDBRenderer()
-    arangodb_output = renderer(document)
+    # 3. Add embeddings
+    await add_embeddings(db, objects)
     
-    # 3. Insert into ArangoDB
-    doc_id = os.path.basename(pdf_path).replace('.pdf', '')
+    # 4. Initialize relationship extractor
+    relationship_extractor = RelationshipExtractor(
+        db=db,
+        edge_collection_name="content_relationships",
+        entity_collection_name="document_objects"
+    )
     
-    for obj in arangodb_output.objects:
-        obj_dict = obj.dict()
-        obj_dict["document_id"] = doc_id
-        db.collection("document_objects").insert(obj_dict)
+    # 5. Run tests
+    test_results = {}
+    test_results["text_extraction"] = await test_text_relationship_extraction(...)
+    test_results["similarity_extraction"] = await test_similarity_extraction(...)
+    test_results["entity_extraction"] = await test_entity_extraction(...)
+    test_results["relationship_creation"] = await test_relationship_creation(...)
     
-    # 4. Create embeddings
-    await create_embeddings(db, doc_id)
-    
-    # 5. Build relationships
-    create_relationships(db, doc_id)
-    
-    # 6. Generate Q&A pairs
-    qa_generator = QAGenerator(db, litellm_client)
-    qa_pairs = await qa_generator.generate_qa_pairs(doc_id)
-    
-    # 7. Format for training
-    training_data = format_for_training(qa_pairs)
-    
-    # 8. Save training data
-    output_path = f"training_data/{doc_id}_qa.jsonl"
-    with open(output_path, 'w') as f:
-        for item in training_data:
-            f.write(json.dumps(item) + '\n')
-    
-    return output_path
+    # Report results
+```
+
+### Relationship Extraction Implementation
+
+The relationship extractor includes:
+
+1. **Text-based extraction**: Pattern matching with regex
+2. **LLM-based extraction**: Uses LLM for advanced extraction
+3. **Similarity-based extraction**: Uses embedding cosine similarity
+4. **Entity extraction**: Identifies named entities in text
+
+Example usage:
+
+```python
+# Extract relationships from text
+relationships = relationship_extractor.extract_relationships_from_text(
+    text="Neural networks use gradient descent for optimization.",
+    source_doc={"name": "Section 2.3"},
+    relationship_types=["CAUSAL", "PREREQUISITE"]
+)
+
+# Create a relationship in the database
+relationship = relationship_extractor.create_document_relationship(
+    source_id="document_objects/text_1",
+    target_id="document_objects/text_2",
+    relationship_type="PREREQUISITE",
+    rationale="Concept A must be understood before concept B",
+    confidence=0.9
+)
 ```
 
 ## 6. Performance Considerations
@@ -636,8 +592,23 @@ def validate_qa_pair(qa: Dict, doc_id: str) -> bool:
 
 ## Next Steps
 
-1. Implement the relationship extraction functions
-2. Create Q&A generation templates for each relationship type
-3. Set up validation pipeline for generated Q&A pairs
-4. Integrate with Unsloth for model fine-tuning
+1. Extend relationship extraction patterns for specific domains
+2. Optimize embeddings for different document types 
+3. Tune Q&A generation prompts for better quality and diversity
+4. Add domain-specific relationship types
 5. Create evaluation metrics for Q&A quality
+6. Implement advanced validation for generated Q&A pairs
+
+## Run the Tests
+
+To run the marker relationship extraction tests:
+
+```bash
+python scripts/test_marker_relationship_extraction.py
+```
+
+To process a PDF file through the complete pipeline:
+
+```bash
+python scripts/marker_integration.py path/to/document.pdf --output qa_pairs.jsonl
+```

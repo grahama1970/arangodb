@@ -1,0 +1,399 @@
+2025-05-19 12:37:55.607 | INFO     | __main__:main:400 - Starting QA Export validation
+2025-05-19 12:37:55.608 | DEBUG    | arangodb.core.arango_setup:connect_arango:173 - Connecting to ArangoDB at http://localhost:8529
+2025-05-19 12:37:55.612 | DEBUG    | arangodb.core.arango_setup:connect_arango:187 - Successfully connected to ArangoDB
+2025-05-19 12:37:55.612 | INFO     | arangodb.qa_generation.generator_marker_aware:generate_from_marker_document:73 - Generating Q&A pairs using Marker corpus
+2025-05-19 12:37:55.612 | INFO     | arangodb.qa_generation.generator_marker_aware:_generate_qa_from_structure:128 - Generating 1 FACTUAL questions...
+2025-05-19 12:37:55.613 | INFO     | arangodb.qa_generation.exporter:export_to_unsloth:159 - Exported 2 Q&A pairs to qa_output/qa_unsloth_20250519_163755.jsonl
+2025-05-19 12:37:55.613 | INFO     | arangodb.qa_generation.exporter:export_to_unsloth:160 - Statistics saved to qa_output/qa_unsloth_20250519_163755.stats.json
+2025-05-19 12:37:55.613 | ERROR    | __main__:test_export_qa_pairs_directly:254 - ❌ Direct QA pair export test failed: Extra data: line 2 column 1 (char 400)
+2025-05-19 12:37:55.613 | INFO     | arangodb.qa_generation.exporter:export_to_unsloth:159 - Exported 2 Q&A pairs to qa_output/qa_unsloth_20250519_163755.jsonl
+2025-05-19 12:37:55.613 | INFO     | arangodb.qa_generation.exporter:export_to_unsloth:160 - Statistics saved to qa_output/qa_unsloth_20250519_163755.stats.json
+2025-05-19 12:37:55.613 | ERROR    | __main__:test_export_qa_batch_directly:295 - ❌ QA batch export test failed: Extra data: line 2 column 1 (char 400)
+2025-05-19 12:37:55.613 | INFO     | arangodb.qa_generation.generator_marker_aware:generate_from_marker_document:73 - Generating Q&A pairs using Marker corpus
+2025-05-19 12:37:55.614 | INFO     | arangodb.qa_generation.generator_marker_aware:_generate_qa_from_structure:128 - Generating 1 FACTUAL questions...
+2025-05-19 12:37:55.614 | INFO     | arangodb.qa_generation.generator_marker_aware:_generate_qa_from_structure:128 - Generating 1 RELATIONSHIP questions...
+2025-05-19 12:37:55.614 | INFO     | arangodb.qa_generation.exporter:export_to_unsloth:159 - Exported 0 Q&A pairs to qa_output/qa_unsloth_20250519_163755.jsonl
+2025-05-19 12:37:55.614 | INFO     | arangodb.qa_generation.exporter:export_to_unsloth:160 - Statistics saved to qa_output/qa_unsloth_20250519_163755.stats.json
+2025-05-19 12:37:55.614 | INFO     | __main__:test_empty_document:324 - ✅ Empty document test passed
+2025-05-19 12:37:55.614 | WARNING  | arangodb.qa_generation.generator_marker_aware:generate_from_marker_document:66 - No raw corpus found in Marker output, falling back to document content
+2025-05-19 12:37:55.614 | INFO     | arangodb.qa_generation.generator_marker_aware:generate_from_marker_document:73 - Generating Q&A pairs using Marker corpus
+2025-05-19 12:37:55.614 | INFO     | arangodb.qa_generation.generator_marker_aware:_generate_qa_from_structure:128 - Generating 1 FACTUAL questions...
+2025-05-19 12:37:55.614 | INFO     | arangodb.qa_generation.generator_marker_aware:_generate_qa_from_structure:128 - Generating 1 RELATIONSHIP questions...
+2025-05-19 12:37:55.614 | INFO     | arangodb.qa_generation.exporter:export_to_unsloth:159 - Exported 0 Q&A pairs to qa_output/qa_unsloth_20250519_163755.jsonl
+2025-05-19 12:37:55.614 | INFO     | arangodb.qa_generation.exporter:export_to_unsloth:160 - Statistics saved to qa_output/qa_unsloth_20250519_163755.stats.json
+2025-05-19 12:37:55.614 | INFO     | __main__:test_document_without_corpus:358 - ✅ Document without corpus test passed
+2025-05-19 12:37:55.669 | WARNING  | arangodb.qa_generation.generator:_generate_with_retry:305 - Attempt 1 exception: litellm.APIConnectionError: File vertex_ai_service_account.json was not found.
+Traceback (most recent call last):
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/main.py", line 507, in acompletion
+    response = await init_response
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/gemini/vertex_and_google_ai_studio_gemini.py", line 1254, in async_completion
+    _auth_header, vertex_project = await self._ensure_access_token_async(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 359, in _ensure_access_token_async
+    raise e
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 354, in _ensure_access_token_async
+    return await asyncify(self.get_access_token)(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/litellm_core_utils/asyncify.py", line 57, in wrapper
+    return await anyio.to_thread.run_sync(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/anyio/to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/anyio/_backends/_asyncio.py", line 2470, in run_sync_in_worker_thread
+    return await future
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/anyio/_backends/_asyncio.py", line 967, in run
+    result = context.run(func, *args)
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 293, in get_access_token
+    raise e
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 286, in get_access_token
+    _credentials, credential_project_id = self.load_auth(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 95, in load_auth
+    creds, creds_project_id = google_auth.default(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/google/auth/_default.py", line 651, in default
+    credentials, project_id = checker()
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/google/auth/_default.py", line 644, in <lambda>
+    lambda: _get_explicit_environ_credentials(quota_project_id=quota_project_id),
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/google/auth/_default.py", line 293, in _get_explicit_environ_credentials
+    credentials, project_id = load_credentials_from_file(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/google/auth/_default.py", line 125, in load_credentials_from_file
+    raise exceptions.DefaultCredentialsError(
+google.auth.exceptions.DefaultCredentialsError: File vertex_ai_service_account.json was not found.
+
+2025-05-19 12:37:56.677 | WARNING  | arangodb.qa_generation.generator:_generate_with_retry:305 - Attempt 2 exception: litellm.APIConnectionError: File vertex_ai_service_account.json was not found.
+Traceback (most recent call last):
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/main.py", line 507, in acompletion
+    response = await init_response
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/gemini/vertex_and_google_ai_studio_gemini.py", line 1254, in async_completion
+    _auth_header, vertex_project = await self._ensure_access_token_async(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 359, in _ensure_access_token_async
+    raise e
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 354, in _ensure_access_token_async
+    return await asyncify(self.get_access_token)(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/litellm_core_utils/asyncify.py", line 57, in wrapper
+    return await anyio.to_thread.run_sync(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/anyio/to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/anyio/_backends/_asyncio.py", line 2470, in run_sync_in_worker_thread
+    return await future
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/anyio/_backends/_asyncio.py", line 967, in run
+    result = context.run(func, *args)
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 293, in get_access_token
+    raise e
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 286, in get_access_token
+    _credentials, credential_project_id = self.load_auth(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 95, in load_auth
+    creds, creds_project_id = google_auth.default(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/google/auth/_default.py", line 651, in default
+    credentials, project_id = checker()
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/google/auth/_default.py", line 644, in <lambda>
+    lambda: _get_explicit_environ_credentials(quota_project_id=quota_project_id),
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/google/auth/_default.py", line 293, in _get_explicit_environ_credentials
+    credentials, project_id = load_credentials_from_file(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/google/auth/_default.py", line 125, in load_credentials_from_file
+    raise exceptions.DefaultCredentialsError(
+google.auth.exceptions.DefaultCredentialsError: File vertex_ai_service_account.json was not found.
+
+2025-05-19 12:37:57.685 | WARNING  | arangodb.qa_generation.generator:_generate_with_retry:305 - Attempt 3 exception: litellm.APIConnectionError: File vertex_ai_service_account.json was not found.
+Traceback (most recent call last):
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/main.py", line 507, in acompletion
+    response = await init_response
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/gemini/vertex_and_google_ai_studio_gemini.py", line 1254, in async_completion
+    _auth_header, vertex_project = await self._ensure_access_token_async(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 359, in _ensure_access_token_async
+    raise e
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 354, in _ensure_access_token_async
+    return await asyncify(self.get_access_token)(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/litellm_core_utils/asyncify.py", line 57, in wrapper
+    return await anyio.to_thread.run_sync(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/anyio/to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/anyio/_backends/_asyncio.py", line 2470, in run_sync_in_worker_thread
+    return await future
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/anyio/_backends/_asyncio.py", line 967, in run
+    result = context.run(func, *args)
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 293, in get_access_token
+    raise e
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 286, in get_access_token
+    _credentials, credential_project_id = self.load_auth(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 95, in load_auth
+    creds, creds_project_id = google_auth.default(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/google/auth/_default.py", line 651, in default
+    credentials, project_id = checker()
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/google/auth/_default.py", line 644, in <lambda>
+    lambda: _get_explicit_environ_credentials(quota_project_id=quota_project_id),
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/google/auth/_default.py", line 293, in _get_explicit_environ_credentials
+    credentials, project_id = load_credentials_from_file(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/google/auth/_default.py", line 125, in load_credentials_from_file
+    raise exceptions.DefaultCredentialsError(
+google.auth.exceptions.DefaultCredentialsError: File vertex_ai_service_account.json was not found.
+
+2025-05-19 12:37:58.693 | WARNING  | arangodb.qa_generation.generator:_generate_with_retry:305 - Attempt 4 exception: litellm.APIConnectionError: File vertex_ai_service_account.json was not found.
+Traceback (most recent call last):
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/main.py", line 507, in acompletion
+    response = await init_response
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/gemini/vertex_and_google_ai_studio_gemini.py", line 1254, in async_completion
+    _auth_header, vertex_project = await self._ensure_access_token_async(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 359, in _ensure_access_token_async
+    raise e
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 354, in _ensure_access_token_async
+    return await asyncify(self.get_access_token)(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/litellm_core_utils/asyncify.py", line 57, in wrapper
+    return await anyio.to_thread.run_sync(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/anyio/to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/anyio/_backends/_asyncio.py", line 2470, in run_sync_in_worker_thread
+    return await future
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/anyio/_backends/_asyncio.py", line 967, in run
+    result = context.run(func, *args)
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 293, in get_access_token
+    raise e
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 286, in get_access_token
+    _credentials, credential_project_id = self.load_auth(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 95, in load_auth
+    creds, creds_project_id = google_auth.default(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/google/auth/_default.py", line 651, in default
+    credentials, project_id = checker()
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/google/auth/_default.py", line 644, in <lambda>
+    lambda: _get_explicit_environ_credentials(quota_project_id=quota_project_id),
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/google/auth/_default.py", line 293, in _get_explicit_environ_credentials
+    credentials, project_id = load_credentials_from_file(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/google/auth/_default.py", line 125, in load_credentials_from_file
+    raise exceptions.DefaultCredentialsError(
+google.auth.exceptions.DefaultCredentialsError: File vertex_ai_service_account.json was not found.
+
+2025-05-19 12:37:59.699 | ERROR    | arangodb.qa_generation.generator:_generate_with_retry:309 - All attempts failed with exception: litellm.APIConnectionError: File vertex_ai_service_account.json was not found.
+Traceback (most recent call last):
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/main.py", line 507, in acompletion
+    response = await init_response
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/gemini/vertex_and_google_ai_studio_gemini.py", line 1254, in async_completion
+    _auth_header, vertex_project = await self._ensure_access_token_async(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 359, in _ensure_access_token_async
+    raise e
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 354, in _ensure_access_token_async
+    return await asyncify(self.get_access_token)(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/litellm_core_utils/asyncify.py", line 57, in wrapper
+    return await anyio.to_thread.run_sync(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/anyio/to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/anyio/_backends/_asyncio.py", line 2470, in run_sync_in_worker_thread
+    return await future
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/anyio/_backends/_asyncio.py", line 967, in run
+    result = context.run(func, *args)
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 293, in get_access_token
+    raise e
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 286, in get_access_token
+    _credentials, credential_project_id = self.load_auth(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 95, in load_auth
+    creds, creds_project_id = google_auth.default(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/google/auth/_default.py", line 651, in default
+    credentials, project_id = checker()
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/google/auth/_default.py", line 644, in <lambda>
+    lambda: _get_explicit_environ_credentials(quota_project_id=quota_project_id),
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/google/auth/_default.py", line 293, in _get_explicit_environ_credentials
+    credentials, project_id = load_credentials_from_file(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/google/auth/_default.py", line 125, in load_credentials_from_file
+    raise exceptions.DefaultCredentialsError(
+google.auth.exceptions.DefaultCredentialsError: File vertex_ai_service_account.json was not found.
+
+2025-05-19 12:37:59.699 | INFO     | arangodb.qa_generation.generator_marker_aware:_generate_qa_from_structure:128 - Generating 1 RELATIONSHIP questions...
+2025-05-19 12:37:59.699 | ERROR    | __main__:test_generate_qa_from_document:220 - ❌ QA generation test failed: QA batch should have at least one pair
+2025-05-19 12:37:59.699 | ERROR    | __main__:run_all_tests:385 - ❌ VALIDATION FAILED - 3 of 5 tests failed:
+2025-05-19 12:37:59.699 | ERROR    | __main__:run_all_tests:387 -   - Direct QA pair export test failed: Extra data: line 2 column 1 (char 400)
+2025-05-19 12:37:59.699 | ERROR    | __main__:run_all_tests:387 -   - QA batch export test failed: Extra data: line 2 column 1 (char 400)
+2025-05-19 12:37:59.699 | ERROR    | __main__:run_all_tests:387 -   - QA generation test failed: QA batch should have at least one pair
+2025-05-19 12:38:41.287 | INFO     | __main__:main:412 - Starting QA Export validation
+2025-05-19 12:38:41.287 | DEBUG    | arangodb.core.arango_setup:connect_arango:173 - Connecting to ArangoDB at http://localhost:8529
+2025-05-19 12:38:41.291 | DEBUG    | arangodb.core.arango_setup:connect_arango:187 - Successfully connected to ArangoDB
+2025-05-19 12:38:41.292 | INFO     | arangodb.qa_generation.generator_marker_aware:generate_from_marker_document:73 - Generating Q&A pairs using Marker corpus
+2025-05-19 12:38:41.292 | INFO     | arangodb.qa_generation.generator_marker_aware:_generate_qa_from_structure:128 - Generating 1 FACTUAL questions...
+2025-05-19 12:38:41.292 | INFO     | arangodb.qa_generation.exporter:export_to_unsloth:158 - Exported 2 Q&A pairs to qa_output/qa_unsloth_20250519_163841.jsonl
+2025-05-19 12:38:41.292 | INFO     | arangodb.qa_generation.exporter:export_to_unsloth:159 - Statistics saved to qa_output/qa_unsloth_20250519_163841.stats.json
+2025-05-19 12:38:41.292 | INFO     | __main__:test_export_qa_pairs_directly:261 - ✅ Direct QA pair export test passed
+2025-05-19 12:38:41.293 | INFO     | arangodb.qa_generation.exporter:export_to_unsloth:158 - Exported 2 Q&A pairs to qa_output/qa_unsloth_20250519_163841.jsonl
+2025-05-19 12:38:41.293 | INFO     | arangodb.qa_generation.exporter:export_to_unsloth:159 - Statistics saved to qa_output/qa_unsloth_20250519_163841.stats.json
+2025-05-19 12:38:41.293 | INFO     | __main__:test_export_qa_batch_directly:302 - ✅ QA batch export test passed
+2025-05-19 12:38:41.293 | INFO     | arangodb.qa_generation.generator_marker_aware:generate_from_marker_document:73 - Generating Q&A pairs using Marker corpus
+2025-05-19 12:38:41.293 | INFO     | arangodb.qa_generation.generator_marker_aware:_generate_qa_from_structure:128 - Generating 1 FACTUAL questions...
+2025-05-19 12:38:41.293 | INFO     | arangodb.qa_generation.generator_marker_aware:_generate_qa_from_structure:128 - Generating 1 RELATIONSHIP questions...
+2025-05-19 12:38:41.293 | INFO     | arangodb.qa_generation.exporter:export_to_unsloth:158 - Exported 0 Q&A pairs to qa_output/qa_unsloth_20250519_163841.jsonl
+2025-05-19 12:38:41.293 | INFO     | arangodb.qa_generation.exporter:export_to_unsloth:159 - Statistics saved to qa_output/qa_unsloth_20250519_163841.stats.json
+2025-05-19 12:38:41.293 | INFO     | __main__:test_empty_document:336 - ✅ Empty document test passed
+2025-05-19 12:38:41.293 | WARNING  | arangodb.qa_generation.generator_marker_aware:generate_from_marker_document:66 - No raw corpus found in Marker output, falling back to document content
+2025-05-19 12:38:41.293 | INFO     | arangodb.qa_generation.generator_marker_aware:generate_from_marker_document:73 - Generating Q&A pairs using Marker corpus
+2025-05-19 12:38:41.294 | INFO     | arangodb.qa_generation.generator_marker_aware:_generate_qa_from_structure:128 - Generating 1 FACTUAL questions...
+2025-05-19 12:38:41.294 | INFO     | arangodb.qa_generation.generator_marker_aware:_generate_qa_from_structure:128 - Generating 1 RELATIONSHIP questions...
+2025-05-19 12:38:41.294 | INFO     | arangodb.qa_generation.exporter:export_to_unsloth:158 - Exported 0 Q&A pairs to qa_output/qa_unsloth_20250519_163841.jsonl
+2025-05-19 12:38:41.294 | INFO     | arangodb.qa_generation.exporter:export_to_unsloth:159 - Statistics saved to qa_output/qa_unsloth_20250519_163841.stats.json
+2025-05-19 12:38:41.294 | INFO     | __main__:test_document_without_corpus:370 - ✅ Document without corpus test passed
+2025-05-19 12:38:41.346 | WARNING  | arangodb.qa_generation.generator:_generate_with_retry:305 - Attempt 1 exception: litellm.APIConnectionError: File vertex_ai_service_account.json was not found.
+Traceback (most recent call last):
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/main.py", line 507, in acompletion
+    response = await init_response
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/gemini/vertex_and_google_ai_studio_gemini.py", line 1254, in async_completion
+    _auth_header, vertex_project = await self._ensure_access_token_async(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 359, in _ensure_access_token_async
+    raise e
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 354, in _ensure_access_token_async
+    return await asyncify(self.get_access_token)(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/litellm_core_utils/asyncify.py", line 57, in wrapper
+    return await anyio.to_thread.run_sync(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/anyio/to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/anyio/_backends/_asyncio.py", line 2470, in run_sync_in_worker_thread
+    return await future
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/anyio/_backends/_asyncio.py", line 967, in run
+    result = context.run(func, *args)
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 293, in get_access_token
+    raise e
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 286, in get_access_token
+    _credentials, credential_project_id = self.load_auth(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 95, in load_auth
+    creds, creds_project_id = google_auth.default(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/google/auth/_default.py", line 651, in default
+    credentials, project_id = checker()
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/google/auth/_default.py", line 644, in <lambda>
+    lambda: _get_explicit_environ_credentials(quota_project_id=quota_project_id),
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/google/auth/_default.py", line 293, in _get_explicit_environ_credentials
+    credentials, project_id = load_credentials_from_file(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/google/auth/_default.py", line 125, in load_credentials_from_file
+    raise exceptions.DefaultCredentialsError(
+google.auth.exceptions.DefaultCredentialsError: File vertex_ai_service_account.json was not found.
+
+2025-05-19 12:38:42.353 | WARNING  | arangodb.qa_generation.generator:_generate_with_retry:305 - Attempt 2 exception: litellm.APIConnectionError: File vertex_ai_service_account.json was not found.
+Traceback (most recent call last):
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/main.py", line 507, in acompletion
+    response = await init_response
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/gemini/vertex_and_google_ai_studio_gemini.py", line 1254, in async_completion
+    _auth_header, vertex_project = await self._ensure_access_token_async(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 359, in _ensure_access_token_async
+    raise e
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 354, in _ensure_access_token_async
+    return await asyncify(self.get_access_token)(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/litellm_core_utils/asyncify.py", line 57, in wrapper
+    return await anyio.to_thread.run_sync(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/anyio/to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/anyio/_backends/_asyncio.py", line 2470, in run_sync_in_worker_thread
+    return await future
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/anyio/_backends/_asyncio.py", line 967, in run
+    result = context.run(func, *args)
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 293, in get_access_token
+    raise e
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 286, in get_access_token
+    _credentials, credential_project_id = self.load_auth(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 95, in load_auth
+    creds, creds_project_id = google_auth.default(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/google/auth/_default.py", line 651, in default
+    credentials, project_id = checker()
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/google/auth/_default.py", line 644, in <lambda>
+    lambda: _get_explicit_environ_credentials(quota_project_id=quota_project_id),
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/google/auth/_default.py", line 293, in _get_explicit_environ_credentials
+    credentials, project_id = load_credentials_from_file(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/google/auth/_default.py", line 125, in load_credentials_from_file
+    raise exceptions.DefaultCredentialsError(
+google.auth.exceptions.DefaultCredentialsError: File vertex_ai_service_account.json was not found.
+
+2025-05-19 12:38:43.362 | WARNING  | arangodb.qa_generation.generator:_generate_with_retry:305 - Attempt 3 exception: litellm.APIConnectionError: File vertex_ai_service_account.json was not found.
+Traceback (most recent call last):
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/main.py", line 507, in acompletion
+    response = await init_response
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/gemini/vertex_and_google_ai_studio_gemini.py", line 1254, in async_completion
+    _auth_header, vertex_project = await self._ensure_access_token_async(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 359, in _ensure_access_token_async
+    raise e
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 354, in _ensure_access_token_async
+    return await asyncify(self.get_access_token)(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/litellm_core_utils/asyncify.py", line 57, in wrapper
+    return await anyio.to_thread.run_sync(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/anyio/to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/anyio/_backends/_asyncio.py", line 2470, in run_sync_in_worker_thread
+    return await future
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/anyio/_backends/_asyncio.py", line 967, in run
+    result = context.run(func, *args)
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 293, in get_access_token
+    raise e
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 286, in get_access_token
+    _credentials, credential_project_id = self.load_auth(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 95, in load_auth
+    creds, creds_project_id = google_auth.default(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/google/auth/_default.py", line 651, in default
+    credentials, project_id = checker()
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/google/auth/_default.py", line 644, in <lambda>
+    lambda: _get_explicit_environ_credentials(quota_project_id=quota_project_id),
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/google/auth/_default.py", line 293, in _get_explicit_environ_credentials
+    credentials, project_id = load_credentials_from_file(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/google/auth/_default.py", line 125, in load_credentials_from_file
+    raise exceptions.DefaultCredentialsError(
+google.auth.exceptions.DefaultCredentialsError: File vertex_ai_service_account.json was not found.
+
+2025-05-19 12:38:44.371 | WARNING  | arangodb.qa_generation.generator:_generate_with_retry:305 - Attempt 4 exception: litellm.APIConnectionError: File vertex_ai_service_account.json was not found.
+Traceback (most recent call last):
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/main.py", line 507, in acompletion
+    response = await init_response
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/gemini/vertex_and_google_ai_studio_gemini.py", line 1254, in async_completion
+    _auth_header, vertex_project = await self._ensure_access_token_async(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 359, in _ensure_access_token_async
+    raise e
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 354, in _ensure_access_token_async
+    return await asyncify(self.get_access_token)(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/litellm_core_utils/asyncify.py", line 57, in wrapper
+    return await anyio.to_thread.run_sync(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/anyio/to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/anyio/_backends/_asyncio.py", line 2470, in run_sync_in_worker_thread
+    return await future
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/anyio/_backends/_asyncio.py", line 967, in run
+    result = context.run(func, *args)
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 293, in get_access_token
+    raise e
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 286, in get_access_token
+    _credentials, credential_project_id = self.load_auth(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 95, in load_auth
+    creds, creds_project_id = google_auth.default(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/google/auth/_default.py", line 651, in default
+    credentials, project_id = checker()
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/google/auth/_default.py", line 644, in <lambda>
+    lambda: _get_explicit_environ_credentials(quota_project_id=quota_project_id),
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/google/auth/_default.py", line 293, in _get_explicit_environ_credentials
+    credentials, project_id = load_credentials_from_file(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/google/auth/_default.py", line 125, in load_credentials_from_file
+    raise exceptions.DefaultCredentialsError(
+google.auth.exceptions.DefaultCredentialsError: File vertex_ai_service_account.json was not found.
+
+2025-05-19 12:38:45.381 | ERROR    | arangodb.qa_generation.generator:_generate_with_retry:309 - All attempts failed with exception: litellm.APIConnectionError: File vertex_ai_service_account.json was not found.
+Traceback (most recent call last):
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/main.py", line 507, in acompletion
+    response = await init_response
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/gemini/vertex_and_google_ai_studio_gemini.py", line 1254, in async_completion
+    _auth_header, vertex_project = await self._ensure_access_token_async(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 359, in _ensure_access_token_async
+    raise e
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 354, in _ensure_access_token_async
+    return await asyncify(self.get_access_token)(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/litellm_core_utils/asyncify.py", line 57, in wrapper
+    return await anyio.to_thread.run_sync(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/anyio/to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/anyio/_backends/_asyncio.py", line 2470, in run_sync_in_worker_thread
+    return await future
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/anyio/_backends/_asyncio.py", line 967, in run
+    result = context.run(func, *args)
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 293, in get_access_token
+    raise e
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 286, in get_access_token
+    _credentials, credential_project_id = self.load_auth(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/litellm/llms/vertex_ai/vertex_llm_base.py", line 95, in load_auth
+    creds, creds_project_id = google_auth.default(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/google/auth/_default.py", line 651, in default
+    credentials, project_id = checker()
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/google/auth/_default.py", line 644, in <lambda>
+    lambda: _get_explicit_environ_credentials(quota_project_id=quota_project_id),
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/google/auth/_default.py", line 293, in _get_explicit_environ_credentials
+    credentials, project_id = load_credentials_from_file(
+  File "/home/graham/workspace/experiments/arangodb/.venv/lib/python3.10/site-packages/google/auth/_default.py", line 125, in load_credentials_from_file
+    raise exceptions.DefaultCredentialsError(
+google.auth.exceptions.DefaultCredentialsError: File vertex_ai_service_account.json was not found.
+
+2025-05-19 12:38:45.381 | INFO     | arangodb.qa_generation.generator_marker_aware:_generate_qa_from_structure:128 - Generating 1 RELATIONSHIP questions...
+2025-05-19 12:38:45.382 | INFO     | arangodb.qa_generation.exporter:export_to_unsloth:158 - Exported 0 Q&A pairs to qa_output/qa_unsloth_20250519_163845.jsonl
+2025-05-19 12:38:45.382 | INFO     | arangodb.qa_generation.exporter:export_to_unsloth:159 - Statistics saved to qa_output/qa_unsloth_20250519_163845.stats.json
+2025-05-19 12:38:45.382 | INFO     | __main__:test_generate_qa_from_document:227 - ✅ QA generation and export test passed
+2025-05-19 12:38:45.382 | INFO     | __main__:run_all_tests:402 - ✅ VALIDATION PASSED - All 5 tests produced expected results

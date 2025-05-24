@@ -1,0 +1,23 @@
+[
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "What is ArangoDB?"
+      },
+      {
+        "role": "assistant",
+        "content": "ArangoDB is a multi-model NoSQL database.",
+        "thinking": "ArangoDB is a database system that supports multiple data models."
+      }
+    ],
+    "metadata": {
+      "document_id": "test_doc",
+      "question_type": "FACTUAL",
+      "confidence": 0.95,
+      "source_section": "introduction",
+      "validation_score": 0.98,
+      "validated": true
+    }
+  }
+]

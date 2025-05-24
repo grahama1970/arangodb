@@ -24,6 +24,10 @@ from arangodb.cli.contradiction_commands import app as contradiction_app
 from arangodb.cli.temporal_commands import app as temporal_app
 from arangodb.cli.visualization_commands import app as visualization_app
 from arangodb.cli.qa_commands import app as qa_app
+from arangodb.cli.agent_commands import app as agent_app
+
+# Import MCP mixin
+from arangodb.cli.slash_mcp_mixin import add_slash_mcp_commands
 
 # Create main app
 app = typer.Typer(
@@ -44,6 +48,7 @@ app.add_typer(contradiction_app, name="contradiction", help="Contradiction detec
 app.add_typer(temporal_app, name="temporal", help="Temporal operations and queries")
 app.add_typer(visualization_app, name="visualize", help="D3.js visualization generation")
 app.add_typer(qa_app, name="qa", help="Q&A generation for LLM fine-tuning")
+app.add_typer(agent_app, name="agent", help="Inter-module communication")
 
 # Add generic CRUD as top-level for convenience
 app.add_typer(crud_app, name="documents", help="Document operations (alias for crud)")
@@ -227,7 +232,7 @@ def health_check(output: str = typer.Option("text", "--output", "-o")):
     
     Verifies all systems are operational.
     """
-    from arangodb.core.db_operations import get_db_connection
+    from arangodb.cli.db_connection import get_db_connection
     
     health_status = {
         "cli_version": "2.0.0",
@@ -269,6 +274,9 @@ def health_check(output: str = typer.Option("text", "--output", "-o")):
         for check, status in health_status["checks"].items():
             emoji = "✓" if status else "✗"
             console.print(f"  {emoji} {check}: {'OK' if status else 'Failed'}")
+
+# Add MCP and slash command generation
+add_slash_mcp_commands(app, output_dir=".claude/arangodb_commands")
 
 if __name__ == "__main__":
     app()

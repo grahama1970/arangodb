@@ -1,0 +1,249 @@
+{
+  "name": "arangodb-simple",
+  "version": "1.0.0",
+  "description": "MCP server for arangodb-simple",
+  "server": {
+    "command": "/home/graham/workspace/experiments/arangodb/.venv/bin/python",
+    "args": [
+      "src/arangodb/cli/simple_mcp.py",
+      "serve-mcp",
+      "--host",
+      "localhost",
+      "--port",
+      "5000"
+    ]
+  },
+  "tools": {
+    "create_entity": {
+      "description": "Create an entity in any collection with optional embeddings.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "collection": {
+            "type": "string",
+            "description": "Parameter: collection"
+          },
+          "data": {
+            "type": "string",
+            "description": "Parameter: data"
+          },
+          "key": {
+            "type": "string",
+            "description": "Parameter: key"
+          },
+          "embed": {
+            "type": "boolean",
+            "description": "Parameter: embed"
+          }
+        },
+        "required": []
+      }
+    },
+    "get_entity": {
+      "description": "Get an entity by key from any collection.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "collection": {
+            "type": "string",
+            "description": "Parameter: collection"
+          },
+          "key": {
+            "type": "string",
+            "description": "Parameter: key"
+          }
+        },
+        "required": []
+      }
+    },
+    "update_entity": {
+      "description": "Update an entity in any collection.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "collection": {
+            "type": "string",
+            "description": "Parameter: collection"
+          },
+          "key": {
+            "type": "string",
+            "description": "Parameter: key"
+          },
+          "data": {
+            "type": "string",
+            "description": "Parameter: data"
+          },
+          "replace": {
+            "type": "boolean",
+            "description": "Parameter: replace"
+          }
+        },
+        "required": []
+      }
+    },
+    "delete_entity": {
+      "description": "Delete an entity from any collection.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "collection": {
+            "type": "string",
+            "description": "Parameter: collection"
+          },
+          "key": {
+            "type": "string",
+            "description": "Parameter: key"
+          }
+        },
+        "required": []
+      }
+    },
+    "search_semantic": {
+      "description": "Search using semantic similarity (vector search).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Parameter: query"
+          },
+          "collection": {
+            "type": "string",
+            "description": "Parameter: collection"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Parameter: limit"
+          }
+        },
+        "required": []
+      }
+    },
+    "search_keyword": {
+      "description": "Search using keyword matching.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Parameter: query"
+          },
+          "collection": {
+            "type": "string",
+            "description": "Parameter: collection"
+          },
+          "field": {
+            "type": "string",
+            "description": "Parameter: field"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Parameter: limit"
+          }
+        },
+        "required": []
+      }
+    },
+    "create_relationship": {
+      "description": "Create a relationship between two entities.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "from_collection": {
+            "type": "string",
+            "description": "Parameter: from_collection"
+          },
+          "from_key": {
+            "type": "string",
+            "description": "Parameter: from_key"
+          },
+          "to_collection": {
+            "type": "string",
+            "description": "Parameter: to_collection"
+          },
+          "to_key": {
+            "type": "string",
+            "description": "Parameter: to_key"
+          },
+          "edge_type": {
+            "type": "string",
+            "description": "Parameter: edge_type"
+          },
+          "data": {
+            "type": "string",
+            "description": "Parameter: data"
+          }
+        },
+        "required": []
+      }
+    },
+    "traverse_graph": {
+      "description": "Traverse the graph from a starting point.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "start_collection": {
+            "type": "string",
+            "description": "Parameter: start_collection"
+          },
+          "start_key": {
+            "type": "string",
+            "description": "Parameter: start_key"
+          },
+          "direction": {
+            "type": "string",
+            "description": "Parameter: direction"
+          },
+          "max_depth": {
+            "type": "integer",
+            "description": "Parameter: max_depth"
+          }
+        },
+        "required": []
+      }
+    },
+    "store_memory": {
+      "description": "Store a new memory with embeddings.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "Parameter: content"
+          },
+          "conversation_id": {
+            "type": "string",
+            "description": "Parameter: conversation_id"
+          },
+          "memory_type": {
+            "type": "string",
+            "description": "Parameter: memory_type"
+          }
+        },
+        "required": []
+      }
+    },
+    "query_aql": {
+      "description": "Execute a raw AQL query (advanced users).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Parameter: query"
+          },
+          "bind_vars": {
+            "type": "string",
+            "description": "Parameter: bind_vars"
+          }
+        },
+        "required": []
+      }
+    }
+  },
+  "capabilities": {
+    "tools": true,
+    "prompts": false,
+    "resources": false
+  }
+}

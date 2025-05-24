@@ -902,6 +902,18 @@ def process_marker_output(
         "--format",
         "-f",
         help="Output format for export"
+    ),
+    graph_integration: bool = typer.Option(
+        False,
+        "--graph-integration",
+        "-g",
+        help="Integrate generated Q&A pairs with the graph"
+    ),
+    confidence_threshold: float = typer.Option(
+        70.0,
+        "--confidence",
+        "-c",
+        help="Confidence threshold for graph integration (0-100)"
     )
 ):
     """
@@ -916,7 +928,7 @@ def process_marker_output(
     db = get_db_connection()
     
     # Create Marker connector
-    connector = MarkerConnector(db)
+    marker_connector = MarkerConnector(db)
     
     # Process Marker output
     async def process():
@@ -929,22 +941,64 @@ def process_marker_output(
                 task = progress.add_task("Loading Marker output...", total=None)
                 
                 # Process Marker file
-                doc_id, qa_keys, rel_keys = await connector.process_marker_file(
+                doc_id, qa_keys, rel_keys = await marker_connector.process_marker_file(
                     file_path,
                     max_pairs=max_pairs
                 )
+                
+                progress.update(task, description="Processing complete")
+                
+                # Integrate with graph if requested
+                if graph_integration and qa_keys:
+                    progress.update(task, description="Integrating with graph...")
+                    
+                    # Create graph connector
+                    graph_connector = QAGraphConnector(db)
+                    
+                    # Convert confidence threshold to decimal
+                    conf_threshold = confidence_threshold / 100.0
+                    
+                    # Integrate Q&A pairs with graph
+                    edge_count, edges = await graph_connector.integrate_qa_with_graph(
+                        document_id=doc_id,
+                        confidence_threshold=conf_threshold,
+                        max_pairs=max_pairs,
+                        include_validation_failed=False
+                    )
+                    
+                    # Group by relationship type
+                    type_counts = {}
+                    for edge in edges:
+                        edge_type = edge.get("question_type", "Unknown")
+                        type_counts[edge_type] = type_counts.get(edge_type, 0) + 1
                 
                 progress.update(task, completed=True, description="Complete")
             
             # Print results
             console.print(f"[bold green]✓[/] Processed document: {doc_id}")
             console.print(f"[bold green]✓[/] Generated {len(qa_keys)} Q&A pairs")
-            console.print(f"[bold green]✓[/] Created {len(rel_keys)} relationships")
+            console.print(f"[bold green]✓[/] Created {len(rel_keys)} document relationships")
+            
+            # Print graph integration results if used
+            if graph_integration and qa_keys:
+                console.print(f"[bold green]✓[/] Created {edge_count} graph edges from Q&A pairs")
+                
+                # Print relationship type distribution
+                if type_counts:
+                    console.print("\n[bold]Edge Type Distribution:[/]")
+                    type_table = Table()
+                    type_table.add_column("Question Type", style="cyan")
+                    type_table.add_column("Edge Count", style="magenta")
+                    
+                    for edge_type, count in sorted(type_counts.items(), key=lambda x: x[1], reverse=True):
+                        type_table.add_row(edge_type, str(count))
+                    
+                    console.print(type_table)
             
             # Export if requested
             if output and qa_keys:
                 # Get QA pairs
-                qa_pairs = connector.qa_connector.get_qa_pairs_by_document(doc_id)
+                qa_pairs = marker_connector.qa_connector.get_qa_pairs_by_document(doc_id)
                 
                 # Export
                 output_path = output
@@ -960,6 +1014,232 @@ def process_marker_output(
     
     # Run the async function
     asyncio.run(process())
+
+
+@marker_app.command("end-to-end")
+def marker_end_to_end(
+    file_path: Path = typer.Argument(
+        ...,
+        help="Path to Marker output JSON file",
+        exists=True
+    ),
+    max_pairs: int = typer.Option(
+        50,
+        "--max-pairs",
+        "-n",
+        help="Maximum number of Q&A pairs to generate"
+    ),
+    output_dir: Optional[Path] = typer.Option(
+        None,
+        "--output-dir",
+        "-o",
+        help="Output directory for all artifacts"
+    ),
+    confidence_threshold: float = typer.Option(
+        80.0,
+        "--confidence",
+        "-c",
+        help="Confidence threshold for graph integration (0-100)"
+    )
+):
+    """
+    Complete end-to-end workflow from Marker output to graph-integrated Q&A.
+    
+    This command performs all steps in the integration between Marker and ArangoDB:
+    1. Process Marker output file
+    2. Generate Q&A pairs
+    3. Integrate Q&A pairs with the graph
+    4. Export Q&A pairs and graph edges
+    5. Create visualization of the graph
+    
+    This is the recommended workflow for production use.
+    """
+    console.print(f"[bold blue]Running end-to-end workflow for: {file_path}[/]")
+    
+    # Create output directory if specified
+    if output_dir:
+        output_dir.mkdir(parents=True, exist_ok=True)
+    else:
+        # Use default output directory
+        output_dir = Path("qa_output")
+        output_dir.mkdir(exist_ok=True)
+    
+    # Get database connection
+    db = get_db_connection()
+    
+    # Create connectors
+    marker_connector = MarkerConnector(db)
+    
+    # End-to-end workflow
+    async def workflow():
+        # Track progress with status indicators
+        steps = [
+            "Process Marker Output",
+            "Generate Q&A Pairs",
+            "Integrate with Graph",
+            "Export Results",
+            "Create Visualization"
+        ]
+        
+        results = {
+            "document_id": None,
+            "qa_count": 0,
+            "edge_count": 0,
+            "relationship_count": 0,
+            "exports": []
+        }
+        
+        # Create progress grid
+        step_table = Table(title="End-to-End Workflow Progress")
+        step_table.add_column("Step", style="cyan")
+        step_table.add_column("Status", style="yellow")
+        step_table.add_column("Result", style="green")
+        
+        for step in steps:
+            step_table.add_row(step, "Pending", "")
+        
+        console.print(step_table)
+        
+        try:
+            # Step 1: Process Marker output
+            console.print("\n[bold blue]Step 1: Processing Marker output[/]")
+            
+            doc_id, qa_keys, rel_keys = await marker_connector.process_marker_file(
+                file_path,
+                max_pairs=max_pairs
+            )
+            
+            results["document_id"] = doc_id
+            results["qa_count"] = len(qa_keys)
+            results["relationship_count"] = len(rel_keys)
+            
+            # Update progress
+            step_table.rows[0].cells[1].text = "[bold green]Complete[/]"
+            step_table.rows[0].cells[2].text = f"{len(qa_keys)} Q&A pairs"
+            console.print(step_table)
+            
+            # Step 2: Generate already done in step 1
+            step_table.rows[1].cells[1].text = "[bold green]Complete[/]"
+            step_table.rows[1].cells[2].text = f"{len(qa_keys)} Q&A pairs"
+            console.print(step_table)
+            
+            # Step 3: Integrate with graph
+            console.print("\n[bold blue]Step 3: Integrating with graph[/]")
+            
+            # Only proceed if we have Q&A pairs
+            if qa_keys:
+                # Create graph connector
+                graph_connector = QAGraphConnector(db)
+                
+                # Convert confidence threshold to decimal
+                conf_threshold = confidence_threshold / 100.0
+                
+                # Integrate Q&A pairs with graph
+                edge_count, edges = await graph_connector.integrate_qa_with_graph(
+                    document_id=doc_id,
+                    confidence_threshold=conf_threshold,
+                    max_pairs=max_pairs,
+                    include_validation_failed=False
+                )
+                
+                results["edge_count"] = edge_count
+                
+                # Update progress
+                step_table.rows[2].cells[1].text = "[bold green]Complete[/]"
+                step_table.rows[2].cells[2].text = f"{edge_count} graph edges"
+            else:
+                step_table.rows[2].cells[1].text = "[bold yellow]Skipped[/]"
+                step_table.rows[2].cells[2].text = "No Q&A pairs to integrate"
+            
+            console.print(step_table)
+            
+            # Step 4: Export results
+            console.print("\n[bold blue]Step 4: Exporting results[/]")
+            
+            if qa_keys:
+                # Get QA pairs
+                qa_pairs = marker_connector.qa_connector.get_qa_pairs_by_document(doc_id)
+                
+                # Export in different formats
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                
+                # JSONL for training
+                jsonl_path = output_dir / f"qa_{doc_id}_{timestamp}.jsonl"
+                export_qa_pairs(qa_pairs, jsonl_path, "jsonl")
+                results["exports"].append(str(jsonl_path))
+                
+                # JSON for analysis
+                json_path = output_dir / f"qa_{doc_id}_{timestamp}.json"
+                export_qa_pairs(qa_pairs, json_path, "json")
+                results["exports"].append(str(json_path))
+                
+                # Export edges if we created them
+                if results["edge_count"] > 0:
+                    # Export edges to JSON
+                    edges_path = output_dir / f"qa_edges_{doc_id}_{timestamp}.json"
+                    with open(edges_path, "w") as f:
+                        json.dump(edges, f, indent=2)
+                    results["exports"].append(str(edges_path))
+                
+                # Update progress
+                step_table.rows[3].cells[1].text = "[bold green]Complete[/]"
+                step_table.rows[3].cells[2].text = f"{len(results['exports'])} files"
+            else:
+                step_table.rows[3].cells[1].text = "[bold yellow]Skipped[/]"
+                step_table.rows[3].cells[2].text = "No data to export"
+            
+            console.print(step_table)
+            
+            # Step 5: Create visualization (optional, if the visualization module is available)
+            console.print("\n[bold blue]Step 5: Creating visualization[/]")
+            
+            try:
+                # Check if visualization module exists
+                import importlib.util
+                if importlib.util.find_spec("arangodb.visualization"):
+                    from arangodb.visualization.core.data_transformer import visualize_document
+                    
+                    # Only visualize if we have a document
+                    if doc_id:
+                        viz_path = output_dir / f"viz_{doc_id}_{timestamp}.html"
+                        visualize_document(db, doc_id, output_path=viz_path)
+                        results["exports"].append(str(viz_path))
+                        
+                        # Update progress
+                        step_table.rows[4].cells[1].text = "[bold green]Complete[/]"
+                        step_table.rows[4].cells[2].text = f"Saved to {viz_path.name}"
+                    else:
+                        step_table.rows[4].cells[1].text = "[bold yellow]Skipped[/]"
+                        step_table.rows[4].cells[2].text = "No document to visualize"
+                else:
+                    step_table.rows[4].cells[1].text = "[bold yellow]Skipped[/]"
+                    step_table.rows[4].cells[2].text = "Visualization module not available"
+            except Exception as viz_e:
+                console.print(f"[yellow]Warning:[/] Visualization creation failed: {viz_e}")
+                step_table.rows[4].cells[1].text = "[bold red]Failed[/]"
+                step_table.rows[4].cells[2].text = f"Error: {str(viz_e)[:30]}..."
+            
+            console.print(step_table)
+            
+            # Print final summary
+            console.print("\n[bold green]Workflow Complete ✓[/]")
+            console.print(f"Document: {results['document_id']}")
+            console.print(f"Generated {results['qa_count']} Q&A pairs")
+            console.print(f"Created {results['relationship_count']} document relationships")
+            console.print(f"Created {results['edge_count']} graph edges")
+            
+            if results["exports"]:
+                console.print("\n[bold]Output Files:[/]")
+                for i, path in enumerate(results["exports"]):
+                    console.print(f"{i+1}. {Path(path).name}")
+                    
+            console.print(f"\nAll files saved to: {output_dir}")
+            
+        except Exception as e:
+            console.print(f"[bold red]Error during workflow:[/] {str(e)}")
+    
+    # Run the async function
+    asyncio.run(workflow())
 
 
 @marker_app.command("batch")

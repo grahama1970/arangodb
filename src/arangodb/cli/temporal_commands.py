@@ -32,14 +32,13 @@ from arangodb.core.temporal_operations import (
 app = typer.Typer(name="temporal", help="Temporal operations and queries")
 
 @app.command("search-at-time")
-@add_output_option
 def search_at_time(
     query: str = typer.Argument(..., help="Search query"),
     timestamp: str = typer.Argument(..., help="ISO timestamp to search at"),
     search_type: str = typer.Option("hybrid", "--type", "-t", help="Search type"),
     limit: int = typer.Option(10, "--limit", "-l", help="Maximum results"),
     conversation_id: Optional[str] = typer.Option(None, "--conversation", "-c", help="Filter by conversation"),
-    output_format: str = "table"
+    output_format: str = typer.Option("table", "--output", "-o", help="Output format (table or json)")
 ):
     """
     Search for messages valid at a specific point in time.
@@ -80,7 +79,7 @@ def search_at_time(
         )
         
         # Format results
-        if output_format == OutputFormat.JSON:
+        if output_format == "json":
             console.print_json(data={
                 "query": query,
                 "timestamp": timestamp,
@@ -116,12 +115,11 @@ def search_at_time(
         raise typer.Exit(code=1)
 
 @app.command("conversation-at-time")
-@add_output_option
 def conversation_at_time(
     conversation_id: str = typer.Argument(..., help="Conversation ID"),
     timestamp: str = typer.Argument(..., help="ISO timestamp"),
     include_invalid: bool = typer.Option(False, "--invalid", help="Include invalidated messages"),
-    output_format: str = "table"
+    output_format: str = typer.Option("table", "--output", "-o", help="Output format (table or json)")
 ):
     """
     Get the state of a conversation at a specific point in time.
@@ -151,7 +149,7 @@ def conversation_at_time(
         )
         
         # Format results
-        if output_format == OutputFormat.JSON:
+        if output_format == "json":
             console.print_json(data={
                 "conversation_id": conversation_id,
                 "timestamp": timestamp,
@@ -187,12 +185,11 @@ def conversation_at_time(
         raise typer.Exit(code=1)
 
 @app.command("range")
-@add_output_option
 def temporal_range(
     start_time: str = typer.Argument(..., help="Start time (ISO format)"),
     end_time: str = typer.Argument(..., help="End time (ISO format)"),
     conversation_id: Optional[str] = typer.Option(None, "--conversation", "-c", help="Filter by conversation"),
-    output_format: str = "table"
+    output_format: str = typer.Option("table", "--output", "-o", help="Output format (table or json)")
 ):
     """
     Get messages within a temporal range.
@@ -220,7 +217,7 @@ def temporal_range(
         )
         
         # Format results
-        if output_format == OutputFormat.JSON:
+        if output_format == "json":
             console.print_json(data={
                 "start_time": start_time,
                 "end_time": end_time,
@@ -256,12 +253,11 @@ def temporal_range(
         raise typer.Exit(code=1)
 
 @app.command("history")
-@add_output_option
 def entity_history(
     collection: str = typer.Argument(..., help="Collection name"),
     entity_key: str = typer.Argument(..., help="Entity key"),
     include_invalidated: bool = typer.Option(True, "--include-invalid", help="Include invalidated versions"),
-    output_format: str = "table"
+    output_format: str = typer.Option("table", "--output", "-o", help="Output format (table or json)")
 ):
     """
     Get the complete temporal history of an entity.
@@ -285,7 +281,7 @@ def entity_history(
         )
         
         # Format results
-        if output_format == OutputFormat.JSON:
+        if output_format == "json":
             console.print_json(data={
                 "entity_key": entity_key,
                 "collection": collection,

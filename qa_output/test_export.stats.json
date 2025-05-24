@@ -1,0 +1,10 @@
+{
+  "total_pairs": 1,
+  "valid_pairs": 1,
+  "documents": [
+    "test_doc"
+  ],
+  "question_types": {
+    "FACTUAL": 1
+  }
+}

@@ -58,6 +58,7 @@ class QAPair(BaseModel):
     source_section: str = Field(..., description="Source section identifier")
     source_hash: str = Field(..., description="Hash of source content")
     evidence_blocks: List[str] = Field(default_factory=list, description="Block IDs used as evidence")
+    section_summary: Optional[str] = Field(None, description="Summary of the source section")
     
     # Relationship information (if applicable)
     relationship_types: List[str] = Field(default_factory=list, description="Types of relationships used")
@@ -150,16 +151,35 @@ class QABatch(BaseModel):
     generation_time: float = Field(0.0, description="Time taken to generate batch")
     timestamp: datetime = Field(default_factory=datetime.utcnow, description="Generation timestamp")
     
+    # Document context metadata
+    metadata: Dict[str, Any] = Field(default_factory=dict, description="Additional metadata about the document")
+    
     def __init__(self, **data):
         super().__init__(**data)
         self.total_pairs = len(self.qa_pairs)
         self.valid_pairs = sum(1 for qa in self.qa_pairs if qa.citation_found)
+        
+        # Initialize metadata if not provided
+        if not self.metadata:
+            self.metadata = {
+                "file_summary": "",
+                "parent_section": "",
+                "document_type": ""
+            }
     
-    def to_unsloth_format(self) -> List[Dict[str, Any]]:
-        """Convert to UnSloth training format."""
+    def to_unsloth_format(self, include_invalid: bool = False) -> List[Dict[str, Any]]:
+        """
+        Convert to UnSloth training format.
+        
+        Args:
+            include_invalid: Whether to include unvalidated pairs
+            
+        Returns:
+            List of messages in UnSloth format
+        """
         messages = []
         for qa in self.qa_pairs:
-            if not qa.citation_found:  # Skip unvalidated pairs
+            if not qa.citation_found and not include_invalid:  # Skip unvalidated pairs unless explicitly included
                 continue
                 
             message = {
@@ -171,7 +191,8 @@ class QABatch(BaseModel):
                     "question_type": qa.question_type.value,
                     "confidence": qa.confidence,
                     "source_section": qa.source_section,
-                    "validation_score": qa.validation_score
+                    "validation_score": qa.validation_score,
+                    "validated": qa.citation_found
                 }
             }
             messages.append(message)

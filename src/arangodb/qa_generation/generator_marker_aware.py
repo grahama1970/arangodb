@@ -98,6 +98,10 @@ class MarkerAwareQAGenerator(QAGenerator):
             }
         )
         
+        # Ensure batch has required fields even if it's empty
+        if not hasattr(batch, 'document_id') or not batch.document_id:
+            batch.document_id = document_id
+        
         return batch
     
     async def _generate_qa_from_structure(
@@ -343,17 +347,15 @@ async def generate_qa_from_marker_file(
     output_dir = output_dir or Path("./qa_output")
     output_dir.mkdir(exist_ok=True, parents=True)
     
+    # Export to file
     output_path = output_dir / f"{marker_file.stem}_qa.json"
-    unsloth_data = exporter.export_to_unsloth(qa_batch.qa_pairs)
-    
-    with open(output_path, 'w') as f:
-        json.dump(unsloth_data, f, indent=2)
+    export_paths = await exporter.export_to_unsloth(qa_batch, filename=output_path.name)
     
     logger.info(f"Generated {len(qa_batch.qa_pairs)} validated Q&A pairs")
     logger.info(f"Validation rate: {qa_batch.metadata.get('validation_rate', 0):.1%}")
-    logger.info(f"Output: {output_path}")
+    logger.info(f"Output: {export_paths[0] if export_paths else output_path}")
     
-    return output_path
+    return Path(export_paths[0]) if export_paths else output_path
 
 
 # Example usage

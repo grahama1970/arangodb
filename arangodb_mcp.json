@@ -1,0 +1,61 @@
+{
+  "name": "arangodb",
+  "version": "1.0.0",
+  "description": "MCP server for arangodb",
+  "server": {
+    "command": "/home/graham/workspace/experiments/arangodb/.venv/bin/python",
+    "args": [
+      "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/__main__.py",
+      "serve-mcp",
+      "--host",
+      "localhost",
+      "--port",
+      "5000"
+    ]
+  },
+  "tools": {
+    "quickstart": {
+      "description": "Interactive quickstart guide for new users.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    "llm-help": {
+      "description": "Generate LLM-friendly command documentation.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "type": "string",
+            "description": "Parameter: command"
+          },
+          "output": {
+            "type": "string",
+            "description": "Parameter: output"
+          }
+        },
+        "required": []
+      }
+    },
+    "health": {
+      "description": "Check CLI and database health.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "output": {
+            "type": "string",
+            "description": "Parameter: output"
+          }
+        },
+        "required": []
+      }
+    }
+  },
+  "capabilities": {
+    "tools": true,
+    "prompts": false,
+    "resources": false
+  }
+}

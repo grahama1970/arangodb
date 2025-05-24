@@ -38,14 +38,13 @@ def create_response(success: bool, data: Any = None, metadata: Dict = None, erro
     }
 
 @crud_app.command("create")
-@add_output_option
 def create_document(
     collection: str = typer.Argument(..., help="Collection name"),
     data: str = typer.Argument(..., help="Document data as JSON string"),
-    output_format: OutputFormat = typer.Option(OutputFormat.TABLE, "--output", "-o"),
     key: Optional[str] = typer.Option(None, "--key", "-k", help="Custom document key"),
     embed: bool = typer.Option(True, "--embed/--no-embed", help="Generate embeddings for text fields"),
     embed_fields: Optional[str] = typer.Option(None, "--embed-fields", help="Comma-separated fields to embed"),
+    output_format: str = typer.Option("table", "--output", "-o", help="Output format (table or json)"),
 ):
     """
     Create a new document in any collection.
@@ -123,7 +122,7 @@ def create_document(
             }
         )
         
-        if output_format == OutputFormat.JSON:
+        if output_format == "json":
             console.print_json(data=response)
         else:
             console.print(format_success(
@@ -143,18 +142,17 @@ def create_document(
                 "suggestion": "Check JSON syntax and collection exists"
             }]
         )
-        if output_format == OutputFormat.JSON:
+        if output_format == "json":
             console.print_json(data=response)
         else:
             console.print(format_error("Create Failed", str(e)))
         raise typer.Exit(1)
 
 @crud_app.command("read")
-@add_output_option  
 def read_document(
     collection: str = typer.Argument(..., help="Collection name"),
     key: str = typer.Argument(..., help="Document key"),
-    output_format: OutputFormat = typer.Option(OutputFormat.TABLE, "--output", "-o"),
+    output_format: str = typer.Option("table", "--output", "-o", help="Output format (table or json)"),
 ):
     """
     Read a document from any collection.
@@ -195,7 +193,7 @@ def read_document(
             }
         )
         
-        if output_format == OutputFormat.JSON:
+        if output_format == "json":
             console.print_json(data=response)
         else:
             from rich.table import Table
@@ -222,21 +220,20 @@ def read_document(
                 "suggestion": f"Verify document '{key}' exists in '{collection}'"
             }]
         )
-        if output_format == OutputFormat.JSON:
+        if output_format == "json":
             console.print_json(data=response)
         else:
             console.print(format_error("Read Failed", str(e)))
         raise typer.Exit(1)
 
 @crud_app.command("update")
-@add_output_option
 def update_document(
     collection: str = typer.Argument(..., help="Collection name"),
     key: str = typer.Argument(..., help="Document key"),
     data: str = typer.Argument(..., help="Update data as JSON string"),
-    output_format: OutputFormat = typer.Option(OutputFormat.TABLE, "--output", "-o"),
     replace: bool = typer.Option(False, "--replace", "-r", help="Replace entire document"),
     embed: bool = typer.Option(True, "--embed/--no-embed", help="Update embeddings"),
+    output_format: str = typer.Option("table", "--output", "-o", help="Output format (table or json)"),
 ):
     """
     Update a document in any collection.
@@ -328,7 +325,7 @@ def update_document(
             }
         )
         
-        if output_format == OutputFormat.JSON:
+        if output_format == "json":
             console.print_json(data=response)
         else:
             console.print(format_success(
@@ -349,19 +346,18 @@ def update_document(
                 "suggestion": "Check document exists and JSON is valid"
             }]
         )
-        if output_format == OutputFormat.JSON:
+        if output_format == "json":
             console.print_json(data=response)
         else:
             console.print(format_error("Update Failed", str(e)))
         raise typer.Exit(1)
 
 @crud_app.command("delete")
-@add_output_option
 def delete_document(
     collection: str = typer.Argument(..., help="Collection name"),
     key: str = typer.Argument(..., help="Document key"),
-    output_format: OutputFormat = typer.Option(OutputFormat.TABLE, "--output", "-o"),
     force: bool = typer.Option(False, "--force", "-f", help="Skip confirmation"),
+    output_format: str = typer.Option("table", "--output", "-o", help="Output format (table or json)"),
 ):
     """
     Delete a document from any collection.
@@ -414,7 +410,7 @@ def delete_document(
             }
         )
         
-        if output_format == OutputFormat.JSON:
+        if output_format == "json":
             console.print_json(data=response)
         else:
             console.print(format_success(
@@ -433,23 +429,22 @@ def delete_document(
                 "suggestion": f"Verify document '{key}' exists in '{collection}'"
             }]
         )
-        if output_format == OutputFormat.JSON:
+        if output_format == "json":
             console.print_json(data=response)
         else:
             console.print(format_error("Delete Failed", str(e)))
         raise typer.Exit(1)
 
 @crud_app.command("list")
-@add_output_option
 def list_documents(
     collection: str = typer.Argument(..., help="Collection name"),
-    output_format: OutputFormat = typer.Option(OutputFormat.TABLE, "--output", "-o"),
     limit: int = typer.Option(10, "--limit", "-l", help="Number of results"),
     offset: int = typer.Option(0, "--offset", help="Skip this many results"),
     filter_field: Optional[str] = typer.Option(None, "--filter-field", help="Field to filter by"),
     filter_value: Optional[str] = typer.Option(None, "--filter-value", help="Value to filter for"),
     sort_by: Optional[str] = typer.Option(None, "--sort", "-s", help="Field to sort by"),
     descending: bool = typer.Option(False, "--desc", help="Sort in descending order"),
+    output_format: str = typer.Option("table", "--output", "-o", help="Output format (table or json)"),
 ):
     """
     List documents from any collection.
@@ -470,30 +465,32 @@ def list_documents(
         arangodb crud list products --sort price --desc --output json
     """
     logger.info(f"Listing documents from collection: {collection}")
+    logger.debug(f"Parameters: limit={limit}, offset={offset}, filter_field={filter_field}, filter_value={filter_value}, sort_by={sort_by}")
     
     try:
         db = get_db_connection()
         
-        # Build query
-        query = f"FOR doc IN {collection}"
+        # Build query - use backticks for collection name to handle special characters
+        query = f"FOR doc IN `{collection}`"
         bind_vars = {}
         
         # Add filter if specified
         if filter_field and filter_value:
-            query += " FILTER doc.@field == @value"
-            bind_vars["field"] = filter_field
+            query += f" FILTER doc.{filter_field} == @value"
             bind_vars["value"] = filter_value
         
         # Add sorting
         if sort_by:
-            query += f" SORT doc.@sort_field {'DESC' if descending else 'ASC'}"
-            bind_vars["sort_field"] = sort_by
+            query += f" SORT doc.{sort_by} {'DESC' if descending else 'ASC'}"
         
         # Add limit and offset
         query += " LIMIT @offset, @limit"
         bind_vars.update({"offset": offset, "limit": limit})
         
         query += " RETURN doc"
+        
+        logger.debug(f"Query: {query}")
+        logger.debug(f"Bind vars: {bind_vars}")
         
         # Execute query
         start_time = datetime.now()
@@ -502,9 +499,12 @@ def list_documents(
         query_time = (datetime.now() - start_time).total_seconds() * 1000
         
         # Get total count
-        count_query = f"FOR doc IN {collection}"
+        count_query = f"FOR doc IN `{collection}`"
         if filter_field and filter_value:
             count_query += f" FILTER doc.{filter_field} == @value"
+        count_query += " RETURN doc"
+        
+        if filter_field and filter_value:
             count_cursor = db.aql.execute(count_query, bind_vars={"value": filter_value})
         else:
             count_cursor = db.aql.execute(count_query)
@@ -525,7 +525,7 @@ def list_documents(
             }
         )
         
-        if output_format == OutputFormat.JSON:
+        if output_format == "json":
             console.print_json(data=response)
         else:
             if results:
@@ -568,7 +568,7 @@ def list_documents(
                 "suggestion": f"Verify collection '{collection}' exists"
             }]
         )
-        if output_format == OutputFormat.JSON:
+        if output_format == "json":
             console.print_json(data=response)
         else:
             console.print(format_error("List Failed", str(e)))

@@ -36,13 +36,12 @@ app = typer.Typer(name="contradiction", help="Contradiction detection and resolu
 
 
 @app.command("list")
-@add_output_option
 def list_contradictions(
     limit: int = typer.Option(50, "--limit", "-l", help="Maximum number of contradictions to show"),
     status: Optional[str] = typer.Option(None, "--status", "-s", help="Filter by status (resolved/failed)"),
     edge_type: Optional[str] = typer.Option(None, "--type", "-t", help="Filter by edge type"),
     entity_id: Optional[str] = typer.Option(None, "--entity", "-e", help="Filter by entity ID"),
-    output_format: str = "table"
+    output_format: str = typer.Option("table", "--output", "-o", help="Output format (table or json)")
 ):
     """List detected contradictions from the log.
     
@@ -67,7 +66,7 @@ def list_contradictions(
             console.print(format_warning("No contradictions found matching the criteria."))
             return
         
-        if output_format == OutputFormat.JSON:
+        if output_format == "json":
             console.print(format_output(contradictions, output_format=output_format))
         else:
             # Prepare data for table/CSV/text format
@@ -115,7 +114,6 @@ def list_contradictions(
 
 
 @app.command("summary")
-@add_output_option
 def contradiction_summary(output_format: str = "table"):
     """Show contradiction statistics summary.
     
@@ -131,7 +129,7 @@ def contradiction_summary(output_format: str = "table"):
         # Get summary
         summary = logger.get_contradiction_summary()
         
-        if output_format == OutputFormat.JSON:
+        if output_format == "json":
             console.print(format_output(summary, output_format=output_format))
         else:
             # Prepare main summary data
@@ -152,7 +150,7 @@ def contradiction_summary(output_format: str = "table"):
             console.print(formatted_output)
             
             # Show breakdown by edge type
-            if summary['by_edge_type'] and output_format == OutputFormat.TABLE:
+            if summary['by_edge_type'] and output_format == "table":
                 type_rows = []
                 for item in summary['by_edge_type']:
                     type_rows.append([
@@ -169,7 +167,7 @@ def contradiction_summary(output_format: str = "table"):
                 console.print("\n" + type_output)
             
             # Show breakdown by resolution action
-            if summary['by_resolution_action'] and output_format == OutputFormat.TABLE:
+            if summary['by_resolution_action'] and output_format == "table":
                 action_rows = []
                 for item in summary['by_resolution_action']:
                     action_rows.append([
@@ -191,13 +189,12 @@ def contradiction_summary(output_format: str = "table"):
 
 
 @app.command("detect")
-@add_output_option
 def detect_contradictions(
     from_id: str = typer.Argument(..., help="Source entity ID (_id format)"),
     to_id: str = typer.Argument(..., help="Target entity ID (_id format)"),
     edge_type: Optional[str] = typer.Option(None, "--type", "-t", help="Filter by relationship type"),
     collection: str = typer.Option("agent_relationships", "--collection", "-c", help="Edge collection name"),
-    output_format: str = "table"
+    output_format: str = typer.Option("table", "--output", "-o", help="Output format (table or json)")
 ):
     """Detect potential contradictions between two entities.
     
@@ -221,12 +218,12 @@ def detect_contradictions(
             console.print(format_success(f"No contradictions found between {from_id} and {to_id}"))
             return
         
-        if output_format == OutputFormat.JSON:
+        if output_format == "json":
             console.print(format_output(contradictions, output_format=output_format))
         else:
             console.print(format_warning(f"Found {len(contradictions)} potential contradictions"))
             
-            if output_format == OutputFormat.TABLE:
+            if output_format == "table":
                 # Display each contradiction as panels for table format
                 for i, edge in enumerate(contradictions, 1):
                     panel_content = f"""
@@ -272,7 +269,6 @@ def detect_contradictions(
 
 
 @app.command("resolve")
-@add_output_option
 def resolve_contradiction_manually(
     new_edge_key: str = typer.Argument(..., help="Key of the new edge"),
     existing_edge_key: str = typer.Argument(..., help="Key of the existing edge"),
@@ -280,7 +276,7 @@ def resolve_contradiction_manually(
                                 help="Resolution strategy: newest_wins, merge, split_timeline"),
     collection: str = typer.Option("agent_relationships", "--collection", "-c", help="Edge collection name"),
     reason: Optional[str] = typer.Option(None, "--reason", "-r", help="Resolution reason"),
-    output_format: str = "table"
+    output_format: str = typer.Option("table", "--output", "-o", help="Output format (table or json)")
 ):
     """Manually resolve a contradiction between two edges.
     
@@ -335,7 +331,7 @@ def resolve_contradiction_manually(
         )
         
         # Display result
-        if output_format == OutputFormat.JSON:
+        if output_format == "json":
             console.print(format_output(result, output_format=output_format))
         else:
             if result["success"]:
@@ -356,7 +352,7 @@ def resolve_contradiction_manually(
                 )
                 console.print(formatted_output)
                 
-                if result.get("resolved_edge") and output_format == OutputFormat.TABLE:
+                if result.get("resolved_edge") and output_format == "table":
                     console.print("\n[bold]Resolved Edge:[/bold]")
                     console.print(Syntax(json.dumps(result["resolved_edge"], indent=2), "json"))
             else:

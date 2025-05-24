@@ -114,7 +114,7 @@ class QAGenerator:
             qa_pairs.extend(pairs)
         
         # Add reversal pairs after generating all other types
-        if any(qt == QuestionType.REVERSAL for qt in weight_distribution.keys()):
+        if any(qt == QuestionType.REVERSAL for qt in self.config.question_type_weights.keys()):
             # Generate reversals from existing pairs
             reversal_ratio = self.config.question_type_weights.get(QuestionType.REVERSAL, 0.1)
             qa_pairs = enhance_with_reversals(qa_pairs, reversal_ratio)

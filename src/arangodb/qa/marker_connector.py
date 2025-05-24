@@ -188,43 +188,53 @@ class MarkerConnector:
         Returns:
             List of relationship keys
         """
-        # Create relationships between section headers and content
+        # Import the relationship extractor
+        from arangodb.qa.marker_relationship_extractor import extract_relationships_from_marker
+        
+        # Extract relationships using the dedicated extractor
+        extracted_relationships = extract_relationships_from_marker(marker_output)
+        logger.info(f"Extracted {len(extracted_relationships)} relationships from marker output")
+        
+        # Convert to ArangoDB edge format
         relationships = []
-        section_headers = {}
-        
-        # First pass: identify section headers
-        for block_id, obj in self.doc_object_cache.items():
-            if obj.get("_type") == "section_header":
-                level = obj.get("section_level", 1)
-                section_headers[level] = block_id
-        
-        # Second pass: create parent-child relationships
-        for block_id, obj in self.doc_object_cache.items():
-            if obj.get("_type") != "section_header":
-                # Find appropriate section header
-                for level in sorted(section_headers.keys(), reverse=True):
-                    section_id = section_headers[level]
-                    
-                    # Create relationship
-                    rel = {
-                        "_from": f"document_objects/{section_id}",
-                        "_to": f"document_objects/{block_id}",
-                        "relationship_type": "PARENT_CHILD",
-                        "confidence": 1.0,
-                        "metadata": {
-                            "extraction_method": "marker_structure",
-                            "created_at": datetime.now().isoformat()
-                        }
-                    }
-                    
-                    relationships.append(rel)
-                    break
+        for rel in extracted_relationships:
+            # Create relationship edge
+            edge = {
+                "_from": f"document_objects/{rel['from']}",
+                "_to": f"document_objects/{rel['to']}",
+                "relationship_type": rel['type'],
+                "confidence": 1.0,  # Default high confidence for marker relationships
+                "metadata": {
+                    "extraction_method": "marker_structure",
+                    "created_at": datetime.now().isoformat()
+                }
+            }
+            
+            # Add any additional metadata
+            if "metadata" in rel:
+                edge["metadata"].update(rel["metadata"])
+            
+            relationships.append(edge)
         
         # Store relationships
         if relationships:
-            results = self.db.collection("content_relationships").insert_many(relationships)
-            logger.info(f"Created {len(relationships)} document relationships for {doc_id}")
-            return [doc["_key"] for doc in results]
+            try:
+                results = self.db.collection("content_relationships").insert_many(relationships)
+                logger.info(f"Created {len(relationships)} document relationships for {doc_id}")
+                return [doc["_key"] for doc in results]
+            except Exception as e:
+                logger.error(f"Failed to insert relationships: {e}")
+                # Handle case where some document_objects might not exist
+                valid_relationships = []
+                for rel in relationships:
+                    try:
+                        result = self.db.collection("content_relationships").insert(rel)
+                        valid_relationships.append(result["_key"])
+                    except Exception as rel_e:
+                        logger.debug(f"Skipping relationship due to error: {rel_e}")
+                
+                logger.info(f"Created {len(valid_relationships)} valid document relationships for {doc_id}")
+                return valid_relationships
         
         return []
     

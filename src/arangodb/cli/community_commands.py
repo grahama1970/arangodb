@@ -41,7 +41,6 @@ app = typer.Typer()
 
 
 @app.command("detect", no_args_is_help=False)
-@add_output_option
 def detect_communities(
     min_size: int = typer.Option(
         2,
@@ -61,7 +60,7 @@ def detect_communities(
         "-R",
         help="Force rebuild all communities"
     ),
-    output_format: str = "table"
+    output_format: str = typer.Option("table", "--output", "-o", help="Output format (table or json)")
 ):
     """
     Detect communities in the entity graph using the Louvain algorithm.
@@ -106,7 +105,7 @@ def detect_communities(
         community_metadata = {c["original_id"]: c for c in stored_communities}
         
         # Prepare data for output
-        if output_format == OutputFormat.JSON:
+        if output_format == "json":
             # JSON format - full data structure
             result = {
                 "total_entities": len(communities),
@@ -153,7 +152,7 @@ def detect_communities(
             console.print(formatted_output)
             
             # Add summary for table format
-            if output_format == OutputFormat.TABLE:
+            if output_format == "table":
                 console.print(format_success(
                     f"Total communities: {len(community_groups)}, Total entities: {len(communities)}"
                 ))
@@ -165,13 +164,12 @@ def detect_communities(
 
 
 @app.command("show")
-@add_output_option
 def show_community(
     community_id: str = typer.Argument(
         ...,
         help="Community ID to display"
     ),
-    output_format: str = "table"
+    output_format: str = typer.Option("table", "--output", "-o", help="Output format (table or json)")
 ):
     """
     Show detailed information about a specific community.
@@ -212,7 +210,7 @@ def show_community(
             except:
                 pass
         
-        if output_format == OutputFormat.JSON:
+        if output_format == "json":
             # Output as JSON
             result = {
                 "id": community["_key"],
@@ -274,7 +272,6 @@ def show_community(
 
 
 @app.command("list")
-@add_output_option
 def list_communities(
     min_size: Optional[int] = typer.Option(
         None,
@@ -288,7 +285,7 @@ def list_communities(
         "-s",
         help="Sort by: size, modularity, or created"
     ),
-    output_format: str = "table"
+    output_format: str = typer.Option("table", "--output", "-o", help="Output format (table or json)")
 ):
     """
     List all communities with their basic information.
@@ -320,7 +317,7 @@ def list_communities(
         elif sort_by == "created":
             communities.sort(key=lambda c: c.get("created_at", ""), reverse=True)
         
-        if output_format == OutputFormat.JSON:
+        if output_format == "json":
             # Output as JSON
             result = {
                 "total": len(communities),
