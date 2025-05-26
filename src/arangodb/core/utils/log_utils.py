@@ -1,5 +1,6 @@
 import re
 import sys
+import json
 from typing import List, Any, Dict, Optional
 
 # Define a ValidationTracker class for validation
@@ -47,6 +48,149 @@ class ValidationTracker:
         else:
             print("✅ VALIDATION PASSED - All tests produced expected results")
             sys.exit(0)
+
+def format_arango_result_for_display(result: Any, max_length: int = 200, max_items: int = 3) -> str:
+    """
+    Format ArangoDB query results for human-readable display in reports.
+    
+    Args:
+        result: The ArangoDB query result
+        max_length: Maximum character length for the formatted string
+        max_items: Maximum number of items to show for collections
+    
+    Returns:
+        Formatted string suitable for markdown tables and reports
+    """
+    if result is None:
+        return "null"
+    
+    try:
+        if isinstance(result, (list, tuple)):
+            if len(result) == 0:
+                return "[]"
+            elif len(result) == 1:
+                item_str = format_single_item(result[0], max_length // 2)
+                return f"[1 item: {item_str}]"
+            else:
+                # Show first few items
+                items_to_show = min(max_items, len(result))
+                item_strings = []
+                for i in range(items_to_show):
+                    item_str = format_single_item(result[i], max_length // (items_to_show + 1))
+                    item_strings.append(item_str)
+                
+                if len(result) > max_items:
+                    return f"[{len(result)} items: {', '.join(item_strings)}, +{len(result) - max_items} more]"
+                else:
+                    return f"[{len(result)} items: {', '.join(item_strings)}]"
+        
+        elif isinstance(result, dict):
+            if len(result) == 0:
+                return "{}"
+            
+            # Show key information for ArangoDB documents
+            if "_id" in result:
+                id_str = result["_id"]
+                other_keys = [k for k in result.keys() if k not in ["_id", "_key", "_rev"]]
+                if other_keys:
+                    key_sample = other_keys[:2]
+                    if len(other_keys) > 2:
+                        return f"{{_id: {id_str}, keys: {key_sample}, +{len(other_keys)-2} more}}"
+                    else:
+                        return f"{{_id: {id_str}, keys: {key_sample}}}"
+                else:
+                    return f"{{_id: {id_str}}}"
+            else:
+                # Regular dict
+                keys = list(result.keys())[:3]
+                if len(result) > 3:
+                    return f"{{keys: {keys}, +{len(result)-3} more}}"
+                else:
+                    return f"{{keys: {keys}}}"
+        
+        elif isinstance(result, (int, float, bool)):
+            return str(result)
+        
+        elif isinstance(result, str):
+            if len(result) <= max_length:
+                return f'"{result}"'
+            else:
+                return f'"{result[:max_length-3]}..."'
+        
+        else:
+            # For other types, convert to string and truncate
+            result_str = str(result)
+            if len(result_str) <= max_length:
+                return result_str
+            else:
+                return f"{result_str[:max_length-3]}..."
+    
+    except Exception as e:
+        return f"<formatting error: {str(e)[:50]}>"
+
+def format_single_item(item: Any, max_length: int = 50) -> str:
+    """Format a single item for display."""
+    if isinstance(item, dict) and "_id" in item:
+        return item["_id"]
+    elif isinstance(item, dict):
+        keys = list(item.keys())[:2]
+        return f"{{{', '.join(keys)}}}"
+    elif isinstance(item, str):
+        if len(item) <= max_length:
+            return f'"{item}"'
+        else:
+            return f'"{item[:max_length-3]}..."'
+    else:
+        item_str = str(item)
+        if len(item_str) <= max_length:
+            return item_str
+        else:
+            return f"{item_str[:max_length-3]}..."
+
+def format_arango_query_for_report(query: str, max_length: int = 100) -> str:
+    """Format ArangoDB AQL query for display in reports."""
+    if not query:
+        return ""
+    
+    # Clean up whitespace
+    query = re.sub(r'\s+', ' ', query.strip())
+    
+    if len(query) <= max_length:
+        return query
+    else:
+        return f"{query[:max_length-3]}..."
+
+def truncate_for_table(text: str, max_length: int = 50) -> str:
+    """Truncate text for table display while preserving readability."""
+    if not text:
+        return ""
+    
+    text = str(text).strip()
+    
+    if len(text) <= max_length:
+        return text
+    
+    # Try to truncate at word boundary
+    if max_length > 20:
+        truncated = text[:max_length-3]
+        last_space = truncated.rfind(' ')
+        if last_space > max_length // 2:
+            return truncated[:last_space] + "..."
+    
+    return text[:max_length-3] + "..."
+
+def create_markdown_table_row(columns: List[str], max_lengths: List[int] = None) -> str:
+    """Create a markdown table row with proper formatting."""
+    if max_lengths:
+        formatted_cols = []
+        for i, col in enumerate(columns):
+            max_len = max_lengths[i] if i < len(max_lengths) else 50
+            formatted_cols.append(truncate_for_table(col, max_len))
+        columns = formatted_cols
+    
+    # Escape pipes in content
+    escaped_cols = [col.replace('|', '\\|') for col in columns]
+    return "| " + " | ".join(escaped_cols) + " |"
 
 # Regex to identify common data URI patterns for images
 BASE64_IMAGE_PATTERN = re.compile(r"^(data:image/[a-zA-Z+.-]+;base64,)")

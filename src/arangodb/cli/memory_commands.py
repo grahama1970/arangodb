@@ -102,7 +102,7 @@ def create_memory(
             agent_response=agent_response,
             conversation_id=conversation_id,
             metadata=meta_dict,
-            point_in_time=ref_time.isoformat() if ref_time else None,
+            point_in_time=ref_time,
             auto_embed=True
         )
         
@@ -621,6 +621,202 @@ def get_history(
         else:
             console.print(format_error("History Failed", str(e)))
         raise typer.Exit(1)
+
+@memory_app.command("update")
+def update_memory(
+    memory_id: str = typer.Argument(help="Memory ID to update (_key from the collection)"),
+    content: Optional[str] = typer.Option(None, "--content", "-c", help="New content for the memory"),
+    metadata: Optional[str] = typer.Option(None, "--metadata", "-m", help="New metadata as JSON"),
+    tags: Optional[str] = typer.Option(None, "--tags", "-t", help="Comma-separated tags"),
+    output_format: OutputFormat = typer.Option(OutputFormat.TABLE, "--output", "-o"),
+):
+    """Update an existing memory entry.
+    
+    Updates specific fields of a memory document. Only provided fields will be updated.
+    """
+    try:
+        db = get_db_connection()
+        
+        # Build update data
+        update_data = {}
+        if content is not None:
+            update_data["content"] = content
+        
+        if metadata is not None:
+            try:
+                update_data["metadata"] = json.loads(metadata)
+            except json.JSONDecodeError:
+                raise typer.BadParameter("Metadata must be valid JSON")
+        
+        if tags is not None:
+            update_data["tags"] = [tag.strip() for tag in tags.split(",") if tag.strip()]
+        
+        if not update_data:
+            raise typer.BadParameter("No fields to update. Provide at least one of: --content, --metadata, --tags")
+        
+        # Add update timestamp
+        update_data["updated_at"] = datetime.utcnow().isoformat()
+        
+        # Execute update
+        collection = db.collection(MEMORY_MESSAGE_COLLECTION)
+        
+        # Check if document exists
+        try:
+            existing = collection.get(memory_id)
+            if not existing:
+                raise ValueError(f"Memory with ID '{memory_id}' not found")
+        except Exception as e:
+            if "document not found" in str(e).lower():
+                raise ValueError(f"Memory with ID '{memory_id}' not found")
+            raise
+        
+        # Update the document
+        result = collection.update({
+            "_key": memory_id,
+            **update_data
+        })
+        
+        # Fetch updated document
+        updated = collection.get(memory_id)
+        
+        response = create_response(
+            success=True,
+            data={"memory": updated},
+            metadata={
+                "memory_id": memory_id,
+                "fields_updated": list(update_data.keys()),
+                "updated_at": update_data["updated_at"]
+            }
+        )
+        
+        if output_format == OutputFormat.JSON:
+            console.print_json(data=response)
+        else:
+            console.print(format_success("Memory Updated", f"Updated memory ID: {memory_id}"))
+            console.print(f"\n[bold]Updated fields:[/bold]")
+            for field in update_data.keys():
+                if field != "updated_at":
+                    console.print(f"  • {field}")
+    
+    except ValueError as e:
+        logger.error(f"Memory update failed: {e}")
+        response = create_response(
+            success=False,
+            errors=[{
+                "code": "NOT_FOUND",
+                "message": str(e),
+                "suggestion": "Check memory ID with 'memory list' command"
+            }]
+        )
+        if output_format == OutputFormat.JSON:
+            console.print_json(data=response)
+        else:
+            console.print(format_error("Update Failed", str(e)))
+        raise typer.Exit(1)
+    except Exception as e:
+        logger.error(f"Memory update failed: {e}")
+        response = create_response(
+            success=False,
+            errors=[{
+                "code": "UPDATE_ERROR",
+                "message": str(e),
+                "suggestion": "Check memory ID and update parameters"
+            }]
+        )
+        if output_format == OutputFormat.JSON:
+            console.print_json(data=response)
+        else:
+            console.print(format_error("Update Failed", str(e)))
+        raise typer.Exit(1)
+
+
+@memory_app.command("delete")
+def delete_memory(
+    memory_id: str = typer.Argument(help="Memory ID to delete (_key from the collection)"),
+    force: bool = typer.Option(False, "--force", "-f", help="Skip confirmation prompt"),
+    output_format: OutputFormat = typer.Option(OutputFormat.TABLE, "--output", "-o"),
+):
+    """Delete a memory entry.
+    
+    Permanently removes a memory document from the collection.
+    """
+    try:
+        db = get_db_connection()
+        collection = db.collection(MEMORY_MESSAGE_COLLECTION)
+        
+        # Check if document exists
+        try:
+            existing = collection.get(memory_id)
+            if not existing:
+                raise ValueError(f"Memory with ID '{memory_id}' not found")
+        except Exception as e:
+            if "document not found" in str(e).lower():
+                raise ValueError(f"Memory with ID '{memory_id}' not found")
+            raise
+        
+        # Show memory details and confirm deletion
+        if not force:
+            console.print(f"\n[yellow]About to delete memory:[/yellow]")
+            console.print(f"ID: {memory_id}")
+            console.print(f"Type: {existing.get('type', 'unknown')}")
+            console.print(f"Content: {existing.get('content', '')[:100]}...")
+            console.print(f"Created: {existing.get('timestamp', 'unknown')}")
+            
+            confirm = typer.confirm("\nAre you sure you want to delete this memory?")
+            if not confirm:
+                console.print("[yellow]Deletion cancelled[/yellow]")
+                raise typer.Abort()
+        
+        # Delete the document
+        result = collection.delete(memory_id)
+        
+        response = create_response(
+            success=True,
+            data={"deleted": True},
+            metadata={
+                "memory_id": memory_id,
+                "deleted_at": datetime.utcnow().isoformat()
+            }
+        )
+        
+        if output_format == OutputFormat.JSON:
+            console.print_json(data=response)
+        else:
+            console.print(format_success("Memory Deleted", f"Successfully deleted memory ID: {memory_id}"))
+    
+    except ValueError as e:
+        logger.error(f"Memory deletion failed: {e}")
+        response = create_response(
+            success=False,
+            errors=[{
+                "code": "NOT_FOUND",
+                "message": str(e),
+                "suggestion": "Check memory ID with 'memory list' command"
+            }]
+        )
+        if output_format == OutputFormat.JSON:
+            console.print_json(data=response)
+        else:
+            console.print(format_error("Deletion Failed", str(e)))
+        raise typer.Exit(1)
+    except typer.Abort:
+        raise
+    except Exception as e:
+        logger.error(f"Memory deletion failed: {e}")
+        response = create_response(
+            success=False,
+            errors=[{
+                "code": "DELETE_ERROR",
+                "message": str(e),
+                "suggestion": "Check memory ID and database connection"
+            }]
+        )
+        if output_format == OutputFormat.JSON:
+            console.print_json(data=response)
+        else:
+            console.print(format_error("Deletion Failed", str(e)))
+        raise typer.Exit(1)
+
 
 if __name__ == "__main__":
     memory_app()

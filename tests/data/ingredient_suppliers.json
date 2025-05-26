@@ -1,0 +1,53 @@
+[
+  {
+    "_key": "supplier_001",
+    "name": "Italian Dairy Co",
+    "type": "dairy_supplier",
+    "location": "New York, NY",
+    "reliability_score": 0.95,
+    "average_delivery_days": 2,
+    "minimum_order": 50,
+    "payment_terms": "net_30",
+    "certifications": ["organic", "local", "sustainable"],
+    "contact": {
+      "name": "Tony Ricci",
+      "phone": "+1-555-0201",
+      "email": "tony@italiandairy.com"
+    },
+    "tags": ["reliable", "premium", "local"]
+  },
+  {
+    "_key": "supplier_002",
+    "name": "Fresh Sauce Inc",
+    "type": "sauce_supplier",
+    "location": "Newark, NJ",
+    "reliability_score": 0.88,
+    "average_delivery_days": 1,
+    "minimum_order": 20,
+    "payment_terms": "net_15",
+    "certifications": ["haccp", "non_gmo"],
+    "contact": {
+      "name": "Maria Santos",
+      "phone": "+1-555-0202",
+      "email": "maria@freshsauce.com"
+    },
+    "tags": ["fast_delivery", "consistent", "affordable"]
+  },
+  {
+    "_key": "supplier_003",
+    "name": "American Meats",
+    "type": "meat_supplier",
+    "location": "Chicago, IL",
+    "reliability_score": 0.92,
+    "average_delivery_days": 3,
+    "minimum_order": 100,
+    "payment_terms": "net_30",
+    "certifications": ["usda_certified", "halal"],
+    "contact": {
+      "name": "Bob Johnson",
+      "phone": "+1-555-0203",
+      "email": "bob@americanmeats.com"
+    },
+    "tags": ["quality_meats", "bulk_discount", "nationwide"]
+  }
+]

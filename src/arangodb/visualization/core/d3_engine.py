@@ -328,16 +328,22 @@ class D3VisualizationEngine:
         Returns:
             HTML string with force-directed visualization
         """
-        logger.info("Generating force-directed layout")
+        logger.info("Generating responsive force-directed layout")
         
-        # Load the force template
+        # Load the responsive force template first, then fallback to regular force template
+        responsive_template_path = self.template_dir / "responsive_force.html"
         template_path = self.template_dir / "force.html"
         
-        if template_path.exists():
+        if responsive_template_path.exists():
+            logger.info("Using responsive force template")
+            with open(responsive_template_path, 'r', encoding='utf-8') as f:
+                template = f.read()
+        elif template_path.exists():
+            logger.info("Using standard force template")
             with open(template_path, 'r', encoding='utf-8') as f:
                 template = f.read()
         else:
-            logger.warning("Force template not found, using base template")
+            logger.warning("No force template found, using base template")
             template = self._get_base_template()
         
         # Apply node and link transformations based on config

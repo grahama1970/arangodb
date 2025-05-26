@@ -1,0 +1,62 @@
+[
+  {
+    "_from": "customers/cust_002",
+    "_to": "pizza_reviews/review_001",
+    "relationship": "wrote",
+    "timestamp": "2024-12-19T10:30:00Z"
+  },
+  {
+    "_from": "customers/cust_003",
+    "_to": "pizza_reviews/review_002",
+    "relationship": "wrote",
+    "timestamp": "2024-12-16T14:00:00Z"
+  },
+  {
+    "_from": "customers/cust_001",
+    "_to": "pizza_reviews/review_003",
+    "relationship": "wrote",
+    "timestamp": "2024-12-20T19:00:00Z"
+  },
+  {
+    "_from": "customers/cust_002",
+    "_to": "pizza_reviews/review_004",
+    "relationship": "wrote",
+    "timestamp": "2024-12-18T19:30:00Z"
+  },
+  {
+    "_from": "customers/cust_001",
+    "_to": "pizza_reviews/review_005",
+    "relationship": "wrote",
+    "timestamp": "2024-12-19T18:00:00Z"
+  },
+  {
+    "_from": "pizza_reviews/review_001",
+    "_to": "pizzas/margherita",
+    "relationship": "reviews",
+    "rating": 5
+  },
+  {
+    "_from": "pizza_reviews/review_002",
+    "_to": "pizzas/hawaiian",
+    "relationship": "reviews",
+    "rating": 4
+  },
+  {
+    "_from": "pizza_reviews/review_003",
+    "_to": "pizzas/pepperoni",
+    "relationship": "reviews",
+    "rating": 5
+  },
+  {
+    "_from": "pizza_reviews/review_004",
+    "_to": "pizzas/veggie_supreme",
+    "relationship": "reviews",
+    "rating": 3
+  },
+  {
+    "_from": "pizza_reviews/review_005",
+    "_to": "pizzas/bbq_chicken",
+    "relationship": "reviews",
+    "rating": 4
+  }
+]

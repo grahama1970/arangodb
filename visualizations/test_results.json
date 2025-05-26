@@ -1,0 +1,29 @@
+[
+  {
+    "test": "Document Memory Network",
+    "status": "success",
+    "nodes": 7,
+    "links": 0,
+    "file": "visualizations/document_memory_network.html"
+  },
+  {
+    "test": "Episode Timeline",
+    "status": "no_data",
+    "nodes": 0,
+    "links": 0
+  },
+  {
+    "test": "Agent Memory Graph",
+    "status": "success",
+    "nodes": 10,
+    "links": 7,
+    "file": "visualizations/agent_memory_graph.html"
+  },
+  {
+    "test": "Message Flow",
+    "status": "success",
+    "nodes": 20,
+    "links": 0,
+    "file": "visualizations/message_flow.html"
+  }
+]

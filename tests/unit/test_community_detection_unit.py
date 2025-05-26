@@ -1,35 +1,55 @@
 #!/usr/bin/env python3
 """
-Simplified unit tests for Community Detection
+Unit tests for Community Detection using real database
 
 This script validates the core functionality of the CommunityDetector class.
+NO MOCKING - Uses real test database connections per CLAUDE.md guidelines.
 """
 
 import sys
+import os
 from loguru import logger
-from unittest.mock import Mock
+from arango import ArangoClient
 
 # Configure logging
 logger.remove()
 logger.add(sys.stderr, level="INFO")
 
 # Import community detection module
-from src.arangodb.core.graph.community_detection import CommunityDetector
+from arangodb.core.graph.community_detection import CommunityDetector
+
+# Set test database
+os.environ['ARANGO_DB_NAME'] = 'pizza_test'
+
+
+def get_test_db():
+    """Get real test database connection"""
+    client = ArangoClient(hosts='http://localhost:8529')
+    db = client.db('pizza_test', username='root', password='openSesame')
+    
+    # Ensure test collections exist
+    for coll in ['agent_entities', 'agent_relationships', 'agent_communities']:
+        if not db.has_collection(coll):
+            if coll == 'agent_relationships':
+                db.create_collection(coll, edge=True)
+            else:
+                db.create_collection(coll)
+    
+    return db
 
 
 def test_init():
-    """Test CommunityDetector initialization"""
+    """Test CommunityDetector initialization with real database"""
     print("\n1. Testing initialization...")
     
-    # Create mock database
-    mock_db = Mock()
-    mock_db.has_collection = Mock(return_value=True)
+    # Get real test database
+    db = get_test_db()
     
-    # Create detector
-    detector = CommunityDetector(mock_db)
+    # Create detector with real database
+    detector = CommunityDetector(db)
     
     # Verify properties
-    assert detector.db == mock_db
+    assert detector.db == db
     assert detector.entities_collection == "agent_entities"
     assert detector.relationships_collection == "agent_relationships"
     assert detector.communities_collection == "agent_communities"
@@ -37,24 +57,39 @@ def test_init():
 
 
 def test_adjacency_matrix():
-    """Test adjacency matrix construction"""
+    """Test adjacency matrix construction with real data"""
     print("\n2. Testing adjacency matrix...")
     
-    # Create detector with mock database
-    mock_db = Mock()
-    detector = CommunityDetector(mock_db)
+    # Get real test database
+    db = get_test_db()
+    detector = CommunityDetector(db)
     
-    # Test data
-    entities = [
-        {"_id": "agent_entities/1", "_key": "1"},
-        {"_id": "agent_entities/2", "_key": "2"},
-        {"_id": "agent_entities/3", "_key": "3"}
-    ]
+    # Clear test collections
+    db.collection('agent_entities').truncate()
+    db.collection('agent_relationships').truncate()
     
-    relationships = [
-        {"_from": "agent_entities/1", "_to": "agent_entities/2", "confidence": 0.9},
-        {"_from": "agent_entities/2", "_to": "agent_entities/3", "confidence": 0.7}
-    ]
+    # Insert real test entities
+    entities_coll = db.collection('agent_entities')
+    entities_coll.insert({'_key': '1', 'name': 'Entity1'})
+    entities_coll.insert({'_key': '2', 'name': 'Entity2'})
+    entities_coll.insert({'_key': '3', 'name': 'Entity3'})
+    
+    # Insert real test relationships
+    relationships_coll = db.collection('agent_relationships')
+    relationships_coll.insert({
+        '_from': 'agent_entities/1',
+        '_to': 'agent_entities/2',
+        'confidence': 0.9
+    })
+    relationships_coll.insert({
+        '_from': 'agent_entities/2',
+        '_to': 'agent_entities/3',
+        'confidence': 0.7
+    })
+    
+    # Get real data from database
+    entities = list(entities_coll.all())
+    relationships = list(relationships_coll.all())
     
     # Build adjacency matrix
     adjacency = detector._build_adjacency_matrix(entities, relationships)
@@ -68,12 +103,34 @@ def test_adjacency_matrix():
 
 
 def test_modularity():
-    """Test modularity calculation"""
+    """Test modularity calculation with real data"""
     print("\n3. Testing modularity calculation...")
     
-    # Create detector
-    mock_db = Mock()
-    detector = CommunityDetector(mock_db)
+    # Get real test database
+    db = get_test_db()
+    detector = CommunityDetector(db)
+    
+    # Clear and set up test data
+    db.collection('agent_entities').truncate()
+    db.collection('agent_relationships').truncate()
+    
+    # Insert entities for two communities
+    entities_coll = db.collection('agent_entities')
+    entities_coll.insert({'_key': '1', 'name': 'Entity1'})
+    entities_coll.insert({'_key': '2', 'name': 'Entity2'})
+    entities_coll.insert({'_key': '3', 'name': 'Entity3'})
+    entities_coll.insert({'_key': '4', 'name': 'Entity4'})
+    
+    # Insert relationships with good community structure
+    relationships_coll = db.collection('agent_relationships')
+    # Strong connections within communities
+    relationships_coll.insert({'_from': 'agent_entities/1', '_to': 'agent_entities/2', 'confidence': 1.0})
+    relationships_coll.insert({'_from': 'agent_entities/3', '_to': 'agent_entities/4', 'confidence': 1.0})
+    # Weak connections between communities
+    relationships_coll.insert({'_from': 'agent_entities/1', '_to': 'agent_entities/3', 'confidence': 0.1})
+    relationships_coll.insert({'_from': 'agent_entities/1', '_to': 'agent_entities/4', 'confidence': 0.1})
+    relationships_coll.insert({'_from': 'agent_entities/2', '_to': 'agent_entities/3', 'confidence': 0.1})
+    relationships_coll.insert({'_from': 'agent_entities/2', '_to': 'agent_entities/4', 'confidence': 0.1})
     
     # Test communities
     communities = {
@@ -81,13 +138,10 @@ def test_modularity():
         "3": "B", "4": "B"   # Community B
     }
     
-    # Test adjacency with good community structure
-    adjacency = {
-        "1": {"2": 1.0, "3": 0.1, "4": 0.1},
-        "2": {"1": 1.0, "3": 0.1, "4": 0.1},
-        "3": {"1": 0.1, "2": 0.1, "4": 1.0},
-        "4": {"1": 0.1, "2": 0.1, "3": 1.0}
-    }
+    # Build adjacency matrix from real data
+    entities = list(entities_coll.all())
+    relationships = list(relationships_coll.all())
+    adjacency = detector._build_adjacency_matrix(entities, relationships)
     
     # Calculate modularity
     modularity = detector._calculate_modularity(communities, adjacency)
@@ -99,12 +153,12 @@ def test_modularity():
 
 
 def test_small_community_merging():
-    """Test merging of small communities"""
+    """Test merging of small communities with real data"""
     print("\n4. Testing small community merging...")
     
-    # Create detector
-    mock_db = Mock()
-    detector = CommunityDetector(mock_db)
+    # Get real test database
+    db = get_test_db()
+    detector = CommunityDetector(db)
     
     # Initial communities with one small community
     communities = {
@@ -134,18 +188,18 @@ def test_small_community_merging():
 
 
 def test_empty_graph():
-    """Test with empty graph"""
+    """Test with empty graph using real database"""
     print("\n5. Testing empty graph...")
     
-    # Create detector with mock database
-    mock_db = Mock()
-    mock_db.aql = Mock()
-    mock_db.aql.execute = Mock(side_effect=[
-        Mock(__iter__=lambda x: iter([])),  # No entities
-        Mock(__iter__=lambda x: iter([]))   # No relationships
-    ])
+    # Get real test database
+    db = get_test_db()
     
-    detector = CommunityDetector(mock_db)
+    # Clear all test collections
+    db.collection('agent_entities').truncate()
+    db.collection('agent_relationships').truncate()
+    db.collection('agent_communities').truncate()
+    
+    detector = CommunityDetector(db)
     
     # Detect communities in empty graph
     communities = detector.detect_communities()

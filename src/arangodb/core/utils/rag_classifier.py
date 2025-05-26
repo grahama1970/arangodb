@@ -317,24 +317,6 @@ class EmbedderModel:
         return embeddings
 
 
-##############################################################################
-# 3) LOAD & FILTER DATASET (REMOVED - Handled by arango_setup.py)
-##############################################################################
-
-# def load_and_filter_dataset(...) -> ... :
-#     """ ... """
-#     # This function is no longer needed here as data loading and embedding
-#     # are assumed to be handled by the arango_setup.py script.
-
-
-##############################################################################
-# 4) CONCURRENT EMBEDDING FOR DATASET (REMOVED - Handled by arango_setup.py)
-##############################################################################
-
-# def embed_dataset_concurrent(...) -> ... :
-#     """ ... """
-#     # This function is no longer needed here as data loading and embedding
-#     # are assumed to be handled by the arango_setup.py script.
 
 
 ##############################################################################

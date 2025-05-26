@@ -152,14 +152,14 @@ class EpisodeManager:
         }
         
         try:
-            result = self.db.collection(EPISODES_COLLECTION).update(
-                {"_key": episode_key},
-                update_doc,
-                return_new=True
-            )
+            # Update the episode
+            update_doc["_key"] = episode_key
+            self.db.collection(EPISODES_COLLECTION).update(update_doc)
             logger.info(f"Ended episode: {episode_key}")
-            return result["new"]
-        except AQLQueryExecuteError as e:
+            
+            # Fetch and return the updated document
+            return self.get_episode(episode_key)
+        except Exception as e:
             logger.error(f"Failed to end episode: {e}")
             raise
     

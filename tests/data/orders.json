@@ -1,0 +1,90 @@
+[
+  {
+    "_key": "order_001",
+    "order_number": "ORD-2024-001",
+    "customer_id": "customers/cust_001",
+    "order_date": "2024-12-20T18:30:00Z",
+    "status": "delivered",
+    "delivery_address": {
+      "street": "123 Main St",
+      "city": "New York",
+      "state": "NY",
+      "zip": "10001"
+    },
+    "subtotal": 29.98,
+    "tax": 2.67,
+    "delivery_fee": 3.99,
+    "total": 36.64,
+    "payment_method": "credit_card",
+    "delivery_time": "2024-12-20T19:15:00Z",
+    "driver_rating": 5,
+    "notes": "Extra napkins please",
+    "tags": ["on_time", "satisfied"]
+  },
+  {
+    "_key": "order_002",
+    "order_number": "ORD-2024-002",
+    "customer_id": "customers/cust_002",
+    "order_date": "2024-12-18T19:00:00Z",
+    "status": "delivered",
+    "delivery_address": {
+      "street": "456 Oak Ave",
+      "city": "Los Angeles",
+      "state": "CA",
+      "zip": "90001"
+    },
+    "subtotal": 26.48,
+    "tax": 2.36,
+    "delivery_fee": 4.99,
+    "total": 33.83,
+    "payment_method": "cash",
+    "delivery_time": "2024-12-18T19:45:00Z",
+    "driver_rating": 4,
+    "notes": "Call when arriving",
+    "tags": ["vegetarian_order"]
+  },
+  {
+    "_key": "order_003",
+    "order_number": "ORD-2024-003",
+    "customer_id": "customers/cust_003",
+    "order_date": "2024-12-15T20:00:00Z",
+    "status": "delivered",
+    "delivery_address": {
+      "street": "789 Pine Rd",
+      "city": "Chicago",
+      "state": "IL",
+      "zip": "60601"
+    },
+    "subtotal": 41.97,
+    "tax": 3.74,
+    "delivery_fee": 3.99,
+    "total": 49.70,
+    "payment_method": "app_payment",
+    "delivery_time": "2024-12-15T20:35:00Z",
+    "driver_rating": 5,
+    "notes": "",
+    "tags": ["large_order", "weekend"]
+  },
+  {
+    "_key": "order_004",
+    "order_number": "ORD-2024-004",
+    "customer_id": "customers/cust_001",
+    "order_date": "2024-12-19T17:45:00Z",
+    "status": "preparing",
+    "delivery_address": {
+      "street": "123 Main St",
+      "city": "New York",
+      "state": "NY",
+      "zip": "10001"
+    },
+    "subtotal": 15.99,
+    "tax": 1.42,
+    "delivery_fee": 3.99,
+    "total": 21.40,
+    "payment_method": "credit_card",
+    "delivery_time": null,
+    "driver_rating": null,
+    "notes": "No onions on BBQ chicken",
+    "tags": ["in_progress", "dinner_rush"]
+  }
+]

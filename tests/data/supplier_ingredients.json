@@ -1,0 +1,80 @@
+[
+  {
+    "_from": "ingredient_suppliers/supplier_001",
+    "_to": "ingredients/mozzarella",
+    "relationship": "supplies",
+    "price_per_unit": 0.02,
+    "lead_time_days": 2,
+    "quality_rating": 0.95,
+    "contract_expires": "2025-12-31",
+    "volume_discount": {
+      "threshold": 500,
+      "discount_percent": 10
+    }
+  },
+  {
+    "_from": "ingredient_suppliers/supplier_002",
+    "_to": "ingredients/tomato_sauce",
+    "relationship": "supplies",
+    "price_per_unit": 0.01,
+    "lead_time_days": 1,
+    "quality_rating": 0.88,
+    "contract_expires": "2025-06-30",
+    "volume_discount": {
+      "threshold": 200,
+      "discount_percent": 5
+    }
+  },
+  {
+    "_from": "ingredient_suppliers/supplier_002",
+    "_to": "ingredients/bbq_sauce",
+    "relationship": "supplies",
+    "price_per_unit": 0.015,
+    "lead_time_days": 1,
+    "quality_rating": 0.90,
+    "contract_expires": "2025-06-30",
+    "volume_discount": {
+      "threshold": 150,
+      "discount_percent": 7
+    }
+  },
+  {
+    "_from": "ingredient_suppliers/supplier_003",
+    "_to": "ingredients/pepperoni",
+    "relationship": "supplies",
+    "price_per_unit": 0.04,
+    "lead_time_days": 3,
+    "quality_rating": 0.93,
+    "contract_expires": "2025-09-30",
+    "volume_discount": {
+      "threshold": 300,
+      "discount_percent": 12
+    }
+  },
+  {
+    "_from": "ingredient_suppliers/supplier_003",
+    "_to": "ingredients/ham",
+    "relationship": "supplies",
+    "price_per_unit": 0.03,
+    "lead_time_days": 3,
+    "quality_rating": 0.91,
+    "contract_expires": "2025-09-30",
+    "volume_discount": {
+      "threshold": 250,
+      "discount_percent": 10
+    }
+  },
+  {
+    "_from": "ingredient_suppliers/supplier_003",
+    "_to": "ingredients/chicken",
+    "relationship": "supplies",
+    "price_per_unit": 0.03,
+    "lead_time_days": 2,
+    "quality_rating": 0.94,
+    "contract_expires": "2025-09-30",
+    "volume_discount": {
+      "threshold": 200,
+      "discount_percent": 8
+    }
+  }
+]

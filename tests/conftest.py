@@ -11,6 +11,8 @@ sys.path.insert(0, str(project_root / 'src'))
 
 # Configure test environment variables
 os.environ['ARANGODB_TEST_MODE'] = 'true'
+os.environ['ARANGODB_DATABASE'] = 'pizza_test'
+os.environ['ARANGO_DB_NAME'] = 'pizza_test'  # This is what the code actually uses
 
 # Pytest configuration
 pytest_plugins = []

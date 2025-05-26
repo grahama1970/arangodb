@@ -50,7 +50,11 @@ def generate(
         
         # Initialize database connection
         client = connect_arango()
-        db = ensure_database(client)
+        if db_name == "epistemic_test":
+            db = ensure_database(client)
+        else:
+            # Use specified database directly with credentials
+            db = client.db(db_name, username='root', password='password')
         
         # Execute query
         cursor = db.aql.execute(query)
@@ -63,17 +67,31 @@ def generate(
         # Transform data for visualization
         transformer = DataTransformer()
         
-        # Check if result is already in graph format
-        if isinstance(result, dict) and "nodes" in result and "links" in result:
-            graph_data = result
-        else:
-            # Transform list results to graph format
-            if isinstance(result, list) and len(result) > 0:
-                # Attempt to auto-detect graph structure
-                graph_data = transformer.transform_arangodb_results(result)
+        # Handle different result formats
+        if isinstance(result, list) and len(result) == 1 and isinstance(result[0], dict):
+            # Single result object - check if it's already in graph format
+            if "nodes" in result[0] and ("links" in result[0] or "edges" in result[0]):
+                graph_data = result[0]
+                # Convert "edges" to "links" if needed
+                if "edges" in graph_data and "links" not in graph_data:
+                    graph_data["links"] = graph_data.pop("edges")
             else:
-                console.print("[red]Could not transform results to graph format[/red]")
-                return
+                # Convert single documents to nodes
+                graph_data = {
+                    "nodes": [{"id": doc.get("_key", str(i)), "name": doc.get("name", f"Node {i}")} 
+                              for i, doc in enumerate(result)],
+                    "links": []
+                }
+        elif isinstance(result, list):
+            # Multiple documents - convert to nodes
+            graph_data = {
+                "nodes": [{"id": doc.get("_key", str(i)), "name": doc.get("name", f"Node {i}")} 
+                          for i, doc in enumerate(result)],
+                "links": []
+            }
+        else:
+            console.print("[red]Could not transform results to graph format[/red]")
+            return
         
         console.print(f"[green]Transformed data: {len(graph_data['nodes'])} nodes, {len(graph_data['links'])} links[/green]")
         

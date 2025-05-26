@@ -69,7 +69,7 @@ def setup_memory_test_data():
             agent_response=conv["agent"],
             conversation_id=conv["conversation_id"],
             metadata=conv["metadata"],
-            point_in_time=conv["time"].isoformat(),
+            point_in_time=conv["time"],
             auto_embed=True
         )
     
@@ -78,8 +78,8 @@ def setup_memory_test_data():
     
     # Create proper vector index AFTER inserting documents
     # According to the APPROX_NEAR_COSINE_USAGE.md guide
-    # Using the actual collection the memory agent uses: "agent_messages"
-    memory_collection = db.collection("agent_messages")
+    # Using the actual collection the memory agent uses: "memory_messages"
+    memory_collection = db.collection("memory_messages")
     
     # Drop any existing vector indexes first
     for index in memory_collection.indexes():
@@ -248,7 +248,7 @@ class TestMemoryCommands:
         list_data = json.loads(list_result.stdout)
         memory_id = list_data["data"]["memories"][0]["_key"]
         
-        # Now get by ID
+        # Now get by ID - memory get command takes ID as argument
         result = runner.invoke(app, [
             "memory", "get",
             memory_id,

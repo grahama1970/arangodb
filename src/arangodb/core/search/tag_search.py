@@ -249,64 +249,6 @@ def tag_search(
             "search_engine": "tag-search-failed",
             "search_type": "tag"
         }
-# def print_search_results(search_results: Dict[str, Any], max_width: int = 120) -> None:
-#     """
-#     Print search results in the specified format (table or JSON).
-    
-#     Args:
-#         search_results: The search results to display
-#         max_width: Maximum width for text fields in characters (used for table format)
-#     """
-#     # Get the requested output format
-#     output_format = search_results.get("format", "table").lower()
-    
-#     # For JSON output, just print the JSON
-#     if output_format == "json":
-#         json_results = {
-#             "results": search_results.get("results", []),
-#             "total": search_results.get("total", 0),
-#             "tags": search_results.get("tags", []),
-#             "require_all_tags": search_results.get("require_all_tags", False),
-#             "offset": search_results.get("offset", 0),
-#             "limit": search_results.get("limit", 0),
-#             "time": search_results.get("time", 0)
-#         }
-#         print(json.dumps(json_results, indent=2))
-#         return
-    
-#     # Initialize colorama for cross-platform colored terminal output
-#     init(autoreset=True)
-    
-#     # Print basic search metadata
-#     result_count = len(search_results.get("results", []))
-#     total_count = search_results.get("total", 0)
-#     tags = search_results.get("tags", [])
-#     tags_str = ", ".join(tags) if isinstance(tags, list) else str(tags)  # Ensure tags is a string
-#     require_all = search_results.get("require_all_tags", False)
-#     search_time = search_results.get("time", 0)
-    
-#     print(f"{Fore.CYAN}{'═' * 80}{Style.RESET_ALL}")
-#     print(f"Found {Fore.GREEN}{result_count}{Style.RESET_ALL} results out of {Fore.CYAN}{total_count}{Style.RESET_ALL} total matches")
-#     print(f"Tags: {Fore.YELLOW}{tags_str}{Style.RESET_ALL} ({Fore.CYAN}{'ALL' if require_all else 'ANY'}{Style.RESET_ALL})")
-#     print(f"Search Time: {Fore.CYAN}{search_time:.3f}s{Style.RESET_ALL}")
-#     print(f"{Fore.CYAN}{'─' * 80}{Style.RESET_ALL}")
-    
-#     # Use common display utility for consistent formatting across search modes
-#     display_results(
-#         search_results,
-#         max_width=max_width,
-#         title_field="Content",
-#         id_field="_key",
-#         score_field=None,  # Tag search doesn't have scores
-#         score_name=None,
-#         table_title="Tag Search Results"
-#     )
-    
-#     # Print detailed info for first result if there are results
-#     results = search_results.get("results", [])
-#     if results:
-#         print_result_details(results[0])
-
 
 
 

@@ -15,7 +15,9 @@ from arangodb.core.utils.cli.formatters import format_info, format_success
 # Import all command groups
 from arangodb.cli.crud_commands import crud_app
 from arangodb.cli.search_commands import search_app
+from arangodb.cli.search_config_commands import app as search_config_app
 from arangodb.cli.memory_commands import memory_app
+from arangodb.cli.validate_commands import app as validate_app
 from arangodb.cli.episode_commands import app as episode_app
 from arangodb.cli.community_commands import app as community_app
 from arangodb.cli.graph_commands import graph_app
@@ -39,7 +41,9 @@ app = typer.Typer(
 # Add all command groups
 app.add_typer(crud_app, name="crud", help="CRUD operations for any collection")
 app.add_typer(search_app, name="search", help="Search operations with multiple algorithms")
+app.add_typer(search_config_app, name="search-config", help="Search configuration management")
 app.add_typer(memory_app, name="memory", help="Memory and conversation management")
+app.add_typer(validate_app, name="validate", help="Memory validation and verification")
 app.add_typer(episode_app, name="episode", help="Episode management")
 app.add_typer(community_app, name="community", help="Community detection and management")
 app.add_typer(graph_app, name="graph", help="Graph relationship operations")
@@ -50,8 +54,7 @@ app.add_typer(visualization_app, name="visualize", help="D3.js visualization gen
 app.add_typer(qa_app, name="qa", help="Q&A generation for LLM fine-tuning")
 app.add_typer(agent_app, name="agent", help="Inter-module communication")
 
-# Add generic CRUD as top-level for convenience
-app.add_typer(crud_app, name="documents", help="Document operations (alias for crud)")
+# Generic CRUD commands are available under 'crud' command group
 
 # Global options
 @app.callback()

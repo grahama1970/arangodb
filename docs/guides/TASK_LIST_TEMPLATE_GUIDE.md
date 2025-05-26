@@ -1,4 +1,15 @@
-# Task List Template Guide v2 - Example-Driven Approach
+# Task Naming Convention
+
+Task files should be named following this pattern:
+- Place in the `docs/tasks` directory
+- Follow the format: `00N_task_name.md` 
+  - Where N is the task number (001, 002, etc.)
+  - task_name should be brief and descriptive
+
+Examples:
+- `001_claude_simple_question.md`
+- `002_anthropic_streaming.md`
+- `003_max_text_embeddings.md` Task List Template Guide v2 - Example-Driven Approach
 
 This guide provides a focused, example-driven template for creating task lists that prevent code executors from getting lost in excessive documentation and theory.
 

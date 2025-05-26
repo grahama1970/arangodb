@@ -1,0 +1,26 @@
+[
+  {
+    "_from": "customers/cust_001",
+    "_to": "orders/order_001",
+    "relationship": "placed",
+    "timestamp": "2024-12-20T18:30:00Z"
+  },
+  {
+    "_from": "customers/cust_002",
+    "_to": "orders/order_002",
+    "relationship": "placed",
+    "timestamp": "2024-12-18T19:00:00Z"
+  },
+  {
+    "_from": "customers/cust_003",
+    "_to": "orders/order_003",
+    "relationship": "placed",
+    "timestamp": "2024-12-15T20:00:00Z"
+  },
+  {
+    "_from": "customers/cust_001",
+    "_to": "orders/order_004",
+    "relationship": "placed",
+    "timestamp": "2024-12-19T17:45:00Z"
+  }
+]

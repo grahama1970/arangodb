@@ -132,10 +132,12 @@ def graph_traverse(
     # Create a start vertex ID from collection/key
     start_vertex_id = f"{collection}/{start_vertex_key}"
     
-    # Call the actual implementation (graph_rag_search)
+    # For pure graph traversal without search, use a dummy query
+    # The graph_rag_search function will skip the semantic search part
+    # when start_vertex_id is provided
     return graph_rag_search(
         db=db,
-        query_text="",  # Not used for traversal, just for RAG
+        query_text="graph_traversal_only",  # Dummy non-empty query for pure traversal
         start_vertex_id=start_vertex_id,
         min_depth=min_depth,
         max_depth=max_depth,

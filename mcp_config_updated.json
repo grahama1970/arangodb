@@ -1,0 +1,1572 @@
+{
+  "name": "arangodb",
+  "version": "1.0.0",
+  "description": "MCP server for arangodb",
+  "server": {
+    "command": "/home/graham/workspace/experiments/arangodb/.venv/bin/python3",
+    "args": [
+      "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/main.py",
+      "serve-mcp",
+      "--host",
+      "localhost",
+      "--port",
+      "5000"
+    ]
+  },
+  "tools": {
+    "quickstart": {
+      "description": "Interactive quickstart guide for new users.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    "llm-help": {
+      "description": "Generate LLM-friendly command documentation.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "type": "string",
+            "description": "Parameter: command"
+          },
+          "output": {
+            "type": "string",
+            "description": "Parameter: output"
+          }
+        },
+        "required": []
+      }
+    },
+    "health": {
+      "description": "Check CLI and database health.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "output": {
+            "type": "string",
+            "description": "Parameter: output"
+          }
+        },
+        "required": []
+      }
+    },
+    "crud.create": {
+      "description": "Create a new document in any collection.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "collection": {
+            "type": "string",
+            "description": "Parameter: collection"
+          },
+          "data": {
+            "type": "string",
+            "description": "Parameter: data"
+          },
+          "key": {
+            "type": "string",
+            "description": "Parameter: key"
+          },
+          "embed": {
+            "type": "boolean",
+            "description": "Parameter: embed"
+          },
+          "embed_fields": {
+            "type": "string",
+            "description": "Parameter: embed_fields"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          }
+        },
+        "required": []
+      }
+    },
+    "crud.read": {
+      "description": "Read a document from any collection.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "collection": {
+            "type": "string",
+            "description": "Parameter: collection"
+          },
+          "key": {
+            "type": "string",
+            "description": "Parameter: key"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          }
+        },
+        "required": []
+      }
+    },
+    "crud.update": {
+      "description": "Update a document in any collection.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "collection": {
+            "type": "string",
+            "description": "Parameter: collection"
+          },
+          "key": {
+            "type": "string",
+            "description": "Parameter: key"
+          },
+          "data": {
+            "type": "string",
+            "description": "Parameter: data"
+          },
+          "replace": {
+            "type": "boolean",
+            "description": "Parameter: replace"
+          },
+          "embed": {
+            "type": "boolean",
+            "description": "Parameter: embed"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          }
+        },
+        "required": []
+      }
+    },
+    "crud.delete": {
+      "description": "Delete a document from any collection.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "collection": {
+            "type": "string",
+            "description": "Parameter: collection"
+          },
+          "key": {
+            "type": "string",
+            "description": "Parameter: key"
+          },
+          "force": {
+            "type": "boolean",
+            "description": "Parameter: force"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          }
+        },
+        "required": []
+      }
+    },
+    "crud.list": {
+      "description": "List documents from any collection.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "collection": {
+            "type": "string",
+            "description": "Parameter: collection"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Parameter: limit"
+          },
+          "offset": {
+            "type": "integer",
+            "description": "Parameter: offset"
+          },
+          "filter_field": {
+            "type": "string",
+            "description": "Parameter: filter_field"
+          },
+          "filter_value": {
+            "type": "string",
+            "description": "Parameter: filter_value"
+          },
+          "sort_by": {
+            "type": "string",
+            "description": "Parameter: sort_by"
+          },
+          "descending": {
+            "type": "boolean",
+            "description": "Parameter: descending"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          }
+        },
+        "required": []
+      }
+    },
+    "search.bm25": {
+      "description": "Find documents using BM25 keyword search algorithm.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Parameter: query"
+          },
+          "collection": {
+            "type": "string",
+            "description": "Parameter: collection"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Parameter: limit"
+          },
+          "offset": {
+            "type": "integer",
+            "description": "Parameter: offset"
+          },
+          "threshold": {
+            "type": "number",
+            "description": "Parameter: threshold"
+          },
+          "tags": {
+            "type": "string",
+            "description": "Parameter: tags"
+          }
+        },
+        "required": []
+      }
+    },
+    "search.semantic": {
+      "description": "Find documents based on semantic similarity using embeddings.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Parameter: query"
+          },
+          "collection": {
+            "type": "string",
+            "description": "Parameter: collection"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Parameter: limit"
+          },
+          "threshold": {
+            "type": "number",
+            "description": "Parameter: threshold"
+          },
+          "tags": {
+            "type": "string",
+            "description": "Parameter: tags"
+          }
+        },
+        "required": []
+      }
+    },
+    "search.keyword": {
+      "description": "Find documents containing specific keywords in a field.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Parameter: query"
+          },
+          "collection": {
+            "type": "string",
+            "description": "Parameter: collection"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Parameter: limit"
+          },
+          "field": {
+            "type": "string",
+            "description": "Parameter: field"
+          }
+        },
+        "required": []
+      }
+    },
+    "search.hybrid": {
+      "description": "Find documents using combined BM25 and semantic search with RRF re-ranking.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Parameter: query"
+          },
+          "collection": {
+            "type": "string",
+            "description": "Parameter: collection"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Parameter: limit"
+          },
+          "bm25_weight": {
+            "type": "number",
+            "description": "Parameter: bm25_weight"
+          },
+          "semantic_weight": {
+            "type": "number",
+            "description": "Parameter: semantic_weight"
+          },
+          "tags": {
+            "type": "string",
+            "description": "Parameter: tags"
+          },
+          "use_graph": {
+            "type": "boolean",
+            "description": "Parameter: use_graph"
+          },
+          "use_perplexity": {
+            "type": "boolean",
+            "description": "Parameter: use_perplexity"
+          }
+        },
+        "required": []
+      }
+    },
+    "search.tag": {
+      "description": "Find documents by tags.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "tags": {
+            "type": "string",
+            "description": "Parameter: tags"
+          },
+          "collection": {
+            "type": "string",
+            "description": "Parameter: collection"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Parameter: limit"
+          },
+          "match_all": {
+            "type": "boolean",
+            "description": "Parameter: match_all"
+          }
+        },
+        "required": []
+      }
+    },
+    "search.graph": {
+      "description": "Traverse graph relationships from a starting point.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "start_id": {
+            "type": "string",
+            "description": "Parameter: start_id"
+          },
+          "collection": {
+            "type": "string",
+            "description": "Parameter: collection"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Parameter: limit"
+          },
+          "max_depth": {
+            "type": "integer",
+            "description": "Parameter: max_depth"
+          },
+          "direction": {
+            "type": "string",
+            "description": "Parameter: direction"
+          }
+        },
+        "required": []
+      }
+    },
+    "memory.create": {
+      "description": "Create a new memory from user-agent conversation.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "user_message": {
+            "type": "string",
+            "description": "Parameter: user_message"
+          },
+          "agent_response": {
+            "type": "string",
+            "description": "Parameter: agent_response"
+          },
+          "conversation_id": {
+            "type": "string",
+            "description": "Parameter: conversation_id"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "Parameter: timestamp"
+          },
+          "metadata": {
+            "type": "string",
+            "description": "Parameter: metadata"
+          },
+          "language": {
+            "type": "string",
+            "description": "Parameter: language"
+          }
+        },
+        "required": []
+      }
+    },
+    "memory.list": {
+      "description": "List stored memories.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Parameter: limit"
+          },
+          "offset": {
+            "type": "integer",
+            "description": "Parameter: offset"
+          },
+          "conversation_id": {
+            "type": "string",
+            "description": "Parameter: conversation_id"
+          }
+        },
+        "required": []
+      }
+    },
+    "memory.search": {
+      "description": "Search memories by content.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Parameter: query"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Parameter: limit"
+          },
+          "conversation_id": {
+            "type": "string",
+            "description": "Parameter: conversation_id"
+          },
+          "point_in_time": {
+            "type": "string",
+            "description": "Parameter: point_in_time"
+          },
+          "threshold": {
+            "type": "number",
+            "description": "Parameter: threshold"
+          }
+        },
+        "required": []
+      }
+    },
+    "memory.get": {
+      "description": "Get a specific memory by ID.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "memory_id": {
+            "type": "string",
+            "description": "Parameter: memory_id"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          }
+        },
+        "required": []
+      }
+    },
+    "memory.history": {
+      "description": "Get conversation history.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "conversation_id": {
+            "type": "string",
+            "description": "Parameter: conversation_id"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Parameter: limit"
+          },
+          "chronological": {
+            "type": "boolean",
+            "description": "Parameter: chronological"
+          }
+        },
+        "required": []
+      }
+    },
+    "memory.update": {
+      "description": "Update an existing memory entry.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "memory_id": {
+            "type": "string",
+            "description": "Parameter: memory_id"
+          },
+          "content": {
+            "type": "string",
+            "description": "Parameter: content"
+          },
+          "metadata": {
+            "type": "string",
+            "description": "Parameter: metadata"
+          },
+          "tags": {
+            "type": "string",
+            "description": "Parameter: tags"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          }
+        },
+        "required": []
+      }
+    },
+    "memory.delete": {
+      "description": "Delete a memory entry.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "memory_id": {
+            "type": "string",
+            "description": "Parameter: memory_id"
+          },
+          "force": {
+            "type": "boolean",
+            "description": "Parameter: force"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          }
+        },
+        "required": []
+      }
+    },
+    "episode.create": {
+      "description": "Create a new episode for grouping conversations.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Parameter: name"
+          },
+          "description": {
+            "type": "string",
+            "description": "Parameter: description"
+          },
+          "user_id": {
+            "type": "string",
+            "description": "Parameter: user_id"
+          },
+          "session_id": {
+            "type": "string",
+            "description": "Parameter: session_id"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          }
+        },
+        "required": []
+      }
+    },
+    "episode.list": {
+      "description": "List episodes with optional filters.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "active_only": {
+            "type": "boolean",
+            "description": "Parameter: active_only"
+          },
+          "user_id": {
+            "type": "string",
+            "description": "Parameter: user_id"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Parameter: limit"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          }
+        },
+        "required": []
+      }
+    },
+    "episode.search": {
+      "description": "Search episodes by text query.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Parameter: query"
+          },
+          "user_id": {
+            "type": "string",
+            "description": "Parameter: user_id"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Parameter: limit"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          }
+        },
+        "required": []
+      }
+    },
+    "episode.get": {
+      "description": "Get detailed information about a specific episode.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "episode_id": {
+            "type": "string",
+            "description": "Parameter: episode_id"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          }
+        },
+        "required": []
+      }
+    },
+    "episode.end": {
+      "description": "Mark an episode as ended.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "episode_id": {
+            "type": "string",
+            "description": "Parameter: episode_id"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          }
+        },
+        "required": []
+      }
+    },
+    "episode.delete": {
+      "description": "Delete an episode and all its links.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "episode_id": {
+            "type": "string",
+            "description": "Parameter: episode_id"
+          },
+          "force": {
+            "type": "boolean",
+            "description": "Parameter: force"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          }
+        },
+        "required": []
+      }
+    },
+    "episode.link-entity": {
+      "description": "Link an entity to an episode.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "episode_id": {
+            "type": "string",
+            "description": "Parameter: episode_id"
+          },
+          "entity_id": {
+            "type": "string",
+            "description": "Parameter: entity_id"
+          }
+        },
+        "required": []
+      }
+    },
+    "episode.link-relationship": {
+      "description": "Link a relationship to an episode.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "episode_id": {
+            "type": "string",
+            "description": "Parameter: episode_id"
+          },
+          "relationship_id": {
+            "type": "string",
+            "description": "Parameter: relationship_id"
+          }
+        },
+        "required": []
+      }
+    },
+    "community.detect": {
+      "description": "Detect communities in the entity graph using the Louvain algorithm.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "min_size": {
+            "type": "integer",
+            "description": "Parameter: min_size"
+          },
+          "resolution": {
+            "type": "number",
+            "description": "Parameter: resolution"
+          },
+          "rebuild": {
+            "type": "boolean",
+            "description": "Parameter: rebuild"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          }
+        },
+        "required": []
+      }
+    },
+    "community.show": {
+      "description": "Show detailed information about a specific community.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "community_id": {
+            "type": "string",
+            "description": "Parameter: community_id"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          }
+        },
+        "required": []
+      }
+    },
+    "community.list": {
+      "description": "List all communities with their basic information.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "min_size": {
+            "type": "string",
+            "description": "Parameter: min_size"
+          },
+          "sort_by": {
+            "type": "string",
+            "description": "Parameter: sort_by"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          }
+        },
+        "required": []
+      }
+    },
+    "graph.add-relationship": {
+      "description": "Create a link (edge) between two lessons.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "from_key": {
+            "type": "string",
+            "description": "Parameter: from_key"
+          },
+          "to_key": {
+            "type": "string",
+            "description": "Parameter: to_key"
+          },
+          "rationale": {
+            "type": "string",
+            "description": "Parameter: rationale"
+          },
+          "relationship_type": {
+            "type": "string",
+            "description": "Parameter: relationship_type"
+          },
+          "attributes": {
+            "type": "string",
+            "description": "Parameter: attributes"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          }
+        },
+        "required": []
+      }
+    },
+    "graph.delete-relationship": {
+      "description": "Remove a specific link (edge) between lessons.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "edge_key": {
+            "type": "string",
+            "description": "Parameter: edge_key"
+          },
+          "yes": {
+            "type": "boolean",
+            "description": "Parameter: yes"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          }
+        },
+        "required": []
+      }
+    },
+    "graph.traverse": {
+      "description": "Explore relationships starting from a specific node.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "start_node_id": {
+            "type": "string",
+            "description": "Parameter: start_node_id"
+          },
+          "graph_name": {
+            "type": "string",
+            "description": "Parameter: graph_name"
+          },
+          "min_depth": {
+            "type": "integer",
+            "description": "Parameter: min_depth"
+          },
+          "max_depth": {
+            "type": "integer",
+            "description": "Parameter: max_depth"
+          },
+          "direction": {
+            "type": "string",
+            "description": "Parameter: direction"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Parameter: limit"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          }
+        },
+        "required": []
+      }
+    },
+    "compaction.create": {
+      "description": "Create a compact representation of a conversation or episode.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "conversation_id": {
+            "type": "string",
+            "description": "Parameter: conversation_id"
+          },
+          "episode_id": {
+            "type": "string",
+            "description": "Parameter: episode_id"
+          },
+          "compaction_method": {
+            "type": "string",
+            "description": "Parameter: compaction_method"
+          },
+          "max_tokens": {
+            "type": "integer",
+            "description": "Parameter: max_tokens"
+          },
+          "min_overlap": {
+            "type": "integer",
+            "description": "Parameter: min_overlap"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          }
+        },
+        "required": []
+      }
+    },
+    "compaction.search": {
+      "description": "Search for compacted conversation summaries using semantic similarity.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Parameter: query"
+          },
+          "threshold": {
+            "type": "number",
+            "description": "Parameter: threshold"
+          },
+          "top_n": {
+            "type": "integer",
+            "description": "Parameter: top_n"
+          },
+          "method": {
+            "type": "string",
+            "description": "Parameter: method"
+          },
+          "conversation_id": {
+            "type": "string",
+            "description": "Parameter: conversation_id"
+          },
+          "episode_id": {
+            "type": "string",
+            "description": "Parameter: episode_id"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          }
+        },
+        "required": []
+      }
+    },
+    "compaction.get": {
+      "description": "Retrieve a specific compacted conversation summary.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "compaction_id": {
+            "type": "string",
+            "description": "Parameter: compaction_id"
+          },
+          "include_workflow": {
+            "type": "boolean",
+            "description": "Parameter: include_workflow"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          }
+        },
+        "required": []
+      }
+    },
+    "compaction.list": {
+      "description": "List compacted conversation summaries with optional filtering.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "description": "Parameter: limit"
+          },
+          "conversation_id": {
+            "type": "string",
+            "description": "Parameter: conversation_id"
+          },
+          "episode_id": {
+            "type": "string",
+            "description": "Parameter: episode_id"
+          },
+          "compaction_method": {
+            "type": "string",
+            "description": "Parameter: compaction_method"
+          },
+          "sort_by": {
+            "type": "string",
+            "description": "Parameter: sort_by"
+          },
+          "descending": {
+            "type": "boolean",
+            "description": "Parameter: descending"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          }
+        },
+        "required": []
+      }
+    },
+    "contradiction.list": {
+      "description": "List detected contradictions from the log.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "description": "Parameter: limit"
+          },
+          "status": {
+            "type": "string",
+            "description": "Parameter: status"
+          },
+          "edge_type": {
+            "type": "string",
+            "description": "Parameter: edge_type"
+          },
+          "entity_id": {
+            "type": "string",
+            "description": "Parameter: entity_id"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          }
+        },
+        "required": []
+      }
+    },
+    "contradiction.summary": {
+      "description": "Show contradiction statistics summary.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          }
+        },
+        "required": []
+      }
+    },
+    "contradiction.detect": {
+      "description": "Detect potential contradictions between two entities.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "from_id": {
+            "type": "string",
+            "description": "Parameter: from_id"
+          },
+          "to_id": {
+            "type": "string",
+            "description": "Parameter: to_id"
+          },
+          "edge_type": {
+            "type": "string",
+            "description": "Parameter: edge_type"
+          },
+          "collection": {
+            "type": "string",
+            "description": "Parameter: collection"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          }
+        },
+        "required": []
+      }
+    },
+    "contradiction.resolve": {
+      "description": "Manually resolve a contradiction between two edges.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "new_edge_key": {
+            "type": "string",
+            "description": "Parameter: new_edge_key"
+          },
+          "existing_edge_key": {
+            "type": "string",
+            "description": "Parameter: existing_edge_key"
+          },
+          "strategy": {
+            "type": "string",
+            "description": "Parameter: strategy"
+          },
+          "collection": {
+            "type": "string",
+            "description": "Parameter: collection"
+          },
+          "reason": {
+            "type": "string",
+            "description": "Parameter: reason"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          }
+        },
+        "required": []
+      }
+    },
+    "temporal.search-at-time": {
+      "description": "Search for messages valid at a specific point in time.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Parameter: query"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "Parameter: timestamp"
+          },
+          "search_type": {
+            "type": "string",
+            "description": "Parameter: search_type"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Parameter: limit"
+          },
+          "conversation_id": {
+            "type": "string",
+            "description": "Parameter: conversation_id"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          }
+        },
+        "required": []
+      }
+    },
+    "temporal.conversation-at-time": {
+      "description": "Get the state of a conversation at a specific point in time.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "conversation_id": {
+            "type": "string",
+            "description": "Parameter: conversation_id"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "Parameter: timestamp"
+          },
+          "include_invalid": {
+            "type": "boolean",
+            "description": "Parameter: include_invalid"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          }
+        },
+        "required": []
+      }
+    },
+    "temporal.range": {
+      "description": "Get messages within a temporal range.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "start_time": {
+            "type": "string",
+            "description": "Parameter: start_time"
+          },
+          "end_time": {
+            "type": "string",
+            "description": "Parameter: end_time"
+          },
+          "conversation_id": {
+            "type": "string",
+            "description": "Parameter: conversation_id"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          }
+        },
+        "required": []
+      }
+    },
+    "temporal.history": {
+      "description": "Get the complete temporal history of an entity.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "collection": {
+            "type": "string",
+            "description": "Parameter: collection"
+          },
+          "entity_key": {
+            "type": "string",
+            "description": "Parameter: entity_key"
+          },
+          "include_invalidated": {
+            "type": "boolean",
+            "description": "Parameter: include_invalidated"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          }
+        },
+        "required": []
+      }
+    },
+    "temporal.validate": {
+      "description": "Validate temporal consistency of an entity.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "collection": {
+            "type": "string",
+            "description": "Parameter: collection"
+          },
+          "entity_key": {
+            "type": "string",
+            "description": "Parameter: entity_key"
+          }
+        },
+        "required": []
+      }
+    },
+    "temporal.create-indexes": {
+      "description": "Create temporal indexes for a collection.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "collection": {
+            "type": "string",
+            "description": "Parameter: collection"
+          }
+        },
+        "required": []
+      }
+    },
+    "visualize.generate": {
+      "description": "Generate a visualization from an AQL query",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Parameter: query"
+          },
+          "layout": {
+            "type": "string",
+            "description": "Parameter: layout"
+          },
+          "output": {
+            "type": "string",
+            "description": "Parameter: output"
+          },
+          "title": {
+            "type": "string",
+            "description": "Parameter: title"
+          },
+          "open_browser": {
+            "type": "boolean",
+            "description": "Parameter: open_browser"
+          },
+          "use_llm": {
+            "type": "boolean",
+            "description": "Parameter: use_llm"
+          },
+          "width": {
+            "type": "integer",
+            "description": "Parameter: width"
+          },
+          "height": {
+            "type": "integer",
+            "description": "Parameter: height"
+          },
+          "db_name": {
+            "type": "string",
+            "description": "Parameter: db_name"
+          },
+          "collection": {
+            "type": "string",
+            "description": "Parameter: collection"
+          }
+        },
+        "required": []
+      }
+    },
+    "visualize.from_file": {
+      "description": "Generate a visualization from a JSON file",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "input_file": {
+            "type": "string",
+            "description": "Parameter: input_file"
+          },
+          "layout": {
+            "type": "string",
+            "description": "Parameter: layout"
+          },
+          "output": {
+            "type": "string",
+            "description": "Parameter: output"
+          },
+          "title": {
+            "type": "string",
+            "description": "Parameter: title"
+          },
+          "open_browser": {
+            "type": "boolean",
+            "description": "Parameter: open_browser"
+          },
+          "use_llm": {
+            "type": "boolean",
+            "description": "Parameter: use_llm"
+          },
+          "width": {
+            "type": "integer",
+            "description": "Parameter: width"
+          },
+          "height": {
+            "type": "integer",
+            "description": "Parameter: height"
+          }
+        },
+        "required": []
+      }
+    },
+    "visualize.server": {
+      "description": "Send visualization request to server",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "graph_data": {
+            "type": "string",
+            "description": "Parameter: graph_data"
+          },
+          "query": {
+            "type": "string",
+            "description": "Parameter: query"
+          },
+          "layout": {
+            "type": "string",
+            "description": "Parameter: layout"
+          },
+          "use_llm": {
+            "type": "boolean",
+            "description": "Parameter: use_llm"
+          },
+          "server_url": {
+            "type": "string",
+            "description": "Parameter: server_url"
+          }
+        },
+        "required": []
+      }
+    },
+    "visualize.layouts": {
+      "description": "List available visualization layouts",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    "visualize.examples": {
+      "description": "Show example AQL queries for visualization",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    "qa.generate": {
+      "description": "Generate Q&A pairs from a document stored in ArangoDB.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "type": "string",
+            "description": "Parameter: document_id"
+          },
+          "max_questions": {
+            "type": "integer",
+            "description": "Parameter: max_questions"
+          },
+          "question_types": {
+            "type": "string",
+            "description": "Parameter: question_types"
+          },
+          "output_file": {
+            "type": "string",
+            "description": "Parameter: output_file"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          },
+          "batch_size": {
+            "type": "integer",
+            "description": "Parameter: batch_size"
+          }
+        },
+        "required": []
+      }
+    },
+    "qa.export": {
+      "description": "Export Q&A pairs in various formats for fine-tuning.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "type": "string",
+            "description": "Parameter: document_id"
+          },
+          "output_dir": {
+            "type": "string",
+            "description": "Parameter: output_dir"
+          },
+          "format": {
+            "type": "string",
+            "description": "Parameter: format"
+          },
+          "split": {
+            "type": "boolean",
+            "description": "Parameter: split"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          }
+        },
+        "required": []
+      }
+    },
+    "qa.validate": {
+      "description": "Validate generated Q&A pairs against corpus.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "type": "string",
+            "description": "Parameter: document_id"
+          },
+          "threshold": {
+            "type": "number",
+            "description": "Parameter: threshold"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          }
+        },
+        "required": []
+      }
+    },
+    "qa.stats": {
+      "description": "Show Q&A generation statistics.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "type": "string",
+            "description": "Parameter: document_id"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Parameter: output_format"
+          }
+        },
+        "required": []
+      }
+    },
+    "agent.process-message": {
+      "description": "Process a message from Marker module.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "message_file": {
+            "type": "string",
+            "description": "Parameter: message_file"
+          }
+        },
+        "required": []
+      }
+    },
+    "agent.send-message": {
+      "description": "Send a message to Marker module.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "Parameter: content"
+          },
+          "message_type": {
+            "type": "string",
+            "description": "Parameter: message_type"
+          }
+        },
+        "required": []
+      }
+    },
+    "agent.claude_code_for_marker": {
+      "description": "Generate and execute Claude Code to create agent_commands.py in Marker.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    }
+  },
+  "capabilities": {
+    "tools": true,
+    "prompts": false,
+    "resources": false
+  }
+}

@@ -33,7 +33,7 @@ initialize_litellm_cache()
 from arangodb.core.llm_utils import get_llm_client, extract_llm_response, extract_rationale
 from arangodb.core.utils.embedding_utils import get_embedding
 from arangodb.core.utils.text_chunker import TextChunker, count_tokens_with_tiktoken
-from arangodb.core.utils.workflow_tracking import WorkflowTracker
+from arangodb.core.utils.workflow_logger import WorkflowLogger as WorkflowTracker
 from arangodb.core.constants import (
     COMPACTED_SUMMARIES_COLLECTION,
     COMPACTED_SUMMARIES_VIEW,
@@ -72,7 +72,7 @@ def compact_conversation(
     """
     # Start workflow tracking
     workflow_id = f"compaction_{uuid.uuid4().hex[:8]}"
-    workflow = WorkflowTracker(workflow_name=f"Conversation Compaction ({compaction_method})")
+    workflow = WorkflowTracker(name=f"Conversation Compaction ({compaction_method})", workflow_id=workflow_id)
     workflow.start_step("retrieve_messages")
     
     # 1. Retrieve the full conversation

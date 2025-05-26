@@ -1,0 +1,65 @@
+[
+  {
+    "_from": "memories/mem_001",
+    "_to": "customers/cust_001",
+    "relationship": "about",
+    "relevance": 1.0,
+    "context": "customer_profile"
+  },
+  {
+    "_from": "memories/mem_002",
+    "_to": "pizzas/hawaiian",
+    "relationship": "about",
+    "relevance": 0.9,
+    "context": "product_analysis"
+  },
+  {
+    "_from": "memories/mem_003",
+    "_to": "customers/cust_002",
+    "relationship": "about",
+    "relevance": 0.95,
+    "context": "customer_influence"
+  },
+  {
+    "_from": "memories/mem_003",
+    "_to": "pizzas/veggie_supreme",
+    "relationship": "references",
+    "relevance": 0.7,
+    "context": "improvement_suggestion"
+  },
+  {
+    "_from": "memories/mem_004",
+    "_to": "ingredients/mozzarella",
+    "relationship": "about",
+    "relevance": 1.0,
+    "context": "supply_chain"
+  },
+  {
+    "_from": "memories/mem_005",
+    "_to": "pizzas/pepperoni",
+    "relationship": "references",
+    "relevance": 0.8,
+    "context": "peak_demand"
+  },
+  {
+    "_from": "memories/mem_005",
+    "_to": "pizzas/bbq_chicken",
+    "relationship": "references",
+    "relevance": 0.8,
+    "context": "peak_demand"
+  },
+  {
+    "_from": "memories/mem_006",
+    "_to": "pizzas/bbq_chicken",
+    "relationship": "about",
+    "relevance": 1.0,
+    "context": "recipe_innovation"
+  },
+  {
+    "_from": "memories/mem_001",
+    "_to": "memories/mem_005",
+    "relationship": "related_to",
+    "relevance": 0.6,
+    "context": "customer_ordering_patterns"
+  }
+]

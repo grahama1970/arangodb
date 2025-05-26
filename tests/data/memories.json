@@ -1,0 +1,152 @@
+[
+  {
+    "_key": "mem_001",
+    "content": "Customer John Smith has been our most loyal customer since June 2023. He consistently orders pepperoni and BBQ chicken pizzas, usually twice a week. Always tips well and leaves positive reviews. He mentioned he's lactose intolerant but takes pills to enjoy our pizzas - that's dedication! His favorite customization is extra cheese on pepperoni.",
+    "summary": "John Smith - VIP customer profile and preferences",
+    "entity_type": "customer_profile",
+    "entity_id": "customers/cust_001",
+    "importance": 0.9,
+    "created_at": "2023-06-15T10:00:00Z",
+    "updated_at": "2024-12-20T18:30:00Z",
+    "accessed_at": "2024-12-20T18:30:00Z",
+    "access_count": 42,
+    "metadata": {
+      "context": "Customer relationship management",
+      "source": "order_history_analysis",
+      "confidence": 0.95,
+      "customer_value": "high",
+      "dietary_notes": "lactose_intolerant_but_takes_medication"
+    },
+    "tags": ["vip_customer", "loyal", "pepperoni_lover", "frequent_orderer"],
+    "temporal_validity": {
+      "start": "2023-06-15T00:00:00Z",
+      "end": null,
+      "confidence": 1.0
+    }
+  },
+  {
+    "_key": "mem_002",
+    "content": "Hawaiian pizza controversy analysis: Our data shows that Hawaiian pizza, despite being our most controversial item, has a dedicated following. 30% of reviews mention the controversy, but those who order it have a 75% reorder rate. David Kim orders it exclusively and has introduced 3 friends to it. Consider marketing campaign: 'Pick a Side - Hawaiian Pizza Week'",
+    "summary": "Hawaiian pizza controversy drives engagement and loyalty",
+    "entity_type": "product_insight",
+    "entity_id": "pizzas/hawaiian",
+    "importance": 0.7,
+    "created_at": "2024-11-01T09:00:00Z",
+    "updated_at": "2024-12-15T20:00:00Z",
+    "accessed_at": "2024-12-18T14:00:00Z",
+    "access_count": 15,
+    "metadata": {
+      "context": "Product marketing analysis",
+      "source": "review_sentiment_analysis",
+      "confidence": 0.85,
+      "marketing_opportunity": "high",
+      "controversy_score": 0.8
+    },
+    "tags": ["product_insight", "controversial", "marketing_opportunity", "loyal_following"],
+    "temporal_validity": {
+      "start": "2024-11-01T00:00:00Z",
+      "end": null,
+      "confidence": 0.9
+    }
+  },
+  {
+    "_key": "mem_003",
+    "content": "Vegetarian customer segment growing: Maria Garcia leads our vegetarian customer segment. Her reviews have influenced at least 5 other customers to try our vegetarian options. She specifically praised the Margherita for authenticity but noted the Veggie Supreme needs improvement (soggy vegetables). Consider pre-roasting vegetables as she suggested.",
+    "summary": "Maria Garcia influences vegetarian segment growth",
+    "entity_type": "customer_influence",
+    "entity_id": "customers/cust_002",
+    "importance": 0.8,
+    "created_at": "2024-09-20T15:00:00Z",
+    "updated_at": "2024-12-18T19:30:00Z",
+    "accessed_at": "2024-12-19T10:00:00Z",
+    "access_count": 8,
+    "metadata": {
+      "context": "Customer influence tracking",
+      "source": "review_impact_analysis",
+      "confidence": 0.88,
+      "influence_score": 0.75,
+      "improvement_suggestion": "pre_roast_vegetables"
+    },
+    "tags": ["influencer", "vegetarian", "improvement_feedback", "quality_focused"],
+    "temporal_validity": {
+      "start": "2024-09-20T00:00:00Z",
+      "end": null,
+      "confidence": 0.95
+    }
+  },
+  {
+    "_key": "mem_004",
+    "content": "Supply chain insight: Our mozzarella supplier 'Italian Dairy Co' has been consistent for 2 years. However, they mentioned potential price increases next quarter due to milk shortages. We should consider negotiating a long-term contract now or identifying alternative suppliers. Current cost is $0.02/gram with 14-day shelf life.",
+    "summary": "Mozzarella supply chain risk - price increase warning",
+    "entity_type": "supplier_intelligence",
+    "entity_id": "ingredients/mozzarella",
+    "importance": 0.85,
+    "created_at": "2024-12-10T11:00:00Z",
+    "updated_at": "2024-12-10T11:00:00Z",
+    "accessed_at": "2024-12-20T09:00:00Z",
+    "access_count": 3,
+    "metadata": {
+      "context": "Supply chain management",
+      "source": "supplier_communication",
+      "confidence": 0.9,
+      "risk_level": "medium",
+      "action_required": true
+    },
+    "tags": ["supply_chain", "cost_risk", "negotiation_needed", "strategic"],
+    "temporal_validity": {
+      "start": "2024-12-10T00:00:00Z",
+      "end": "2025-03-31T00:00:00Z",
+      "confidence": 0.8
+    }
+  },
+  {
+    "_key": "mem_005",
+    "content": "Peak ordering pattern discovered: Analysis shows our busiest time is Friday 6-8 PM, with 40% of weekly orders. Pepperoni and BBQ Chicken are most popular during this window. We've had 3 instances of running out of pepperoni during Friday rush. Recommendation: Increase pepperoni prep by 50% on Fridays and add extra staff 5-9 PM.",
+    "summary": "Friday evening rush pattern requires operational adjustments",
+    "entity_type": "operational_insight",
+    "entity_id": "operations/peak_hours",
+    "importance": 0.9,
+    "created_at": "2024-11-15T20:00:00Z",
+    "updated_at": "2024-12-15T20:00:00Z",
+    "accessed_at": "2024-12-19T16:00:00Z",
+    "access_count": 12,
+    "metadata": {
+      "context": "Operations optimization",
+      "source": "order_pattern_analysis",
+      "confidence": 0.92,
+      "impact": "high",
+      "stockout_incidents": 3
+    },
+    "tags": ["operations", "peak_hours", "inventory_management", "staffing"],
+    "temporal_validity": {
+      "start": "2024-11-15T00:00:00Z",
+      "end": null,
+      "confidence": 0.85
+    }
+  },
+  {
+    "_key": "mem_006",
+    "content": "BBQ Chicken sauce recipe evolution: Chef updated BBQ sauce recipe in October, adding honey and smoked paprika. Customer feedback improved 15% after change. Recipe: 60% BBQ base, 20% honey, 10% apple cider vinegar, 5% smoked paprika, 5% secret spices. This is now our proprietary blend - 'Smoky Sweet BBQ'.",
+    "summary": "Proprietary BBQ sauce recipe improved customer satisfaction",
+    "entity_type": "recipe_innovation",
+    "entity_id": "pizzas/bbq_chicken",
+    "importance": 0.75,
+    "created_at": "2024-10-15T14:00:00Z",
+    "updated_at": "2024-10-15T14:00:00Z",
+    "accessed_at": "2024-12-19T18:00:00Z",
+    "access_count": 6,
+    "metadata": {
+      "context": "Product development",
+      "source": "chef_innovation",
+      "confidence": 1.0,
+      "satisfaction_increase": 0.15,
+      "proprietary": true
+    },
+    "tags": ["recipe", "innovation", "proprietary", "customer_satisfaction"],
+    "temporal_validity": {
+      "start": "2024-10-15T00:00:00Z",
+      "end": null,
+      "confidence": 1.0
+    }
+  }
+]

@@ -1,0 +1,112 @@
+[
+  {
+    "_key": "review_001",
+    "pizza_id": "pizzas/margherita",
+    "customer_id": "customers/cust_002",
+    "order_id": "orders/order_002",
+    "rating": 5,
+    "review_text": "The Margherita pizza was absolutely divine! The fresh basil leaves were aromatic and the mozzarella was perfectly melted. It reminded me of my trip to Naples last summer. The crust had that perfect char and chewiness that you can only get from a wood-fired oven. This is authentic Italian pizza at its finest.",
+    "summary": "Authentic Italian perfection with fresh ingredients",
+    "helpful_votes": 23,
+    "total_votes": 25,
+    "verified_purchase": true,
+    "created_at": "2024-12-19T10:30:00Z",
+    "updated_at": "2024-12-19T10:30:00Z",
+    "tags": ["authentic", "fresh", "wood-fired", "italian"],
+    "sentiment_score": 0.95,
+    "aspects": {
+      "taste": 5,
+      "quality": 5,
+      "value": 4,
+      "service": 5
+    }
+  },
+  {
+    "_key": "review_002",
+    "pizza_id": "pizzas/hawaiian",
+    "customer_id": "customers/cust_003",
+    "order_id": "orders/order_003",
+    "rating": 4,
+    "review_text": "I know Hawaiian pizza is controversial, but I love it! The combination of sweet pineapple and savory ham is perfect. The pineapple was fresh, not canned, which made a huge difference. My only complaint is that I wish there was a bit more ham. Overall, great execution of a divisive pizza.",
+    "summary": "Great execution of controversial Hawaiian pizza",
+    "helpful_votes": 15,
+    "total_votes": 30,
+    "verified_purchase": true,
+    "created_at": "2024-12-16T14:00:00Z",
+    "updated_at": "2024-12-16T14:00:00Z",
+    "tags": ["controversial", "sweet-savory", "fresh-pineapple"],
+    "sentiment_score": 0.8,
+    "aspects": {
+      "taste": 4,
+      "quality": 4,
+      "value": 4,
+      "service": 5
+    }
+  },
+  {
+    "_key": "review_003",
+    "pizza_id": "pizzas/pepperoni",
+    "customer_id": "customers/cust_001",
+    "order_id": "orders/order_001",
+    "rating": 5,
+    "review_text": "Best pepperoni pizza in the city! The pepperoni cups up perfectly and creates those little pools of delicious grease. The cheese pull is Instagram-worthy. I've been ordering this twice a week for months and it's consistently excellent. The spice level is just right - enough kick to be interesting but not overwhelming.",
+    "summary": "Consistently excellent pepperoni with perfect cup and char",
+    "helpful_votes": 42,
+    "total_votes": 45,
+    "verified_purchase": true,
+    "created_at": "2024-12-20T19:00:00Z",
+    "updated_at": "2024-12-20T19:00:00Z",
+    "tags": ["best-in-city", "consistent", "cup-and-char", "cheese-pull"],
+    "sentiment_score": 0.98,
+    "aspects": {
+      "taste": 5,
+      "quality": 5,
+      "value": 5,
+      "service": 5
+    }
+  },
+  {
+    "_key": "review_004",
+    "pizza_id": "pizzas/veggie_supreme",
+    "customer_id": "customers/cust_002",
+    "order_id": "orders/order_002",
+    "rating": 3,
+    "review_text": "The veggie supreme was good but not great. While I appreciate the variety of vegetables, some of them seemed a bit soggy, especially the mushrooms. The bell peppers were nice and crunchy though. I think the pizza could benefit from roasting the veggies first to remove excess moisture. Still a decent option for vegetarians.",
+    "summary": "Decent vegetarian option but vegetables need better preparation",
+    "helpful_votes": 8,
+    "total_votes": 10,
+    "verified_purchase": true,
+    "created_at": "2024-12-18T19:30:00Z",
+    "updated_at": "2024-12-18T19:30:00Z",
+    "tags": ["vegetarian", "soggy-vegetables", "needs-improvement"],
+    "sentiment_score": 0.6,
+    "aspects": {
+      "taste": 3,
+      "quality": 3,
+      "value": 3,
+      "service": 4
+    }
+  },
+  {
+    "_key": "review_005",
+    "pizza_id": "pizzas/bbq_chicken",
+    "customer_id": "customers/cust_001",
+    "order_id": "orders/order_004",
+    "rating": 4,
+    "review_text": "The BBQ chicken pizza is a solid choice. The BBQ sauce has a nice tangy sweetness that complements the grilled chicken well. I asked for no onions and they accommodated perfectly. The cilantro on top adds a fresh element that really elevates the pizza. Would definitely order again.",
+    "summary": "Solid BBQ chicken with great sauce and fresh cilantro",
+    "helpful_votes": 12,
+    "total_votes": 13,
+    "verified_purchase": true,
+    "created_at": "2024-12-19T18:00:00Z",
+    "updated_at": "2024-12-19T18:00:00Z",
+    "tags": ["tangy", "accommodating", "fresh-cilantro", "would-reorder"],
+    "sentiment_score": 0.85,
+    "aspects": {
+      "taste": 4,
+      "quality": 4,
+      "value": 4,
+      "service": 5
+    }
+  }
+]

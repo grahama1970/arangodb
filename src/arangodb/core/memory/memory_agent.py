@@ -302,7 +302,7 @@ class MemoryAgent:
             "user_message_id": user_msg_id,
             "agent_message_id": agent_msg_id,
             "relationship_id": edge_result["_id"],
-            "timestamp": point_in_time
+            "timestamp": point_in_time.isoformat()
         }
         
     def retrieve_messages(

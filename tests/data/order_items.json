@@ -1,0 +1,47 @@
+[
+  {
+    "_from": "orders/order_001",
+    "_to": "pizzas/pepperoni",
+    "quantity": 2,
+    "size": "medium",
+    "price_each": 14.99,
+    "customizations": [],
+    "item_number": 1
+  },
+  {
+    "_from": "orders/order_002",
+    "_to": "pizzas/margherita",
+    "quantity": 1,
+    "size": "medium",
+    "price_each": 12.99,
+    "customizations": ["extra_basil"],
+    "item_number": 1
+  },
+  {
+    "_from": "orders/order_002",
+    "_to": "pizzas/veggie_supreme",
+    "quantity": 1,
+    "size": "medium",
+    "price_each": 13.49,
+    "customizations": [],
+    "item_number": 2
+  },
+  {
+    "_from": "orders/order_003",
+    "_to": "pizzas/hawaiian",
+    "quantity": 3,
+    "size": "medium",
+    "price_each": 13.99,
+    "customizations": ["extra_pineapple"],
+    "item_number": 1
+  },
+  {
+    "_from": "orders/order_004",
+    "_to": "pizzas/bbq_chicken",
+    "quantity": 1,
+    "size": "medium",
+    "price_each": 15.99,
+    "customizations": ["no_onions"],
+    "item_number": 1
+  }
+]

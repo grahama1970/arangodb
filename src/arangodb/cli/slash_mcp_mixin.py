@@ -135,27 +135,22 @@ def add_slash_mcp_commands(
         
         typer.echo(f"\n📁 Generated {generated} commands in {out_dir}/")
     
-    @app.command(name=f"{command_prefix}-mcp-config")
-    def generate_mcp_config_command(
-        output: Path = typer.Option("mcp_config.json", "--output", "-o"),
-        name: Optional[str] = typer.Option(None, "--name"),
-        host: str = typer.Option("localhost", "--host"),
-        port: int = typer.Option(5000, "--port")
-    ):
-        """Generate MCP (Model Context Protocol) configuration."""
-        
-        server_name = name or app.info.name or "cli-server"
-        
-        # Build tool definitions
+    def get_all_tools(app_instance: typer.Typer, prefix: str = "") -> dict:
+        """Recursively get all commands including sub-commands"""
         tools = {}
         
-        for command in app.registered_commands:
+        # Process direct commands
+        for command in app_instance.registered_commands:
             cmd_name = command.name or command.callback.__name__
+            full_name = f"{prefix}{cmd_name}" if prefix else cmd_name
             
             if cmd_name in default_skip:
                 continue
                 
             func = command.callback
+            if func is None:
+                continue
+                
             docstring = func.__doc__ or f"Execute {cmd_name}"
             
             # Extract parameters
@@ -185,7 +180,7 @@ def add_slash_mcp_commands(
                 if param.default == param.empty:
                     required.append(param_name)
             
-            tools[cmd_name] = {
+            tools[full_name] = {
                 "description": docstring.strip().split('\n')[0],
                 "inputSchema": {
                     "type": "object",
@@ -193,6 +188,31 @@ def add_slash_mcp_commands(
                     "required": required
                 }
             }
+        
+        # Process sub-groups
+        for group_info in app_instance.registered_groups:
+            name = group_info.name
+            typer_instance = group_info.typer_instance
+            if isinstance(typer_instance, typer.Typer):
+                sub_prefix = f"{prefix}{name}." if prefix else f"{name}."
+                sub_tools = get_all_tools(typer_instance, sub_prefix)
+                tools.update(sub_tools)
+        
+        return tools
+
+    @app.command(name=f"{command_prefix}-mcp-config")
+    def generate_mcp_config_command(
+        output: Path = typer.Option("mcp_config.json", "--output", "-o"),
+        name: Optional[str] = typer.Option(None, "--name"),
+        host: str = typer.Option("localhost", "--host"),
+        port: int = typer.Option(5000, "--port")
+    ):
+        """Generate MCP (Model Context Protocol) configuration."""
+        
+        server_name = name or app.info.name or "cli-server"
+        
+        # Build tool definitions with sub-commands
+        tools = get_all_tools(app)
         
         # Build config
         config = {

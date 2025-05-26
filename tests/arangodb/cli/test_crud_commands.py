@@ -171,9 +171,10 @@ class TestCrudCommands:
         create_data = json.loads(create_result.stdout)
         doc_key = create_data["data"]["_key"]
         
-        # Now delete it
+        # Now delete it (use --force to skip confirmation)
         result = runner.invoke(app, [
             "crud", "delete", "test_products", doc_key,
+            "--force",  # Skip confirmation prompt in tests
             "--output", "json"
         ])
         
@@ -200,10 +201,10 @@ class TestCrudCommands:
         assert result.exit_code == 0
         data = json.loads(result.stdout)
         assert data["success"] is True
-        assert len(data["data"]["documents"]) >= 2
+        assert len(data["data"]) >= 2
         
         # Verify document structure
-        docs = data["data"]["documents"]
+        docs = data["data"]
         assert all("_key" in doc for doc in docs)
         assert all("name" in doc for doc in docs)
     
@@ -218,13 +219,14 @@ class TestCrudCommands:
         assert result.exit_code == 0
         data = json.loads(result.stdout)
         assert data["success"] is True
-        assert len(data["data"]["documents"]) == 1
+        assert len(data["data"]) == 1
     
     def test_crud_list_with_filter(self, setup_crud_test_data):
         """Test listing documents with filter"""
         result = runner.invoke(app, [
             "crud", "list", "test_products",
-            "--filter", "category:electronics",
+            "--filter-field", "category",
+            "--filter-value", "electronics",
             "--output", "json"
         ])
         
@@ -233,7 +235,7 @@ class TestCrudCommands:
         assert data["success"] is True
         
         # All results should match filter
-        docs = data["data"]["documents"]
+        docs = data["data"]
         assert all(doc["category"] == "electronics" for doc in docs)
     
     def test_crud_list_empty_collection(self, setup_crud_test_data):
@@ -251,7 +253,7 @@ class TestCrudCommands:
         assert result.exit_code == 0
         data = json.loads(result.stdout)
         assert data["success"] is True
-        assert data["data"]["documents"] == []
+        assert data["data"] == []
     
     def test_crud_table_output(self, setup_crud_test_data):
         """Test CRUD commands with table output"""
@@ -262,7 +264,7 @@ class TestCrudCommands:
         
         assert result.exit_code == 0
         # Table should have column headers
-        assert "_key" in result.stdout
+        assert "Key" in result.stdout  # Table shows "Key" not "_key"
         assert "Widget Pro" in result.stdout
     
     def test_crud_create_invalid_json(self, setup_crud_test_data):
@@ -297,7 +299,7 @@ class TestCrudCommands:
         ])
         
         list_data = json.loads(list_result.stdout)
-        assert len(list_data["data"]["documents"]) >= 2
+        assert len(list_data["data"]) >= 2
     
     def test_crud_update_nonexistent(self, setup_crud_test_data):
         """Test updating non-existent document"""
@@ -314,9 +316,15 @@ class TestCrudCommands:
     
     def test_crud_create_with_special_chars(self, setup_crud_test_data):
         """Test creating document with special characters"""
+        # Use proper JSON escaping for the quotes
+        json_data = json.dumps({
+            "title": "Test & Demo",
+            "content": "Content with 'quotes' and \"double quotes\""
+        })
+        
         result = runner.invoke(app, [
             "crud", "create", "test_documents",
-            '{"title": "Test & Demo", "content": "Content with \'quotes\' and \"double quotes\""}',
+            json_data,
             "--output", "json"
         ])
         
@@ -324,6 +332,7 @@ class TestCrudCommands:
         data = json.loads(result.stdout)
         assert data["success"] is True
         assert data["data"]["title"] == "Test & Demo"
+        assert data["data"]["content"] == "Content with 'quotes' and \"double quotes\""
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v", "--no-header"])

@@ -225,7 +225,7 @@ def cli_delete_relationship(
     # Proceed with deletion
     try:
         # Call the core layer delete_relationship_by_key function
-        result = delete_relationship_by_key(db, EDGE_COLLECTION_NAME, edge_key)
+        result = delete_relationship_by_key(db, edge_key, EDGE_COLLECTION_NAME)
         
         if result:
             if output_format == "json":
@@ -298,11 +298,11 @@ def cli_traverse_graph(
         results = graph_traverse(
             db,
             start_node_id,
-            graph_name,
-            direction=direction,
             min_depth=min_depth,
             max_depth=max_depth,
-            limit=limit
+            direction=direction,
+            limit=limit,
+            graph_name=graph_name
         )
         
         if output_format == "json":

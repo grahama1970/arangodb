@@ -100,7 +100,7 @@ def search_bm25(
         from arangodb.core.search.bm25_search import bm25_search
         
         start_time = datetime.now()
-        results = bm25_search(
+        search_results = bm25_search(
             db=db,
             query_text=query,
             collections=[collection],  # Function expects list of collections
@@ -111,6 +111,9 @@ def search_bm25(
             output_format="json"  # We need raw data for our formatter
         )
         search_time = (datetime.now() - start_time).total_seconds() * 1000
+        
+        # Extract results list from the dictionary
+        results = search_results.get("results", [])
         
         metadata = {
             "type": "BM25",
@@ -259,10 +262,10 @@ def search_keyword(
         keywords = query.split()
         
         # Import actual search function
-        from arangodb.core.search.keyword_search import keyword_search
+        from arangodb.core.search.keyword_search import search_keyword
         
         start_time = datetime.now()
-        results = keyword_search(
+        search_results = search_keyword(
             db=db,
             search_term=query,  # Function expects single search term, not array
             collection_name=collection,
@@ -272,6 +275,9 @@ def search_keyword(
             output_format="json"  # We need raw data for our formatter
         )
         search_time = (datetime.now() - start_time).total_seconds() * 1000
+        
+        # Extract results list from the dictionary
+        results = search_results.get("results", [])
         
         metadata = {
             "type": "Keyword",
@@ -302,6 +308,127 @@ def search_keyword(
             console.print_json(data=error_response)
         else:
             console.print(format_error("Keyword Search Failed", str(e)))
+        raise typer.Exit(1)
+
+@search_app.command("hybrid")
+def search_hybrid(
+    query: str = typer.Option(..., "--query", "-q", help="Search query text"),
+    collection: str = typer.Option("documents", "--collection", "-c", help="Collection to search"),
+    output_format: OutputFormat = typer.Option(OutputFormat.TABLE, "--output", "-o"),
+    limit: int = typer.Option(10, "--limit", "-l", help="Number of results"),
+    bm25_weight: float = typer.Option(0.5, "--bm25-weight", help="Weight for BM25 results (0-1)"),
+    semantic_weight: float = typer.Option(0.5, "--semantic-weight", help="Weight for semantic results (0-1)"),
+    tags: Optional[str] = typer.Option(None, "--tags", help="Filter by tags (comma-separated)"),
+    use_graph: bool = typer.Option(False, "--use-graph", help="Include graph traversal in search"),
+    use_perplexity: bool = typer.Option(False, "--use-perplexity", help="Enrich results with Perplexity API"),
+):
+    """
+    Find documents using combined BM25 and semantic search with RRF re-ranking.
+    
+    USAGE:
+        arangodb search hybrid --query "machine learning algorithms" [OPTIONS]
+    
+    WHEN TO USE:
+        When you want the best of both keyword and semantic search
+    
+    OUTPUT:
+        - TABLE: Results with hybrid scores combining BM25 and semantic
+        - JSON: Complete results with individual component scores
+    
+    EXAMPLES:
+        arangodb search hybrid --query "database optimization"
+        arangodb search hybrid --query "AI ethics" --bm25-weight 0.3 --semantic-weight 0.7
+        arangodb search hybrid --query "graph algorithms" --use-graph --output json
+    """
+    logger.info(f"Hybrid search: query='{query}', collection={collection}")
+    
+    try:
+        db = get_db_connection()
+        tag_list = [tag.strip() for tag in tags.split(",")] if tags else []
+        
+        # Import actual search function
+        from arangodb.core.search.hybrid_search import hybrid_search
+        
+        # Normalize weights to ensure they sum to 1.0
+        if use_graph:
+            # When using graph, allocate remaining weight to graph
+            graph_weight = 1.0 - bm25_weight - semantic_weight
+            if graph_weight < 0:
+                # Normalize if weights exceed 1.0
+                total = bm25_weight + semantic_weight
+                bm25_weight = bm25_weight / total * 0.8
+                semantic_weight = semantic_weight / total * 0.8
+                graph_weight = 0.2
+            weights = {
+                "bm25": bm25_weight,
+                "semantic": semantic_weight,
+                "graph": graph_weight
+            }
+        else:
+            # Normalize BM25 and semantic weights
+            total = bm25_weight + semantic_weight
+            if total > 0:
+                weights = {
+                    "bm25": bm25_weight / total,
+                    "semantic": semantic_weight / total
+                }
+            else:
+                weights = {"bm25": 0.5, "semantic": 0.5}
+        
+        start_time = datetime.now()
+        search_results = hybrid_search(
+            db=db,
+            query_text=query,
+            collections=[collection],
+            tag_list=tag_list,
+            weights=weights,
+            top_n=limit,
+            output_format="json",  # We need raw data for our formatter
+            use_graph=use_graph,
+            use_perplexity=use_perplexity
+        )
+        search_time = (datetime.now() - start_time).total_seconds() * 1000
+        
+        # Extract results list from the dictionary
+        results = search_results.get("results", [])
+        
+        metadata = {
+            "type": "Hybrid",
+            "query": query,
+            "collection": collection,
+            "count": len(results),
+            "limit": limit,
+            "weights": weights,
+            "use_graph": use_graph,
+            "use_perplexity": use_perplexity,
+            "timing": {
+                "search_ms": round(search_time, 2),
+                "bm25_ms": round(search_results.get("bm25_time", 0) * 1000, 2),
+                "semantic_ms": round(search_results.get("semantic_time", 0) * 1000, 2)
+            }
+        }
+        
+        if use_graph and "graph_time" in search_results:
+            metadata["timing"]["graph_ms"] = round(search_results["graph_time"] * 1000, 2)
+        
+        standard_output_handler(results, metadata, output_format)
+        
+    except Exception as e:
+        logger.error(f"Hybrid search failed: {e}")
+        error_response = {
+            "success": False,
+            "data": None,
+            "metadata": {},
+            "errors": [{
+                "code": "SEARCH_ERROR",
+                "message": str(e),
+                "suggestion": "Check collection exists and has both text content and embeddings"
+            }]
+        }
+        if output_format == OutputFormat.JSON:
+            console.print_json(data=error_response)
+        else:
+            console.print(format_error("Hybrid Search Failed", str(e)))
         raise typer.Exit(1)
 
 @search_app.command("tag")
@@ -340,7 +467,7 @@ def search_tag(
         from arangodb.core.search.tag_search import tag_search
         
         start_time = datetime.now()
-        results = tag_search(
+        search_results = tag_search(
             db=db,
             tags=tag_list,
             collections=[collection],  # Function expects list of collections
@@ -349,6 +476,9 @@ def search_tag(
             output_format="json"  # We need raw data for our formatter
         )
         search_time = (datetime.now() - start_time).total_seconds() * 1000
+        
+        # Extract results list from the dictionary
+        results = search_results.get("results", [])
         
         metadata = {
             "type": "Tag",

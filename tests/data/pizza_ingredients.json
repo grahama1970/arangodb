@@ -1,0 +1,138 @@
+[
+  {
+    "_from": "pizzas/margherita",
+    "_to": "ingredients/mozzarella",
+    "quantity": 150,
+    "unit": "grams",
+    "is_primary": true,
+    "preparation": "shredded"
+  },
+  {
+    "_from": "pizzas/margherita",
+    "_to": "ingredients/tomato_sauce",
+    "quantity": 100,
+    "unit": "ml",
+    "is_primary": true,
+    "preparation": "spread_evenly"
+  },
+  {
+    "_from": "pizzas/margherita",
+    "_to": "ingredients/basil",
+    "quantity": 10,
+    "unit": "grams",
+    "is_primary": false,
+    "preparation": "fresh_leaves"
+  },
+  {
+    "_from": "pizzas/pepperoni",
+    "_to": "ingredients/mozzarella",
+    "quantity": 180,
+    "unit": "grams",
+    "is_primary": true,
+    "preparation": "shredded"
+  },
+  {
+    "_from": "pizzas/pepperoni",
+    "_to": "ingredients/tomato_sauce",
+    "quantity": 100,
+    "unit": "ml",
+    "is_primary": true,
+    "preparation": "spread_evenly"
+  },
+  {
+    "_from": "pizzas/pepperoni",
+    "_to": "ingredients/pepperoni",
+    "quantity": 80,
+    "unit": "grams",
+    "is_primary": true,
+    "preparation": "sliced_thin"
+  },
+  {
+    "_from": "pizzas/hawaiian",
+    "_to": "ingredients/mozzarella",
+    "quantity": 150,
+    "unit": "grams",
+    "is_primary": true,
+    "preparation": "shredded"
+  },
+  {
+    "_from": "pizzas/hawaiian",
+    "_to": "ingredients/tomato_sauce",
+    "quantity": 100,
+    "unit": "ml",
+    "is_primary": true,
+    "preparation": "spread_evenly"
+  },
+  {
+    "_from": "pizzas/hawaiian",
+    "_to": "ingredients/ham",
+    "quantity": 100,
+    "unit": "grams",
+    "is_primary": true,
+    "preparation": "diced"
+  },
+  {
+    "_from": "pizzas/hawaiian",
+    "_to": "ingredients/pineapple",
+    "quantity": 120,
+    "unit": "grams",
+    "is_primary": true,
+    "preparation": "chunks"
+  },
+  {
+    "_from": "pizzas/veggie_supreme",
+    "_to": "ingredients/mozzarella",
+    "quantity": 140,
+    "unit": "grams",
+    "is_primary": true,
+    "preparation": "shredded"
+  },
+  {
+    "_from": "pizzas/veggie_supreme",
+    "_to": "ingredients/tomato_sauce",
+    "quantity": 100,
+    "unit": "ml",
+    "is_primary": true,
+    "preparation": "spread_evenly"
+  },
+  {
+    "_from": "pizzas/veggie_supreme",
+    "_to": "ingredients/mushrooms",
+    "quantity": 60,
+    "unit": "grams",
+    "is_primary": false,
+    "preparation": "sliced"
+  },
+  {
+    "_from": "pizzas/veggie_supreme",
+    "_to": "ingredients/bell_peppers",
+    "quantity": 80,
+    "unit": "grams",
+    "is_primary": false,
+    "preparation": "diced"
+  },
+  {
+    "_from": "pizzas/bbq_chicken",
+    "_to": "ingredients/mozzarella",
+    "quantity": 160,
+    "unit": "grams",
+    "is_primary": true,
+    "preparation": "shredded"
+  },
+  {
+    "_from": "pizzas/bbq_chicken",
+    "_to": "ingredients/bbq_sauce",
+    "quantity": 80,
+    "unit": "ml",
+    "is_primary": true,
+    "preparation": "base_layer"
+  },
+  {
+    "_from": "pizzas/bbq_chicken",
+    "_to": "ingredients/chicken",
+    "quantity": 120,
+    "unit": "grams",
+    "is_primary": true,
+    "preparation": "grilled_and_diced"
+  }
+]

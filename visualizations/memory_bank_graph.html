@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Memory Bank Entity Graph</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            overflow: hidden;
+        }
+        
+        .graph-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            background-color: white;
+            overflow: hidden;
+        }
+        
+        .graph-svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        
+        .links line {
+            stroke: #999;
+            stroke-opacity: 0.6;
+        }
+        
+        .nodes circle {
+            stroke: #fff;
+            cursor: pointer;
+        }
+        
+        .node-label {
+            font-family: inherit;
+            pointer-events: none;
+            user-select: none;
+            fill: #333;
+        }
+        
+        .tooltip {
+            position: absolute;
+            padding: 8px 12px;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            border-radius: 6px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            font-size: 12px;
+            max-width: 280px;
+            z-index: 1000;
+        }
+        
+        .controls {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            transition: transform 0.3s ease;
+        }
+        
+        .control-btn {
+            border: 1px solid #dee2e6;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .legend {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            z-index: 90;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+        
+        .legend-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        /* Mobile styles */
+        @media (max-width: 768px) {
+            .controls {
+                bottom: 0;
+                left: 0;
+                right: 0;
+                border-radius: 12px 12px 0 0;
+                max-height: 40vh;
+                transform: translateY(calc(100% - 60px));
+                padding: 20px;
+            }
+            
+            .controls.expanded {
+                transform: translateY(0);
+            }
+            
+            .controls-toggle {
+                position: absolute;
+                top: -50px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(255, 255, 255, 0.9);
+                border: none;
+                border-radius: 25px;
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            }
+            
+            .control-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+                margin-top: 10px;
+            }
+            
+            .control-btn {
+                min-height: 44px;
+                font-size: 14px;
+                padding: 8px 12px;
+            }
+            
+            .legend {
+                display: none;
+            }
+            
+            .node-label {
+                font-size: clamp(8px, 2.5vw, 12px);
+            }
+            
+            .links line {
+                stroke-width: clamp(1px, 0.3vw, 2px);
+            }
+        }
+        
+        /* Tablet styles */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            .controls {
+                top: 20px;
+                right: 20px;
+                width: 220px;
+                padding: 15px;
+            }
+            
+            .control-btn {
+                min-height: 40px;
+                font-size: 13px;
+                padding: 8px 14px;
+                margin-bottom: 10px;
+            }
+            
+            .legend {
+                bottom: 20px;
+                left: 20px;
+                padding: 12px;
+                max-width: 200px;
+            }
+            
+            .node-label {
+                font-size: clamp(10px, 1.5vw, 14px);
+            }
+        }
+        
+        /* Desktop styles */
+        @media (min-width: 1024px) {
+            .controls {
+                top: 20px;
+                right: 20px;
+                width: 250px;
+                padding: 15px;
+            }
+            
+            .control-group {
+                margin-bottom: 15px;
+            }
+            
+            .control-group:last-child {
+                margin-bottom: 0;
+            }
+            
+            .control-label {
+                display: block;
+                font-size: 14px;
+                margin-bottom: 5px;
+                color: #495057;
+            }
+            
+            .control-slider {
+                width: 100%;
+                margin-bottom: 5px;
+            }
+            
+            .control-value {
+                display: inline-block;
+                width: 50px;
+                text-align: right;
+                font-size: 12px;
+                color: #6c757d;
+            }
+            
+            .control-btn {
+                padding: 8px 16px;
+                font-size: 14px;
+                margin-right: 8px;
+                margin-bottom: 8px;
+            }
+            
+            .legend {
+                bottom: 20px;
+                left: 20px;
+                padding: 15px;
+                max-width: 250px;
+            }
+            
+            .legend-label {
+                font-size: 14px;
+                color: #495057;
+            }
+            
+            .node-label {
+                font-size: 12px;
+            }
+        }
+        
+        /* Hover effects only on devices that support hover */
+        @media (hover: hover) {
+            .control-btn:hover {
+                background-color: #f8f9fa;
+                border-color: #adb5bd;
+            }
+            
+            .controls-toggle:hover {
+                background-color: #f8f9fa;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="graph-container">
+        <div class="tooltip" id="tooltip"></div>
+        
+        <div class="controls" id="controls">
+            <!-- Mobile toggle button -->
+            <button class="controls-toggle" id="controls-toggle" style="display: none;">⚙️</button>
+            
+            <!-- Controls content -->
+            <div class="controls-content" id="controls-content">
+                <!-- Desktop controls -->
+                <div class="desktop-controls">
+                    <div class="control-group">
+                        <label class="control-label">Link Distance</label>
+                        <input type="range" id="link-distance" class="control-slider" min="20" max="150" value="60">
+                        <span class="control-value" id="link-distance-value">60</span>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="control-label">Charge Force</label>
+                        <input type="range" id="charge-force" class="control-slider" min="-400" max="-50" value="-150">
+                        <span class="control-value" id="charge-force-value">-150</span>
+                    </div>
+                    
+                    <div class="control-group">
+                        <button class="control-btn" id="toggle-physics">Pause Physics</button>
+                        <button class="control-btn" id="reset-view">Reset View</button>
+                        <button class="control-btn" id="toggle-labels">Hide Labels</button>
+                    </div>
+                </div>
+                
+                <!-- Mobile controls -->
+                <div class="mobile-controls" style="display: none;">
+                    <div class="control-grid">
+                        <button class="control-btn" id="mobile-physics">⏸️ Physics</button>
+                        <button class="control-btn" id="mobile-labels">👁️ Labels</button>
+                        <button class="control-btn" id="mobile-reset">🎯 Reset</button>
+                        <button class="control-btn" id="mobile-center">📍 Center</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="legend" id="legend">
+            <!-- Legend populated dynamically -->
+        </div>
+    </div>
+    
+    <script>
+        // Responsive breakpoints
+        const BREAKPOINTS = {
+            mobile: 768,
+            tablet: 1024
+        };
+        
+        // Device detection
+        function getDeviceType() {
+            const width = window.innerWidth;
+            if (width <= BREAKPOINTS.mobile) return 'mobile';
+            if (width <= BREAKPOINTS.tablet) return 'tablet';
+            return 'desktop';
+        }
+        
+        // Graph data and config
+        const graphData = {"nodes": [], "links": [], "metadata": {"source": "memory_bank", "timestamp": "2025-05-26T11:29:26.250620"}};
+        const config = {"width": 1200, "height": 800, "physics_enabled": true, "show_labels": true, "enable_zoom": true, "enable_drag": true, "node_color_field": null, "node_size_field": null, "link_width_field": null};
+        
+        // Responsive dimensions
+        function getResponsiveDimensions() {
+            const deviceType = getDeviceType();
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            
+            return {
+                width: width,
+                height: deviceType === 'mobile' ? height * 0.9 : height,
+                nodeRadius: deviceType === 'mobile' ? 4 : deviceType === 'tablet' ? 6 : 8,
+                fontSize: deviceType === 'mobile' ? 10 : deviceType === 'tablet' ? 12 : 14,
+                linkDistance: deviceType === 'mobile' ? 30 : deviceType === 'tablet' ? 50 : 60,
+                chargeStrength: deviceType === 'mobile' ? -100 : deviceType === 'tablet' ? -150 : -150,
+                deviceType: deviceType
+            };
+        }
+        
+        let dimensions = getResponsiveDimensions();
+        
+        // Color scale
+        const color = d3.scaleOrdinal(d3.schemeCategory10);
+        
+        // Create responsive SVG
+        const svg = d3.select(".graph-container")
+            .append("svg")
+            .attr("viewBox", `0 0 ${dimensions.width} ${dimensions.height}`)
+            .attr("preserveAspectRatio", "xMidYMid meet")
+            .classed("graph-svg", true);
+        
+        // Main graph group
+        const g = svg.append("g");
+        
+        // Responsive zoom behavior
+        const zoom = d3.zoom()
+            .scaleExtent([0.1, 10])
+            .on("zoom", (event) => {
+                g.attr("transform", event.transform);
+            });
+        
+        svg.call(zoom);
+        
+        // Double-tap to reset (mobile)
+        if (dimensions.deviceType === 'mobile') {
+            svg.on("dblclick.zoom", function() {
+                svg.transition().duration(750)
+                   .call(zoom.transform, d3.zoomIdentity);
+            });
+        }
+        
+        // Responsive force simulation
+        let simulation = d3.forceSimulation()
+            .force("link", d3.forceLink()
+                .id(d => d.id)
+                .distance(dimensions.linkDistance))
+            .force("charge", d3.forceManyBody()
+                .strength(dimensions.chargeStrength))
+            .force("center", d3.forceCenter(dimensions.width / 2, dimensions.height / 2))
+            .force("collision", d3.forceCollide().radius(dimensions.nodeRadius * 1.5));
+        
+        // Create arrow markers
+        svg.append("defs").selectAll("marker")
+            .data(["arrowhead"])
+            .enter().append("marker")
+            .attr("id", d => d)
+            .attr("viewBox", "0 -5 10 10")
+            .attr("refX", 20)
+            .attr("refY", 0)
+            .attr("markerWidth", 6)
+            .attr("markerHeight", 6)
+            .attr("orient", "auto")
+            .append("path")
+            .attr("d", "M0,-5L10,0L0,5")
+            .attr("fill", "#999");
+        
+        // Add links
+        const link = g.append("g")
+            .attr("class", "links")
+            .selectAll("line")
+            .data(graphData.links)
+            .enter().append("line")
+            .attr("stroke-width", d => Math.sqrt(d.value || 1) * (dimensions.deviceType === 'mobile' ? 0.5 : 1))
+            .attr("marker-end", "url(#arrowhead)");
+        
+        // Add nodes
+        const node = g.append("g")
+            .attr("class", "nodes")
+            .selectAll("g")
+            .data(graphData.nodes)
+            .enter().append("g")
+            .call(d3.drag()
+                .on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended)
+                .touchable(true)); // Enable touch
+        
+        // Add circles to nodes
+        node.append("circle")
+            .attr("r", dimensions.nodeRadius)
+            .attr("fill", d => color(d.group || 0))
+            .attr("stroke-width", dimensions.deviceType === 'mobile' ? 1 : 1.5);
+        
+        // Add labels to nodes
+        const label = node.append("text")
+            .attr("class", "node-label")
+            .attr("dx", dimensions.nodeRadius + 2)
+            .attr("dy", 4)
+            .text(d => d.name || d.id)
+            .style("font-size", `${dimensions.fontSize}px`);
+        
+        // Responsive tooltips
+        const tooltip = d3.select("#tooltip");
+        
+        node.on("mouseover touchstart", (event, d) => {
+            tooltip.html(`
+                <strong>${d.name || d.id}</strong><br>
+                ${d.group ? `Group: ${d.group}<br>` : ''}
+                ${d.type ? `Type: ${d.type}<br>` : ''}
+                ${Object.keys(d).filter(k => !['id', 'name', 'group', 'type', 'x', 'y', 'vx', 'vy', 'fx', 'fy'].includes(k))
+                    .map(k => `${k}: ${d[k]}`).join('<br>')}
+            `)
+            .style("left", (event.pageX + 10) + "px")
+            .style("top", (event.pageY - 28) + "px")
+            .style("opacity", 1);
+        })
+        .on("mouseout touchend", () => {
+            tooltip.style("opacity", 0);
+        });
+        
+        // Update simulation
+        simulation
+            .nodes(graphData.nodes)
+            .on("tick", ticked);
+        
+        simulation.force("link")
+            .links(graphData.links);
+        
+        function ticked() {
+            link
+                .attr("x1", d => d.source.x)
+                .attr("y1", d => d.source.y)
+                .attr("x2", d => d.target.x)
+                .attr("y2", d => d.target.y);
+            
+            node.attr("transform", d => `translate(${d.x},${d.y})`);
+        }
+        
+        // Drag functions
+        function dragstarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+        
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+        
+        function dragended(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+        
+        // Responsive controls setup
+        function setupControls() {
+            const deviceType = dimensions.deviceType;
+            const controlsToggle = d3.select("#controls-toggle");
+            const controls = d3.select("#controls");
+            const desktopControls = d3.select(".desktop-controls");
+            const mobileControls = d3.select(".mobile-controls");
+            
+            if (deviceType === 'mobile') {
+                controlsToggle.style("display", "block");
+                desktopControls.style("display", "none");
+                mobileControls.style("display", "block");
+                
+                // Toggle controls
+                controlsToggle.on("click", function() {
+                    const expanded = controls.classed("expanded");
+                    controls.classed("expanded", !expanded);
+                });
+                
+                // Mobile control events
+                d3.select("#mobile-physics").on("click", togglePhysics);
+                d3.select("#mobile-labels").on("click", toggleLabels);
+                d3.select("#mobile-reset").on("click", resetView);
+                d3.select("#mobile-center").on("click", centerGraph);
+                
+            } else {
+                controlsToggle.style("display", "none");
+                desktopControls.style("display", "block");
+                mobileControls.style("display", "none");
+                
+                // Desktop control events
+                const linkDistanceSlider = d3.select("#link-distance");
+                const chargeForceSlider = d3.select("#charge-force");
+                
+                linkDistanceSlider.on("input", function() {
+                    const value = +this.value;
+                    d3.select("#link-distance-value").text(value);
+                    simulation.force("link").distance(value);
+                    simulation.alpha(0.3).restart();
+                });
+                
+                chargeForceSlider.on("input", function() {
+                    const value = +this.value;
+                    d3.select("#charge-force-value").text(value);
+                    simulation.force("charge").strength(value);
+                    simulation.alpha(0.3).restart();
+                });
+                
+                d3.select("#toggle-physics").on("click", togglePhysics);
+                d3.select("#reset-view").on("click", resetView);
+                d3.select("#toggle-labels").on("click", toggleLabels);
+            }
+        }
+        
+        // Control functions
+        let physicsEnabled = true;
+        let labelsVisible = true;
+        
+        function togglePhysics() {
+            physicsEnabled = !physicsEnabled;
+            if (physicsEnabled) {
+                simulation.alpha(0.3).restart();
+            } else {
+                simulation.stop();
+            }
+        }
+        
+        function resetView() {
+            svg.transition()
+                .duration(750)
+                .call(zoom.transform, d3.zoomIdentity);
+        }
+        
+        function toggleLabels() {
+            labelsVisible = !labelsVisible;
+            label.style("display", labelsVisible ? "block" : "none");
+        }
+        
+        function centerGraph() {
+            simulation.force("center", d3.forceCenter(dimensions.width / 2, dimensions.height / 2));
+            simulation.alpha(0.3).restart();
+        }
+        
+        // Generate responsive legend
+        function setupLegend() {
+            const groups = [...new Set(graphData.nodes.map(d => d.group))].filter(Boolean);
+            const legend = d3.select("#legend");
+            
+            if (groups.length > 0 && dimensions.deviceType !== 'mobile') {
+                legend.selectAll(".legend-item")
+                    .data(groups)
+                    .enter().append("div")
+                    .attr("class", "legend-item")
+                    .html(d => `
+                        <div class="legend-color" style="background-color: ${color(d)}"></div>
+                        <div class="legend-label">${d}</div>
+                    `);
+            } else {
+                legend.style("display", "none");
+            }
+        }
+        
+        // Responsive resize handler
+        let resizeTimer;
+        function handleResize() {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                // Recalculate dimensions
+                dimensions = getResponsiveDimensions();
+                
+                // Update SVG viewBox
+                svg.attr("viewBox", `0 0 ${dimensions.width} ${dimensions.height}`);
+                
+                // Update simulation forces
+                simulation
+                    .force("center", d3.forceCenter(dimensions.width / 2, dimensions.height / 2))
+                    .force("link").distance(dimensions.linkDistance)
+                    .force("charge").strength(dimensions.chargeStrength)
+                    .force("collision").radius(dimensions.nodeRadius * 1.5)
+                    .alpha(0.3).restart();
+                
+                // Update node sizes and labels
+                node.select("circle").attr("r", dimensions.nodeRadius);
+                label.style("font-size", `${dimensions.fontSize}px`);
+                
+                // Re-setup controls for new device type
+                setupControls();
+                setupLegend();
+                
+            }, 250);
+        }
+        
+        // Initialize
+        setupControls();
+        setupLegend();
+        
+        // Add resize listener
+        window.addEventListener("resize", handleResize);
+        
+        // Prevent default touch behaviors that might interfere
+        document.addEventListener('touchstart', function(e) {
+            if (e.touches.length > 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        
+        document.addEventListener('touchmove', function(e) {
+            if (e.touches.length > 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+    </script>
+</body>
+</html>

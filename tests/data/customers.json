@@ -1,0 +1,82 @@
+[
+  {
+    "_key": "cust_001",
+    "name": "John Smith",
+    "email": "john.smith@email.com",
+    "phone": "+1-555-0101",
+    "address": {
+      "street": "123 Main St",
+      "city": "New York",
+      "state": "NY",
+      "zip": "10001"
+    },
+    "dietary_preferences": ["none"],
+    "favorite_pizzas": ["pepperoni", "bbq_chicken"],
+    "member_since": "2023-06-15",
+    "loyalty_points": 250,
+    "total_orders": 42,
+    "average_order_value": 28.50,
+    "last_order_date": "2024-12-20",
+    "tags": ["vip", "frequent", "loyal"]
+  },
+  {
+    "_key": "cust_002",
+    "name": "Maria Garcia",
+    "email": "maria.garcia@email.com",
+    "phone": "+1-555-0102",
+    "address": {
+      "street": "456 Oak Ave",
+      "city": "Los Angeles",
+      "state": "CA",
+      "zip": "90001"
+    },
+    "dietary_preferences": ["vegetarian"],
+    "favorite_pizzas": ["margherita", "veggie_supreme"],
+    "member_since": "2023-09-20",
+    "loyalty_points": 150,
+    "total_orders": 18,
+    "average_order_value": 24.00,
+    "last_order_date": "2024-12-18",
+    "tags": ["vegetarian", "regular"]
+  },
+  {
+    "_key": "cust_003",
+    "name": "David Kim",
+    "email": "david.kim@email.com",
+    "phone": "+1-555-0103",
+    "address": {
+      "street": "789 Pine Rd",
+      "city": "Chicago",
+      "state": "IL",
+      "zip": "60601"
+    },
+    "dietary_preferences": ["none"],
+    "favorite_pizzas": ["hawaiian"],
+    "member_since": "2024-01-10",
+    "loyalty_points": 75,
+    "total_orders": 8,
+    "average_order_value": 35.00,
+    "last_order_date": "2024-12-15",
+    "tags": ["hawaiian_lover", "new_customer"]
+  },
+  {
+    "_key": "cust_004",
+    "name": "Sarah Johnson",
+    "email": "sarah.j@email.com",
+    "phone": "+1-555-0104",
+    "address": {
+      "street": "321 Elm St",
+      "city": "Seattle",
+      "state": "WA",
+      "zip": "98101"
+    },
+    "dietary_preferences": ["gluten_free"],
+    "favorite_pizzas": ["margherita"],
+    "member_since": "2023-11-01",
+    "loyalty_points": 100,
+    "total_orders": 12,
+    "average_order_value": 32.00,
+    "last_order_date": "2024-12-19",
+    "tags": ["dietary_restrictions", "health_conscious"]
+  }
+]
