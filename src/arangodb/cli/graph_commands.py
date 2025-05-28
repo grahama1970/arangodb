@@ -225,7 +225,7 @@ def cli_delete_relationship(
     # Proceed with deletion
     try:
         # Call the core layer delete_relationship_by_key function
-        result = delete_relationship_by_key(db, edge_key, EDGE_COLLECTION_NAME)
+        result = delete_relationship_by_key(db, edge_key)
         
         if result:
             if output_format == "json":
@@ -270,7 +270,9 @@ def cli_traverse_graph(
     limit: int = typer.Option(
         100, "--limit", "-lim", help="Maximum number of results.", min=1
     ),
-    output_format: str = "json"
+    output_format: str = typer.Option(
+        "json", "--output", "-o", help="Output format (table, json, csv, or text)"
+    )
 ):
     """
     Explore relationships starting from a specific node.
@@ -294,70 +296,73 @@ def cli_traverse_graph(
         raise typer.Exit(code=1)
     
     try:
+        # Extract collection and key from the full ID
+        if "/" in start_node_id:
+            collection, key = start_node_id.split("/", 1)
+        else:
+            # If no collection specified, use default
+            collection = COLLECTION_NAME
+            key = start_node_id
+        
         # Call the core layer graph_traverse function
         results = graph_traverse(
             db,
-            start_node_id,
+            key,  # Pass just the key
             min_depth=min_depth,
             max_depth=max_depth,
             direction=direction,
             limit=limit,
+            start_vertex_collection=collection,  # Pass the collection separately
             graph_name=graph_name
         )
         
         if output_format == "json":
             console.print(format_output(results, output_format=output_format))
         else:
-            # Display results in a readable format
-            paths = results.get("paths", [])
-            if not paths:
-                console.print(format_warning("No paths found. Check if the starting node exists and has connections."))
+            # The graph RAG search returns documents with related items, not paths
+            docs = results.get("results", [])
+            total = results.get("total", 0)
+            
+            if total == 0:
+                console.print(format_warning("No results found. Check if the starting node exists and has connections."))
                 raise typer.Exit(code=0)
             
-            # For table format, show path summaries
+            # For table format, show document summaries with related items
             if output_format == "table":
-                console.print(format_info(f"Graph Traversal Results (found {len(paths)} paths)"))
+                console.print(format_info(f"Graph Traversal Results (found {total} documents)"))
                 console.print(format_info(f"Starting from: {start_node_id}"))
                 console.print(format_info(f"Direction: {direction}, Depth: {min_depth}-{max_depth}"))
                 
-                # Display each path
-                for i, path in enumerate(paths):
-                    console.print(f"\n[bold]Path {i+1}:[/bold]")
+                # Display each document and its related items
+                for i, doc_result in enumerate(docs):
+                    doc = doc_result.get("doc", {})
+                    related = doc_result.get("related", [])
                     
-                    # Display vertices and edges in the path
-                    vertices = path.get("vertices", [])
-                    edges = path.get("edges", [])
+                    console.print(f"\n[bold]Document {i+1}:[/bold]")
+                    console.print(f"  [cyan]ID:[/cyan] {doc.get('_id', 'unknown')}")
+                    console.print(f"  [cyan]Title:[/cyan] {doc.get('title', doc.get('summary', 'No title'))}")
                     
-                    for j, vertex in enumerate(vertices):
-                        # Extract vertex info
-                        v_id = vertex.get("_id", "unknown")
-                        v_title = vertex.get("title", vertex.get("summary", "No title"))
-                        
-                        console.print(f"  [cyan]Vertex {j+1}:[/cyan] {v_id} - {v_title}")
-                        
-                        # Display connecting edge if there is one
-                        if j < len(edges):
-                            edge = edges[j]
-                            e_type = edge.get("type", "unknown")
-                            e_rationale = edge.get("rationale", "No rationale")
-                            
-                            console.print(f"  └─ [yellow]Edge:[/yellow] {e_type} - {e_rationale}")
+                    if related:
+                        console.print(f"  [green]Related items ({len(related)}):[/green]")
+                        for j, rel in enumerate(related[:5]):  # Show first 5 related
+                            v = rel.get("vertex", {})
+                            console.print(f"    • {v.get('_id', 'unknown')} - {v.get('title', v.get('summary', 'No title'))}")
+                        if len(related) > 5:
+                            console.print(f"    ... and {len(related) - 5} more")
             else:
                 # For CSV/text, create tabular summary
-                headers = ["Path", "Vertices", "Depth", "Start", "End"]
+                headers = ["Document", "Related Count", "ID", "Title"]
                 rows = []
                 
-                for i, path in enumerate(paths):
-                    vertices = path.get("vertices", [])
-                    start_vertex = vertices[0] if vertices else {}
-                    end_vertex = vertices[-1] if vertices else {}
+                for i, doc_result in enumerate(docs):
+                    doc = doc_result.get("doc", {})
+                    related = doc_result.get("related", [])
                     
                     rows.append([
-                        f"Path {i+1}",
-                        str(len(vertices)),
-                        str(len(path.get("edges", []))),
-                        start_vertex.get("_id", "unknown"),
-                        end_vertex.get("_id", "unknown")
+                        f"Doc {i+1}",
+                        str(len(related)),
+                        doc.get("_id", "unknown"),
+                        doc.get("title", doc.get("summary", "No title"))[:50]  # Truncate long titles
                     ])
                 
                 formatted_output = format_output(

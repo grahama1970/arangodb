@@ -39,7 +39,7 @@ def setup_episode_test_data():
     db = get_db_connection()
     
     # Ensure collections exist
-    collections = ["agent_episodes", "conversations", "message_history"]
+    collections = ["agent_episodes", "conversations", "message_history", "entities"]
     for collection_name in collections:
         if not db.has_collection(collection_name):
             db.create_collection(collection_name)
@@ -129,6 +129,34 @@ def setup_episode_test_data():
         if conversations.has(conv["_key"]):
             conversations.delete(conv["_key"])
         conversations.insert(conv)
+    
+    # Create test entities
+    entities = db.collection("entities")
+    test_entities = [
+        {
+            "_key": "test_entity_1",
+            "name": "Python",
+            "type": "technology",
+            "description": "Programming language"
+        },
+        {
+            "_key": "test_entity_2", 
+            "name": "ArangoDB",
+            "type": "technology",
+            "description": "Graph database system"
+        },
+        {
+            "_key": "test_entity_3",
+            "name": "Memory Bank",
+            "type": "project",
+            "description": "AI memory management system"
+        }
+    ]
+    
+    for entity in test_entities:
+        if entities.has(entity["_key"]):
+            entities.delete(entity["_key"])
+        entities.insert(entity)
     
     return db
 
@@ -302,20 +330,8 @@ class TestEpisodeCommands:
     
     def test_episode_link_entity(self, setup_episode_test_data):
         """Test linking entity to episode"""
-        # This test will be skipped if no entities exist
+        # The entities collection and test entities are now guaranteed to exist
         db = setup_episode_test_data
-        if not db.has_collection("entities"):
-            pytest.skip("Entities collection not available")
-        
-        # Create a test entity if needed
-        entities = db.collection("entities")
-        test_entity = {
-            "_key": "test_entity_1",
-            "name": "Test Entity",
-            "type": "concept"
-        }
-        if not entities.has(test_entity["_key"]):
-            entities.insert(test_entity)
         
         result = runner.invoke(app, [
             "episode", "link-entity",

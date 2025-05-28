@@ -81,7 +81,8 @@ def detect_communities(
         
         # Clear existing communities if rebuild requested
         if rebuild:
-            console.print("[yellow]Rebuilding all communities...[/yellow]")
+            if output_format != "json":
+                console.print("[yellow]Rebuilding all communities...[/yellow]")
             try:
                 db.collection("agent_communities").truncate()
             except:
@@ -104,16 +105,20 @@ def detect_communities(
         stored_communities = detector.get_all_communities()
         community_metadata = {c["original_id"]: c for c in stored_communities}
         
+        # Filter out communities smaller than min_size (just in case the merge didn't work perfectly)
+        filtered_groups = {cid: entities for cid, entities in community_groups.items() 
+                          if len(entities) >= min_size}
+        
         # Prepare data for output
         if output_format == "json":
             # JSON format - full data structure
             result = {
-                "total_entities": len(communities),
-                "total_communities": len(community_groups),
+                "total_entities": sum(len(entities) for entities in filtered_groups.values()),
+                "total_communities": len(filtered_groups),
                 "communities": []
             }
             
-            for community_id, entities in community_groups.items():
+            for community_id, entities in filtered_groups.items():
                 metadata = community_metadata.get(community_id, {})
                 result["communities"].append({
                     "id": metadata.get("_key", community_id),
@@ -128,7 +133,7 @@ def detect_communities(
             headers = ["Community ID", "Size", "Key Entities", "Modularity"]
             rows = []
             
-            for community_id, entities in community_groups.items():
+            for community_id, entities in filtered_groups.items():
                 key_entities = ", ".join(entities[:3])
                 if len(entities) > 3:
                     key_entities += f" (+{len(entities)-3} more)"

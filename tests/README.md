@@ -1,318 +1,184 @@
-# ArangoDB Memory Bank - Test Suite
+# ArangoDB Memory Bank Tests
 
-This directory contains all tests for the ArangoDB Memory Bank project. Tests are organized to mirror the `src/arangodb/` structure for consistency and easy navigation.
+This directory contains all tests for the ArangoDB Memory Bank project. The test structure mirrors the source code structure in `src/arangodb/` for easy navigation and maintenance.
 
-## Directory Structure
+## Test Structure
 
 ```
 tests/
-├── arangodb/              # Mirrors src/arangodb structure
-│   ├── cli/              # CLI command tests
-│   ├── core/             # Core functionality tests
-│   │   ├── graph/        # Graph operations
-│   │   ├── memory/       # Memory agent
-│   │   ├── search/       # Search functionality
-│   │   └── utils/        # Utilities
-│   ├── mcp/              # MCP integration tests
-│   ├── qa/               # Q&A module tests
-│   ├── qa_generation/    # Q&A generation tests
-│   ├── test_modules/     # Test-specific modules
-│   └── visualization/    # Visualization tests
-├── data/                  # Test data and database setup
-├── fixtures/              # Test fixtures (JSON files)
-├── integration/           # Cross-module integration tests
-└── unit/                  # Pure unit tests
+├── arangodb/           # Mirrors src/arangodb/
+│   ├── cli/           # CLI command tests
+│   ├── core/          # Core functionality tests
+│   │   ├── graph/     # Graph operations tests
+│   │   ├── memory/    # Memory management tests
+│   │   ├── search/    # Search functionality tests
+│   │   └── utils/     # Utility function tests
+│   ├── mcp/           # MCP integration tests
+│   ├── qa/            # Q&A module tests
+│   ├── qa_generation/ # Q&A generation tests
+│   ├── services/      # Service layer tests
+│   ├── tasks/         # Task module tests
+│   └── visualization/ # Visualization tests
+├── data/              # Test data files (JSON, etc.)
+├── fixtures/          # Test fixtures
+├── integration/       # Integration tests
+└── unit/             # Unit tests
 ```
-
-## Test Organization Principle
-
-**The test directory mirrors the source directory structure:**
-- `src/arangodb/cli/` → `tests/arangodb/cli/`
-- `src/arangodb/core/memory/` → `tests/arangodb/core/memory/`
-- `src/arangodb/visualization/` → `tests/arangodb/visualization/`
-
-This makes it easy to find tests for any module.
 
 ## Running Tests
 
-### Prerequisites
-
-1. **ArangoDB Running**: Ensure ArangoDB is running on `http://localhost:8529`
-   ```bash
-   # Check ArangoDB status
-   curl -u root:password http://localhost:8529/_api/version
-   ```
-
-2. **Environment Setup**: Activate the project virtual environment
-   ```bash
-   cd /path/to/arangodb
-   source .venv/bin/activate  # or `uv venv` if using uv
-   ```
-
-3. **Install Dependencies**: Ensure all dependencies are installed
-   ```bash
-   uv pip install -e .  # Install project in editable mode
-   uv pip install pytest pytest-asyncio pytest-cov
-   ```
-
-### Quick Test Menu
-
-Use the interactive test runner:
-```bash
-./scripts/run_quick_tests.sh
-```
-
-This provides options for:
-1. Quick smoke test (unit + core tests)
-2. All CLI tests
-3. Search functionality tests
-4. Memory agent tests
-5. Integration tests
-6. Full test suite
-7. Full test suite with coverage
-
-### Running All Tests
-
+### Run All Tests
 ```bash
 # From project root
 python -m pytest tests/ -v
 
-# Or using the test runner
-python tests/run_tests.py
-
-# With coverage report
-python -m pytest tests/ --cov=arangodb --cov-report=html
+# Or using the test runner script
+python scripts/testing/run_tests.py
 ```
 
-### Running Specific Test Categories
+### Run Specific Test Categories
 
+#### CLI Tests Only
 ```bash
-# CLI tests
 python -m pytest tests/arangodb/cli/ -v
+```
 
-# Core functionality tests
+#### Core Functionality Tests
+```bash
 python -m pytest tests/arangodb/core/ -v
+```
 
-# Search tests
-python -m pytest tests/arangodb/core/search/ -v
-
-# Memory agent tests
-python -m pytest tests/arangodb/core/memory/ -v
-
-# Visualization tests
-python -m pytest tests/arangodb/visualization/ -v
-
-# Integration tests
+#### Integration Tests
+```bash
 python -m pytest tests/integration/ -v
 ```
 
-### Running Individual Test Files
-
+#### Unit Tests
 ```bash
-# Specific test file
-python -m pytest tests/arangodb/core/memory/test_memory_agent_integration.py -v
-
-# Specific test function
-python -m pytest tests/arangodb/core/search/test_integrated_semantic_search.py::test_semantic_search -v
+python -m pytest tests/unit/ -v
 ```
 
-### Test Markers and Filtering
-
+### Run Tests with Coverage
 ```bash
-# Run only fast tests
-python -m pytest tests/ -m "not slow" -v
-
-# Run tests matching a pattern
-python -m pytest tests/ -k "search" -v
-
-# Skip integration tests
-python -m pytest tests/ -m "not integration" -v
+python -m pytest tests/ --cov=arangodb --cov-report=html
 ```
 
-### Environment Variables
-
-Set these environment variables if your ArangoDB setup differs from defaults:
-
+### Run Tests in Parallel
 ```bash
-export ARANGO_HOST=http://localhost:8529
-export ARANGO_USER=root
-export ARANGO_PASSWORD=password
-export ARANGO_DB=natrium_arangodb  # Test database name
+python -m pytest tests/ -n auto
 ```
 
-## Test Categories
+## Test Requirements
 
-### Module Tests (`tests/arangodb/`)
-- Mirror the source code structure
-- Test specific module functionality
-- May include both unit and integration aspects
+1. **ArangoDB**: Must have ArangoDB running locally on default port (8529)
+2. **Test Database**: Tests use `pizza_test` and `memory_bank` databases
+3. **Redis**: Required for LiteLLM caching (localhost:6379)
+4. **Dependencies**: Install all dependencies with `pip install -e ".[dev]"`
 
-### Integration Tests (`tests/integration/`)
-- Test interactions between multiple modules
-- Complete workflow tests
-- End-to-end scenarios
+## Writing Tests
 
-### Unit Tests (`tests/unit/`)
-- Pure unit tests with no external dependencies
-- Fast, isolated tests
-- Focus on individual functions/methods
+### Test Naming Convention
+- Test files must be named `test_*.py`
+- Test classes should be named `Test*`
+- Test methods should be named `test_*`
 
-### Data Directory (`tests/data/`)
-- Test datasets (e.g., pizza database)
-- Database setup scripts
-- Sample data for testing
+### No Mocking Policy
+Per CLAUDE.md requirements:
+- **NEVER mock core functionality**
+- Always test with real database connections
+- Use actual data, not fake inputs
+- Verify outputs against concrete expected results
 
-## Writing New Tests
-
-### Test Placement
-1. **Module-specific tests**: Place in the corresponding test directory
-   - Testing `src/arangodb/core/memory/memory_agent.py`?
-   - Create `tests/arangodb/core/memory/test_memory_agent.py`
-
-2. **Cross-module tests**: Place in `tests/integration/`
-
-3. **Pure unit tests**: Place in `tests/unit/`
-
-### Test File Naming
-- Prefix with `test_` (e.g., `test_new_feature.py`)
-- Match the source file name when possible
-- Use descriptive names for integration tests
-
-### Test Function Naming
-```python
-def test_function_name_describes_what_is_tested():
-    """Test that specific functionality works correctly."""
-    # Arrange
-    # Act
-    # Assert
-```
-
-### Using Fixtures
-```python
-import pytest
-from arangodb.core import db_operations
-
-@pytest.fixture
-def test_db():
-    """Create and cleanup test database."""
-    db = db_operations.ensure_database("test_db")
-    yield db
-    # Cleanup after test
-    db_operations.delete_database("test_db")
-
-def test_with_database(test_db):
-    """Test using the database fixture."""
-    assert test_db is not None
-```
+### Test Organization
+- Place tests in directories that mirror the source structure
+- Integration tests go in `tests/integration/`
+- Unit tests for isolated functions go in `tests/unit/`
+- Test data files go in `tests/data/`
+- Test fixtures go in `tests/fixtures/`
 
 ## Common Test Patterns
 
-### Testing CLI Commands
+### Database Setup
+Most tests use fixtures from `conftest.py` that provide:
+- `get_test_db()`: Returns a test database connection
+- `setup_test_data`: Populates test collections with sample data
+
+### CLI Testing
 ```python
-def test_cli_command():
-    result = subprocess.run(
-        ["python", "-m", "arangodb", "memory", "add", "--content", "test"],
-        capture_output=True,
-        text=True
-    )
-    assert result.returncode == 0
-    assert "Success" in result.stdout
+from typer.testing import CliRunner
+from arangodb.cli.main import app
+
+runner = CliRunner()
+result = runner.invoke(app, ["command", "subcommand", "--option", "value"])
+assert result.exit_code == 0
 ```
 
-### Testing Async Functions
+### Async Testing
 ```python
 import pytest
 
 @pytest.mark.asyncio
 async def test_async_function():
     result = await async_function()
-    assert result is not None
+    assert result == expected_value
 ```
 
-### Testing with Real Data
-```python
-def test_with_real_data():
-    # Always use real data, never mock core functionality
-    data = load_test_data("tests/data/memories.json")
-    result = process_data(data)
-    assert len(result) > 0
-```
+## Continuous Integration
+
+Before pushing code:
+1. Run all tests: `python -m pytest tests/ -v`
+2. Check for any warnings or deprecations
+3. Ensure 100% of tests pass
+4. No skipped tests (all functionality should be testable)
+
+## Test Data
+
+Test data files are located in `tests/data/`:
+- Pizza shop example data for testing general functionality
+- Memory/conversation data for testing memory operations
+- Graph relationship data for testing graph operations
+
+Setup scripts for test data are in `scripts/setup/test_data/`
 
 ## Troubleshooting
 
 ### Common Issues
 
-1. **ArangoDB Connection Error**
-   ```
-   Error: Cannot connect to ArangoDB
-   Solution: Ensure ArangoDB is running and credentials are correct
-   ```
+1. **Database Connection Errors**
+   - Ensure ArangoDB is running: `sudo systemctl status arangodb3`
+   - Check credentials in environment variables
 
-2. **Import Errors**
-   ```
-   Error: ModuleNotFoundError: No module named 'arangodb'
-   Solution: Install project in editable mode: uv pip install -e .
-   ```
+2. **Redis Connection Errors**
+   - Ensure Redis is running: `redis-cli ping`
+   - Should return "PONG"
 
-3. **Test Database Already Exists**
-   ```
-   Error: Database 'test_db' already exists
-   Solution: Clean up test databases: python scripts/cleanup_test_dbs.py
-   ```
+3. **Import Errors**
+   - Install package in development mode: `pip install -e .`
+   - Ensure PYTHONPATH includes project root
 
-### Debug Mode
+4. **Test Discovery Issues**
+   - Ensure all test directories have `__init__.py` files
+   - Use proper test naming conventions
 
-Run tests with detailed output:
+## Maintenance
+
+- Keep tests synchronized with source code changes
+- Remove obsolete tests when features are removed
+- Update test data when schemas change
+- Document any special test requirements in test docstrings
+
+## Quick Verification
+
+Before committing changes, run:
 ```bash
-# Maximum verbosity
-python -m pytest tests/ -vvv
+# Quick smoke test (fast)
+python -m pytest tests/unit/ -v --maxfail=1
 
-# Show print statements
-python -m pytest tests/ -s
-
-# Drop into debugger on failure
-python -m pytest tests/ --pdb
+# Full test suite
+python -m pytest tests/ -v
 ```
 
-## Continuous Integration
-
-For CI/CD pipelines, use:
+For 100% confidence that nothing is broken:
 ```bash
-# Run all tests with coverage and junit output
-python -m pytest tests/ \
-    --cov=arangodb \
-    --cov-report=xml \
-    --cov-report=term-missing \
-    --junit-xml=test-results.xml
+python -m pytest tests/arangodb/cli/ -v  # All 96 CLI tests should pass
 ```
-
-## Maintaining Tests
-
-1. **Keep Tests Fast**: Unit tests should run in < 1 second
-2. **Use Real Data**: Follow project standards - no mocking core functionality
-3. **Clean Up**: Always clean up test data after tests
-4. **Document Complex Tests**: Add docstrings explaining test purpose
-5. **Update Tests**: When adding features, add corresponding tests
-6. **Mirror Structure**: Keep test directory structure in sync with src
-
-## Test Coverage Goals
-
-- Unit Tests: 80%+ coverage
-- Integration Tests: Cover all major workflows
-- CLI Tests: 100% of commands tested
-- Edge Cases: Test error conditions and boundaries
-
-## Quick Test Verification
-
-Before pushing changes, run this quick verification:
-```bash
-# Fast smoke test (< 30 seconds)
-python -m pytest tests/unit/ tests/arangodb/core/ -v --maxfail=1
-
-# Full test suite (may take several minutes)
-python tests/run_tests.py
-```
-
----
-
-For more information about the project structure and development guidelines, see the main [README.md](../README.md) and [CLAUDE.md](../CLAUDE.md).

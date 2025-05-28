@@ -196,8 +196,11 @@ def graph_rag_search(
     start_time = time.time()
     logger.info(f"Running Graph RAG search for query: '{query_text}'")
     
-    # Input validation
-    if not query_text or query_text.strip() == "":
+    # Check if this is pure graph traversal (when start_vertex_id is provided)
+    is_pure_traversal = start_vertex_id is not None
+    
+    # Input validation - skip query text validation for pure traversal
+    if not is_pure_traversal and (not query_text or query_text.strip() == ""):
         error_msg = "Query text cannot be empty"
         logger.error(error_msg)
         return {
@@ -282,58 +285,106 @@ def graph_rag_search(
         """
         
         # OPTIMIZATION: Add timeouts and pagination to prevent long-running queries
-        # Construct the AQL query that combines BM25 search with graph traversal
-        # First find relevant documents with BM25 search, then traverse graph for each
-        aql = f"""
-        // Start with text search
-        LET search_tokens = TOKENS(@query, "{TEXT_ANALYZER}")
-        FOR doc IN {VIEW_NAME}
-        SEARCH {search_field_conditions}
-        LET score = BM25(doc)
-        FILTER score >= @min_score
-        SORT score DESC
-        LIMIT @top_n
-        
-        // For each document, do a controlled graph traversal
-        // with timeout protection
-        LET traversal_start = DATE_NOW()
-        
-        // OPTIMIZATION: Use a subquery with a timeout check to prevent long traversals
-        LET related = (
-            FOR vertex, e, p IN {min_depth}..{max_depth} {direction_upper} doc GRAPH @graph_name
-            {traversal_options}
-            {edge_filter}
+        # Check if this is pure graph traversal or combined search
+        if is_pure_traversal:
+            # Pure graph traversal starting from a specific vertex
+            logger.info(f"Performing pure graph traversal from vertex: {start_vertex_id}")
             
-            // OPTIMIZATION: Add timeout check
-            FILTER DATE_NOW() - traversal_start < @traversal_timeout_ms
+            # Extract vertex from the ID
+            aql = f"""
+            // Start from specific vertex
+            LET start_doc = DOCUMENT(@start_vertex_id)
+            FILTER start_doc != null
             
-            LIMIT @max_related_per_doc  // OPTIMIZATION: Limit related docs per seed
+            // Do a controlled graph traversal
+            LET traversal_start = DATE_NOW()
+            
+            // OPTIMIZATION: Use a subquery with a timeout check to prevent long traversals
+            LET related = (
+                FOR vertex, e, p IN {min_depth}..{max_depth} {direction_upper} start_doc GRAPH @graph_name
+                {traversal_options}
+                {edge_filter}
+                
+                // OPTIMIZATION: Add timeout check
+                FILTER DATE_NOW() - traversal_start < @traversal_timeout_ms
+                
+                LIMIT @max_related_per_doc  // OPTIMIZATION: Limit related docs per seed
+                
+                RETURN {{
+                    "vertex": KEEP(vertex, {fields_to_keep_str}),
+                    "edge": e,
+                    "depth": LENGTH(p.vertices) - 1,  // OPTIMIZATION: Track actual depth
+                    "path": p
+                }}
+            )
             
             RETURN {{
-                "vertex": KEEP(vertex, {fields_to_keep_str}),
-                "edge": e,
-                "depth": LENGTH(p.vertices) - 1,  // OPTIMIZATION: Track actual depth
-                "path": p
+                "doc": KEEP(start_doc, {fields_to_keep_str}),
+                "score": 1.0,
+                "related": related,
+                "related_count": LENGTH(related),
+                "traversal_time_ms": DATE_NOW() - traversal_start
             }}
-        )
-        
-        RETURN {{
-            "doc": KEEP(doc, {fields_to_keep_str}),
-            "score": score,
-            "related": related,
-            "related_count": LENGTH(related),
-            "traversal_time_ms": DATE_NOW() - traversal_start
-        }}
-        """
-        
-        bind_vars = {
-            "query": query_text,
-            "min_score": min_score,
-            "graph_name": graph_name_value,
-            "top_n": top_n,
-            "max_related_per_doc": max_related_per_doc,
-            "traversal_timeout_ms": traversal_timeout_ms
-        }
+            """
+            
+            bind_vars = {
+                "start_vertex_id": start_vertex_id,
+                "graph_name": graph_name_value,
+                "max_related_per_doc": max_related_per_doc,
+                "traversal_timeout_ms": traversal_timeout_ms
+            }
+        else:
+            # Combined BM25 search with graph traversal
+            aql = f"""
+            // Start with text search
+            LET search_tokens = TOKENS(@query, "{TEXT_ANALYZER}")
+            FOR doc IN {VIEW_NAME}
+            SEARCH {search_field_conditions}
+            LET score = BM25(doc)
+            FILTER score >= @min_score
+            SORT score DESC
+            LIMIT @top_n
+            
+            // For each document, do a controlled graph traversal
+            // with timeout protection
+            LET traversal_start = DATE_NOW()
+            
+            // OPTIMIZATION: Use a subquery with a timeout check to prevent long traversals
+            LET related = (
+                FOR vertex, e, p IN {min_depth}..{max_depth} {direction_upper} doc GRAPH @graph_name
+                {traversal_options}
+                {edge_filter}
+                
+                // OPTIMIZATION: Add timeout check
+                FILTER DATE_NOW() - traversal_start < @traversal_timeout_ms
+                
+                LIMIT @max_related_per_doc  // OPTIMIZATION: Limit related docs per seed
+                
+                RETURN {{
+                    "vertex": KEEP(vertex, {fields_to_keep_str}),
+                    "edge": e,
+                    "depth": LENGTH(p.vertices) - 1,  // OPTIMIZATION: Track actual depth
+                    "path": p
+                }}
+            )
+            
+            RETURN {{
+                "doc": KEEP(doc, {fields_to_keep_str}),
+                "score": score,
+                "related": related,
+                "related_count": LENGTH(related),
+                "traversal_time_ms": DATE_NOW() - traversal_start
+            }}
+            """
+            
+            bind_vars = {
+                "query": query_text,
+                "min_score": min_score,
+                "graph_name": graph_name_value,
+                "top_n": top_n,
+                "max_related_per_doc": max_related_per_doc,
+                "traversal_timeout_ms": traversal_timeout_ms
+            }
         
         logger.debug(f"Executing optimized AQL query: {aql}")
         logger.debug(f"With bind variables: {bind_vars}")
@@ -346,19 +397,23 @@ def graph_rag_search(
         results = list(cursor)
         
         # Get total count (number of documents that would match without the limit)
-        count_aql = f"""
-        RETURN LENGTH(
-            LET search_tokens = TOKENS(@query, "{TEXT_ANALYZER}")
-            FOR doc IN {VIEW_NAME}
-            SEARCH {search_field_conditions}
-            LET score = BM25(doc)
-            FILTER score >= @min_score
-            RETURN 1
-        )
-        """
-        
-        count_cursor = db.aql.execute(count_aql, bind_vars={"query": query_text, "min_score": min_score})
-        total_count = next(count_cursor)
+        if is_pure_traversal:
+            # For pure traversal, count is 1 if vertex exists, 0 otherwise
+            total_count = 1 if results else 0
+        else:
+            count_aql = f"""
+            RETURN LENGTH(
+                LET search_tokens = TOKENS(@query, "{TEXT_ANALYZER}")
+                FOR doc IN {VIEW_NAME}
+                SEARCH {search_field_conditions}
+                LET score = BM25(doc)
+                FILTER score >= @min_score
+                RETURN 1
+            )
+            """
+            
+            count_cursor = db.aql.execute(count_aql, bind_vars={"query": query_text, "min_score": min_score})
+            total_count = next(count_cursor)
         
         # Gather traversal statistics
         related_counts = [r.get("related_count", 0) for r in results]
