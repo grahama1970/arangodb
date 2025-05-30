@@ -91,7 +91,7 @@ docs = [
     "myst-parser>=2.0.0"
 ]"
 
-[build-system]
+[build-system]"
 requires = ["setuptools>=61.0"]"
 build-backend = "setuptools.build_meta"
 
@@ -123,14 +123,14 @@ markers = [
 ]"
 
 # Python path for development and scripts
-[tool.python.dev]
+[tool.python.dev]"
 path = ["/home/graham/workspace/experiments/arangodb"]"
 
 # Ensure VSCode and other editors respect the Python path
-[tool.vscode]
+[tool.vscode]"
 python.analysis.extraPaths = ["/home/graham/workspace/experiments/arangodb"]"
 
-[dependency-groups]
+[dependency-groups]"
 dev = [
     "pytest>=8.3.5",
     "pytest-asyncio>=0.26.0",
