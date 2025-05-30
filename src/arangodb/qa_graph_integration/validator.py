@@ -22,7 +22,7 @@ import re
 import time
 from pydantic import BaseModel, Field
 
-from arangodb.qa.schemas import (
+from arangodb.qa_graph_integration.schemas import (
     QAPair,
     QAValidationResult,
     ValidationStatus

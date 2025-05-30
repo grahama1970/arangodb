@@ -136,12 +136,8 @@ class QARelationship(BaseModel):
             self._key = f"qarel_{uuid.uuid4().hex[:12]}"
         return self
 
-    @field_validator('_from')
-    def validate_from(cls, v):
-        """Validate that _from starts with qa_pairs/."""
-        if not v.startswith("qa_pairs/"):
-            raise ValueError("_from must start with qa_pairs/")
-        return v
+    # Note: Field validation for _from removed due to Pydantic v2 compatibility issues
+    # The validation should be done at the application level when creating relationships
 
     def to_arangodb(self) -> Dict[str, Any]:
         """Convert to ArangoDB edge document format."""

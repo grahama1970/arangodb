@@ -22,7 +22,7 @@ import uuid
 from datetime import datetime
 import json
 
-from arangodb.qa.schemas import (
+from arangodb.qa_graph_integration.schemas import (
     QAPair,
     QARelationship,
     QAValidationResult,
@@ -30,7 +30,7 @@ from arangodb.qa.schemas import (
     QuestionType,
     ValidationStatus
 )
-from arangodb.qa.setup import (
+from arangodb.qa_graph_integration.setup import (
     QA_PAIRS_COLLECTION,
     QA_RELATIONSHIPS_COLLECTION,
     QA_VALIDATION_COLLECTION
@@ -427,7 +427,7 @@ if __name__ == "__main__":
     """
     import sys
     from arangodb.core.arango_setup import connect_arango, ensure_database
-    from arangodb.qa.setup import QASetup
+    from arangodb.qa_graph_integration.setup import QASetup
     
     # Configure logger for validation output
     logger.remove()

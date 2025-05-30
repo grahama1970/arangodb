@@ -14,7 +14,7 @@ Features:
 - CLI integration for Q&A workflows
 """
 
-from arangodb.qa.schemas import (
+from arangodb.qa_graph_integration.schemas import (
     # Enums
     QuestionType,
     DifficultyLevel,

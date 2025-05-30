@@ -23,16 +23,16 @@ from loguru import logger
 from arango.database import StandardDatabase
 from arango.collection import StandardCollection
 
-from arangodb.qa.schemas import (
+from arangodb.qa_graph_integration.schemas import (
     QAPair,
     QARelationship,
     ValidationStatus
 )
-from arangodb.qa.setup import (
+from arangodb.qa_graph_integration.setup import (
     QA_PAIRS_COLLECTION,
     QA_RELATIONSHIPS_COLLECTION
 )
-from arangodb.qa.connector import QAConnector
+from arangodb.qa_graph_integration.connector import QAConnector
 
 
 class MarkerConnector:
@@ -189,7 +189,7 @@ class MarkerConnector:
             List of relationship keys
         """
         # Import the relationship extractor
-        from arangodb.qa.marker_relationship_extractor import extract_relationships_from_marker
+        from arangodb.qa_graph_integration.marker_relationship_extractor import extract_relationships_from_marker
         
         # Extract relationships using the dedicated extractor
         extracted_relationships = extract_relationships_from_marker(marker_output)

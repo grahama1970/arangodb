@@ -24,9 +24,9 @@ from arango.database import StandardDatabase
 from arango.collection import StandardCollection
 from arango.cursor import Cursor
 
-from arangodb.qa.connector import QAConnector
-from arangodb.qa.schemas import QAPair, QuestionType, ValidationStatus
-from arangodb.qa.setup import QA_PAIRS_COLLECTION
+from arangodb.qa_graph_integration.connector import QAConnector
+from arangodb.qa_graph_integration.schemas import QAPair, QuestionType, ValidationStatus
+from arangodb.qa_graph_integration.setup import QA_PAIRS_COLLECTION
 from arangodb.core.db_connection_wrapper import DatabaseOperations
 from arangodb.core.constants import CONFIG
 from arangodb.core.field_constants import (
@@ -355,7 +355,7 @@ if __name__ == "__main__":
     """
     import sys
     from arangodb.core.arango_setup import connect_arango, ensure_database
-    from arangodb.qa.setup import QASetup
+    from arangodb.qa_graph_integration.setup import QASetup
     
     # Configure logger for validation output
     logger.remove()

@@ -28,16 +28,16 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from arango import ArangoClient
 from arangodb.core.arango_setup import connect_arango, ensure_database
-from arangodb.qa.setup import QASetup, QA_PAIRS_COLLECTION
-from arangodb.qa.connector import QAConnector
-from arangodb.qa.marker_connector import MarkerConnector
-from arangodb.qa.graph_connector import QAGraphConnector
-from arangodb.qa.schemas import (
+from arangodb.qa_graph_integration.setup import QASetup, QA_PAIRS_COLLECTION
+from arangodb.qa_graph_integration.connector import QAConnector
+from arangodb.qa_graph_integration.marker_connector import MarkerConnector
+from arangodb.qa_graph_integration.graph_connector import QAGraphConnector
+from arangodb.qa_graph_integration.schemas import (
     QAPair,
     QAExportFormat,
     QuestionType
 )
-from arangodb.qa.validator import QAValidator
+from arangodb.qa_graph_integration.validator import QAValidator
 
 # Add import for the existing QA generator
 try:

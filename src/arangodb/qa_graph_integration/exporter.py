@@ -24,7 +24,7 @@ from typing import List, Dict, Any, Optional, Union, Tuple
 from datetime import datetime
 from loguru import logger
 
-from arangodb.qa.schemas import (
+from arangodb.qa_graph_integration.schemas import (
     QAPair,
     QABatch,
     QAExportFormat
