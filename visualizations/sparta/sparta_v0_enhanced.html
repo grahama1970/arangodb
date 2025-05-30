@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPARTA Space Cybersecurity Threat Matrix</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- D3.js -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    
+    <style>
+        :root {
+            --color-primary-start: #4F46E5;
+            --color-primary-end: #6366F1;
+            --color-secondary: #6B7280;
+            --color-background: #F9FAFB;
+            --color-accent: #10B981;
+            --font-family-base: 'Inter', system-ui, sans-serif;
+            --border-radius-base: 8px;
+            --transition-duration: 250ms;
+            --transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        * {
+            font-family: var(--font-family-base);
+        }
+        
+        body {
+            background: linear-gradient(180deg, #F9FAFB 0%, #F3F4F6 100%);
+            min-height: 100vh;
+        }
+        
+        .gradient-primary {
+            background: linear-gradient(135deg, var(--color-primary-start) 0%, var(--color-primary-end) 100%);
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .matrix-cell {
+            transition: all 200ms ease-in-out;
+            cursor: pointer;
+        }
+        
+        .matrix-cell:hover {
+            filter: brightness(1.1);
+            transform: scale(1.02);
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #F3F4F6;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #D1D5DB;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="antialiased text-gray-900">
+    <!-- Header -->
+    <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-lg border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 gradient-primary rounded-lg flex items-center justify-center">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                                <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
+                            </svg>
+                        </div>
+                        <h1 class="text-xl font-semibold">SPARTA Matrix</h1>
+                    </div>
+                    <span class="text-sm text-gray-500">v2.0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+                <h3 class="text-sm text-gray-500 mb-1">System Resilience</h3>
+                <p class="text-2xl font-bold text-gray-900" id="resilience-score">--</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+                <h3 class="text-sm text-gray-500 mb-1">Total Techniques</h3>
+                <p class="text-2xl font-bold text-gray-900" id="total-techniques">--</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+                <h3 class="text-sm text-gray-500 mb-1">Critical Threats</h3>
+                <p class="text-2xl font-bold text-red-600" id="critical-threats">--</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+                <h3 class="text-sm text-gray-500 mb-1">Coverage</h3>
+                <p class="text-2xl font-bold text-green-600" id="coverage">--</p>
+            </div>
+        </div>
+        
+        <!-- Matrix Container -->
+        <div class="bg-white rounded-xl shadow-sm p-6">
+            <h2 class="text-2xl font-semibold mb-6">SPARTA Threat Matrix</h2>
+            <div id="matrix-container" class="overflow-x-auto">
+                <svg id="sparta-matrix"></svg>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        // Matrix data will be injected here
+        const matrixData = {
+  "tactics": [
+    {
+      "id": "ST0001",
+      "name": "Reconnaissance",
+      "description": "Threat actor is trying to gather information about the spacecraft or space mission",
+      "mitre_mapping": "TA0043"
+    },
+    {
+      "id": "ST0002",
+      "name": "Resource Development",
+      "description": "Threat actor is trying to establish resources they can use to support operations",
+      "mitre_mapping": "TA0042"
+    },
+    {
+      "id": "ST0003",
+      "name": "Initial Access",
+      "description": "Threat actor is trying to get point of presence/command execution on the spacecraft",
+      "mitre_mapping": "TA0001"
+    },
+    {
+      "id": "ST0004",
+      "name": "Execution",
+      "description": "Threat actor is trying to execute malicious code on the spacecraft",
+      "mitre_mapping": "TA0002"
+    },
+    {
+      "id": "ST0005",
+      "name": "Persistence",
+      "description": "Threat actor is trying to maintain their foothold on the spacecraft",
+      "mitre_mapping": "TA0003"
+    },
+    {
+      "id": "ST0006",
+      "name": "Defense Evasion",
+      "description": "Threat actor is trying to avoid being detected",
+      "mitre_mapping": "TA0005"
+    },
+    {
+      "id": "ST0007",
+      "name": "Lateral Movement",
+      "description": "Threat actor is trying to move through across sub-systems of the spacecraft",
+      "mitre_mapping": "TA0008"
+    },
+    {
+      "id": "ST0008",
+      "name": "Exfiltration",
+      "description": "Threat actor is trying to steal information",
+      "mitre_mapping": "TA0010"
+    },
+    {
+      "id": "ST0009",
+      "name": "Impact",
+      "description": "Threat actor is trying to manipulate, interrupt, or destroy the space system(s) and/or data",
+      "mitre_mapping": "TA0040"
+    }
+  ],
+  "techniques": [
+    {
+      "id": "REC-0001",
+      "name": "Gather Spacecraft Design Information",
+      "description": "Adversaries may gather design specifications and technical documentation about target spacecraft",
+      "tactic_id": "ST0001",
+      "severity": "medium",
+      "examples": [
+        "Accessing public technical papers",
+        "Social engineering spacecraft engineers"
+      ],
+      "countermeasures": [
+        "Limit public disclosure of technical details",
+        "Security awareness training"
+      ],
+      "space_specific": true,
+      "detection_difficulty": "hard",
+      "exploitation_complexity": "medium",
+      "risk_score": 60.0,
+      "impact_score": 50.0,
+      "likelihood_score": 60.0,
+      "detection_score": 80.0,
+      "mitigation_effectiveness": 40
+    },
+    {
+      "id": "REC-0005",
+      "name": "Eavesdrop on Communications",
+      "description": "Monitor spacecraft-ground station communications to gather intelligence",
+      "tactic_id": "ST0001",
+      "severity": "high",
+      "examples": [
+        "RF signal interception",
+        "Network traffic monitoring"
+      ],
+      "countermeasures": [
+        "Encryption of all communications",
+        "Frequency hopping"
+      ],
+      "space_specific": true,
+      "detection_difficulty": "medium",
+      "exploitation_complexity": "low",
+      "risk_score": 90.0,
+      "impact_score": 75.0,
+      "likelihood_score": 80.0,
+      "detection_score": 60.0,
+      "mitigation_effectiveness": 40
+    },
+    {
+      "id": "IA-0004",
+      "name": "Compromise Ground Station",
+      "description": "Gain access to spacecraft through compromised ground control systems",
+      "tactic_id": "ST0003",
+      "severity": "critical",
+      "examples": [
+        "Phishing ground station operators",
+        "Exploiting ground system vulnerabilities"
+      ],
+      "countermeasures": [
+        "Multi-factor authentication",
+        "Network segmentation",
+        "Regular security audits"
+      ],
+      "space_specific": true,
+      "detection_difficulty": "medium",
+      "exploitation_complexity": "medium",
+      "risk_score": 60.0,
+      "impact_score": 100.0,
+      "likelihood_score": 60.0,
+      "detection_score": 60.0,
+      "mitigation_effectiveness": 60
+    },
+    {
+      "id": "IA-0008",
+      "name": "Rogue Radio Frequency Commands",
+      "description": "Send unauthorized commands via radio frequency to spacecraft",
+      "tactic_id": "ST0003",
+      "severity": "critical",
+      "examples": [
+        "Command replay attacks",
+        "RF signal spoofing"
+      ],
+      "countermeasures": [
+        "Command authentication",
+        "Encrypted command links"
+      ],
+      "space_specific": true,
+      "detection_difficulty": "medium",
+      "exploitation_complexity": "high",
+      "risk_score": 60.0,
+      "impact_score": 100.0,
+      "likelihood_score": 40.0,
+      "detection_score": 60.0,
+      "mitigation_effectiveness": 40
+    },
+    {
+      "id": "EX-0001",
+      "name": "Replay Valid Commands",
+      "description": "Capture and replay legitimate commands to cause unintended actions",
+      "tactic_id": "ST0004",
+      "severity": "high",
+      "examples": [
+        "Recording and replaying thruster commands",
+        "Replaying mode change commands"
+      ],
+      "countermeasures": [
+        "Command counters",
+        "Timestamp validation",
+        "Nonce-based authentication"
+      ],
+      "space_specific": true,
+      "detection_difficulty": "medium",
+      "exploitation_complexity": "medium",
+      "risk_score": 45.0,
+      "impact_score": 75.0,
+      "likelihood_score": 60.0,
+      "detection_score": 60.0,
+      "mitigation_effectiveness": 60
+    },
+    {
+      "id": "EX-0005",
+      "name": "Exploit Hardware/Firmware Corruption",
+      "description": "Leverage vulnerabilities in spacecraft hardware or firmware",
+      "tactic_id": "ST0004",
+      "severity": "critical",
+      "examples": [
+        "Buffer overflow in flight software",
+        "Firmware backdoors"
+      ],
+      "countermeasures": [
+        "Secure coding practices",
+        "Hardware security modules",
+        "Code signing"
+      ],
+      "space_specific": true,
+      "detection_difficulty": "medium",
+      "exploitation_complexity": "very_high",
+      "risk_score": 20.0,
+      "impact_score": 100.0,
+      "likelihood_score": 20.0,
+      "detection_score": 60.0,
+      "mitigation_effectiveness": 60
+    },
+    {
+      "id": "PER-0002",
+      "name": "Backdoor Flight Software",
+      "description": "Install persistent backdoors in spacecraft flight software",
+      "tactic_id": "ST0005",
+      "severity": "critical",
+      "examples": [
+        "Hidden command interfaces",
+        "Trojanized software updates"
+      ],
+      "countermeasures": [
+        "Code reviews",
+        "Integrity monitoring",
+        "Secure boot"
+      ],
+      "space_specific": true,
+      "detection_difficulty": "very_hard",
+      "exploitation_complexity": "medium",
+      "risk_score": 100.0,
+      "impact_score": 100.0,
+      "likelihood_score": 60.0,
+      "detection_score": 100.0,
+      "mitigation_effectiveness": 60
+    },
+    {
+      "id": "DE-0003",
+      "name": "Disable Telemetry",
+      "description": "Turn off or corrupt telemetry to hide malicious activities",
+      "tactic_id": "ST0006",
+      "severity": "high",
+      "examples": [
+        "Disabling health monitoring",
+        "Corrupting sensor data"
+      ],
+      "countermeasures": [
+        "Redundant telemetry paths",
+        "Anomaly detection"
+      ],
+      "space_specific": true,
+      "detection_difficulty": "medium",
+      "exploitation_complexity": "medium",
+      "risk_score": 67.5,
+      "impact_score": 75.0,
+      "likelihood_score": 60.0,
+      "detection_score": 60.0,
+      "mitigation_effectiveness": 40
+    },
+    {
+      "id": "LM-0001",
+      "name": "Exploit Bus Systems",
+      "description": "Move between spacecraft subsystems via internal bus connections",
+      "tactic_id": "ST0007",
+      "severity": "high",
+      "examples": [
+        "MIL-STD-1553 exploitation",
+        "SpaceWire attacks"
+      ],
+      "countermeasures": [
+        "Bus encryption",
+        "Access control lists",
+        "Network segmentation"
+      ],
+      "space_specific": true,
+      "detection_difficulty": "hard",
+      "exploitation_complexity": "medium",
+      "risk_score": 60.0,
+      "impact_score": 75.0,
+      "likelihood_score": 60.0,
+      "detection_score": 80.0,
+      "mitigation_effectiveness": 60
+    },
+    {
+      "id": "EXF-0003",
+      "name": "Downlink Sensitive Data",
+      "description": "Use spacecraft downlink to exfiltrate sensitive mission data",
+      "tactic_id": "ST0008",
+      "severity": "high",
+      "examples": [
+        "Stealing encryption keys",
+        "Exfiltrating mission data"
+      ],
+      "countermeasures": [
+        "Data classification",
+        "Downlink monitoring",
+        "Encryption"
+      ],
+      "space_specific": true,
+      "detection_difficulty": "medium",
+      "exploitation_complexity": "low",
+      "risk_score": 60.0,
+      "impact_score": 75.0,
+      "likelihood_score": 80.0,
+      "detection_score": 60.0,
+      "mitigation_effectiveness": 60
+    },
+    {
+      "id": "IMP-0002",
+      "name": "Denial of Service",
+      "description": "Prevent spacecraft from performing its mission",
+      "tactic_id": "ST0009",
+      "severity": "critical",
+      "examples": [
+        "CPU exhaustion",
+        "Memory corruption",
+        "Thruster depletion"
+      ],
+      "countermeasures": [
+        "Resource monitoring",
+        "Watchdog timers",
+        "Graceful degradation"
+      ],
+      "space_specific": true,
+      "detection_difficulty": "easy",
+      "exploitation_complexity": "medium",
+      "risk_score": 40.0,
+      "impact_score": 100.0,
+      "likelihood_score": 60.0,
+      "detection_score": 40.0,
+      "mitigation_effectiveness": 60
+    },
+    {
+      "id": "IMP-0004",
+      "name": "Manipulate Sensor Readings",
+      "description": "Alter sensor data to cause incorrect spacecraft behavior",
+      "tactic_id": "ST0009",
+      "severity": "critical",
+      "examples": [
+        "GPS spoofing",
+        "Star tracker manipulation"
+      ],
+      "countermeasures": [
+        "Sensor fusion",
+        "Sanity checks",
+        "Redundant sensors"
+      ],
+      "space_specific": true,
+      "detection_difficulty": "medium",
+      "exploitation_complexity": "high",
+      "risk_score": 40.0,
+      "impact_score": 100.0,
+      "likelihood_score": 40.0,
+      "detection_score": 60.0,
+      "mitigation_effectiveness": 60
+    },
+    {
+      "id": "IMP-0005",
+      "name": "Trigger Unintended Maneuvers",
+      "description": "Cause spacecraft to perform dangerous orbital maneuvers",
+      "tactic_id": "ST0009",
+      "severity": "critical",
+      "examples": [
+        "Unauthorized thruster firing",
+        "Attitude control disruption"
+      ],
+      "countermeasures": [
+        "Command verification",
+        "Safety interlocks",
+        "Ground approval required"
+      ],
+      "space_specific": true,
+      "detection_difficulty": "easy",
+      "exploitation_complexity": "medium",
+      "risk_score": 40.0,
+      "impact_score": 100.0,
+      "likelihood_score": 60.0,
+      "detection_score": 40.0,
+      "mitigation_effectiveness": 60
+    }
+  ],
+  "metadata": {
+    "version": "2.0",
+    "last_updated": "2025-05-29T15:29:51.421457",
+    "source": "The Aerospace Corporation SPARTA Framework"
+  },
+  "analytics": {
+    "tactic_coverage": {
+      "ST0001": {
+        "technique_count": 2,
+        "average_risk": 75.0,
+        "max_risk": 90.0,
+        "min_risk": 60.0
+      },
+      "ST0003": {
+        "technique_count": 2,
+        "average_risk": 60.0,
+        "max_risk": 60.0,
+        "min_risk": 60.0
+      },
+      "ST0004": {
+        "technique_count": 2,
+        "average_risk": 32.5,
+        "max_risk": 45.0,
+        "min_risk": 20.0
+      },
+      "ST0005": {
+        "technique_count": 1,
+        "average_risk": 100.0,
+        "max_risk": 100.0,
+        "min_risk": 100.0
+      },
+      "ST0006": {
+        "technique_count": 1,
+        "average_risk": 67.5,
+        "max_risk": 67.5,
+        "min_risk": 67.5
+      },
+      "ST0007": {
+        "technique_count": 1,
+        "average_risk": 60.0,
+        "max_risk": 60.0,
+        "min_risk": 60.0
+      },
+      "ST0008": {
+        "technique_count": 1,
+        "average_risk": 60.0,
+        "max_risk": 60.0,
+        "min_risk": 60.0
+      },
+      "ST0009": {
+        "technique_count": 3,
+        "average_risk": 40.0,
+        "max_risk": 40.0,
+        "min_risk": 40.0
+      }
+    },
+    "system_resilience": {
+      "coverage_percentage": 100.0,
+      "average_countermeasures_per_technique": 2.69,
+      "weighted_resilience_score": 59.13,
+      "total_countermeasures": 35,
+      "techniques_with_countermeasures": 13,
+      "total_techniques": 13
+    },
+    "critical_paths": [
+      [
+        "REC-0005",
+        "IA-0004",
+        "EX-0001",
+        "IMP-0002"
+      ],
+      [
+        "REC-0005",
+        "IA-0004",
+        "EX-0001",
+        "PER-0002",
+        "LM-0001",
+        "IMP-0002"
+      ]
+    ],
+    "threat_heatmap": [
+      {
+        "technique_id": "REC-0001",
+        "tactic_id": "ST0001",
+        "risk_score": 60.0,
+        "impact": 50.0,
+        "likelihood": 60.0,
+        "detection_difficulty": 80.0,
+        "mitigation": 40
+      },
+      {
+        "technique_id": "REC-0005",
+        "tactic_id": "ST0001",
+        "risk_score": 90.0,
+        "impact": 75.0,
+        "likelihood": 80.0,
+        "detection_difficulty": 60.0,
+        "mitigation": 40
+      },
+      {
+        "technique_id": "IA-0004",
+        "tactic_id": "ST0003",
+        "risk_score": 60.0,
+        "impact": 100.0,
+        "likelihood": 60.0,
+        "detection_difficulty": 60.0,
+        "mitigation": 60
+      },
+      {
+        "technique_id": "IA-0008",
+        "tactic_id": "ST0003",
+        "risk_score": 60.0,
+        "impact": 100.0,
+        "likelihood": 40.0,
+        "detection_difficulty": 60.0,
+        "mitigation": 40
+      },
+      {
+        "technique_id": "EX-0001",
+        "tactic_id": "ST0004",
+        "risk_score": 45.0,
+        "impact": 75.0,
+        "likelihood": 60.0,
+        "detection_difficulty": 60.0,
+        "mitigation": 60
+      },
+      {
+        "technique_id": "EX-0005",
+        "tactic_id": "ST0004",
+        "risk_score": 20.0,
+        "impact": 100.0,
+        "likelihood": 20.0,
+        "detection_difficulty": 60.0,
+        "mitigation": 60
+      },
+      {
+        "technique_id": "PER-0002",
+        "tactic_id": "ST0005",
+        "risk_score": 100.0,
+        "impact": 100.0,
+        "likelihood": 60.0,
+        "detection_difficulty": 100.0,
+        "mitigation": 60
+      },
+      {
+        "technique_id": "DE-0003",
+        "tactic_id": "ST0006",
+        "risk_score": 67.5,
+        "impact": 75.0,
+        "likelihood": 60.0,
+        "detection_difficulty": 60.0,
+        "mitigation": 40
+      },
+      {
+        "technique_id": "LM-0001",
+        "tactic_id": "ST0007",
+        "risk_score": 60.0,
+        "impact": 75.0,
+        "likelihood": 60.0,
+        "detection_difficulty": 80.0,
+        "mitigation": 60
+      },
+      {
+        "technique_id": "EXF-0003",
+        "tactic_id": "ST0008",
+        "risk_score": 60.0,
+        "impact": 75.0,
+        "likelihood": 80.0,
+        "detection_difficulty": 60.0,
+        "mitigation": 60
+      },
+      {
+        "technique_id": "IMP-0002",
+        "tactic_id": "ST0009",
+        "risk_score": 40.0,
+        "impact": 100.0,
+        "likelihood": 60.0,
+        "detection_difficulty": 40.0,
+        "mitigation": 60
+      },
+      {
+        "technique_id": "IMP-0004",
+        "tactic_id": "ST0009",
+        "risk_score": 40.0,
+        "impact": 100.0,
+        "likelihood": 40.0,
+        "detection_difficulty": 60.0,
+        "mitigation": 60
+      },
+      {
+        "technique_id": "IMP-0005",
+        "tactic_id": "ST0009",
+        "risk_score": 40.0,
+        "impact": 100.0,
+        "likelihood": 60.0,
+        "detection_difficulty": 40.0,
+        "mitigation": 60
+      }
+    ],
+    "threat_distribution": {
+      "critical": 7,
+      "high": 5,
+      "medium": 1,
+      "low": 0
+    },
+    "top_threats": [
+      {
+        "id": "PER-0002",
+        "name": "Backdoor Flight Software",
+        "description": "Install persistent backdoors in spacecraft flight software",
+        "tactic_id": "ST0005",
+        "severity": "critical",
+        "examples": [
+          "Hidden command interfaces",
+          "Trojanized software updates"
+        ],
+        "countermeasures": [
+          "Code reviews",
+          "Integrity monitoring",
+          "Secure boot"
+        ],
+        "space_specific": true,
+        "detection_difficulty": "very_hard",
+        "exploitation_complexity": "medium",
+        "risk_score": 100.0,
+        "impact_score": 100.0,
+        "likelihood_score": 60.0,
+        "detection_score": 100.0,
+        "mitigation_effectiveness": 60
+      },
+      {
+        "id": "REC-0005",
+        "name": "Eavesdrop on Communications",
+        "description": "Monitor spacecraft-ground station communications to gather intelligence",
+        "tactic_id": "ST0001",
+        "severity": "high",
+        "examples": [
+          "RF signal interception",
+          "Network traffic monitoring"
+        ],
+        "countermeasures": [
+          "Encryption of all communications",
+          "Frequency hopping"
+        ],
+        "space_specific": true,
+        "detection_difficulty": "medium",
+        "exploitation_complexity": "low",
+        "risk_score": 90.0,
+        "impact_score": 75.0,
+        "likelihood_score": 80.0,
+        "detection_score": 60.0,
+        "mitigation_effectiveness": 40
+      },
+      {
+        "id": "DE-0003",
+        "name": "Disable Telemetry",
+        "description": "Turn off or corrupt telemetry to hide malicious activities",
+        "tactic_id": "ST0006",
+        "severity": "high",
+        "examples": [
+          "Disabling health monitoring",
+          "Corrupting sensor data"
+        ],
+        "countermeasures": [
+          "Redundant telemetry paths",
+          "Anomaly detection"
+        ],
+        "space_specific": true,
+        "detection_difficulty": "medium",
+        "exploitation_complexity": "medium",
+        "risk_score": 67.5,
+        "impact_score": 75.0,
+        "likelihood_score": 60.0,
+        "detection_score": 60.0,
+        "mitigation_effectiveness": 40
+      },
+      {
+        "id": "REC-0001",
+        "name": "Gather Spacecraft Design Information",
+        "description": "Adversaries may gather design specifications and technical documentation about target spacecraft",
+        "tactic_id": "ST0001",
+        "severity": "medium",
+        "examples": [
+          "Accessing public technical papers",
+          "Social engineering spacecraft engineers"
+        ],
+        "countermeasures": [
+          "Limit public disclosure of technical details",
+          "Security awareness training"
+        ],
+        "space_specific": true,
+        "detection_difficulty": "hard",
+        "exploitation_complexity": "medium",
+        "risk_score": 60.0,
+        "impact_score": 50.0,
+        "likelihood_score": 60.0,
+        "detection_score": 80.0,
+        "mitigation_effectiveness": 40
+      },
+      {
+        "id": "IA-0004",
+        "name": "Compromise Ground Station",
+        "description": "Gain access to spacecraft through compromised ground control systems",
+        "tactic_id": "ST0003",
+        "severity": "critical",
+        "examples": [
+          "Phishing ground station operators",
+          "Exploiting ground system vulnerabilities"
+        ],
+        "countermeasures": [
+          "Multi-factor authentication",
+          "Network segmentation",
+          "Regular security audits"
+        ],
+        "space_specific": true,
+        "detection_difficulty": "medium",
+        "exploitation_complexity": "medium",
+        "risk_score": 60.0,
+        "impact_score": 100.0,
+        "likelihood_score": 60.0,
+        "detection_score": 60.0,
+        "mitigation_effectiveness": 60
+      },
+      {
+        "id": "IA-0008",
+        "name": "Rogue Radio Frequency Commands",
+        "description": "Send unauthorized commands via radio frequency to spacecraft",
+        "tactic_id": "ST0003",
+        "severity": "critical",
+        "examples": [
+          "Command replay attacks",
+          "RF signal spoofing"
+        ],
+        "countermeasures": [
+          "Command authentication",
+          "Encrypted command links"
+        ],
+        "space_specific": true,
+        "detection_difficulty": "medium",
+        "exploitation_complexity": "high",
+        "risk_score": 60.0,
+        "impact_score": 100.0,
+        "likelihood_score": 40.0,
+        "detection_score": 60.0,
+        "mitigation_effectiveness": 40
+      },
+      {
+        "id": "LM-0001",
+        "name": "Exploit Bus Systems",
+        "description": "Move between spacecraft subsystems via internal bus connections",
+        "tactic_id": "ST0007",
+        "severity": "high",
+        "examples": [
+          "MIL-STD-1553 exploitation",
+          "SpaceWire attacks"
+        ],
+        "countermeasures": [
+          "Bus encryption",
+          "Access control lists",
+          "Network segmentation"
+        ],
+        "space_specific": true,
+        "detection_difficulty": "hard",
+        "exploitation_complexity": "medium",
+        "risk_score": 60.0,
+        "impact_score": 75.0,
+        "likelihood_score": 60.0,
+        "detection_score": 80.0,
+        "mitigation_effectiveness": 60
+      },
+      {
+        "id": "EXF-0003",
+        "name": "Downlink Sensitive Data",
+        "description": "Use spacecraft downlink to exfiltrate sensitive mission data",
+        "tactic_id": "ST0008",
+        "severity": "high",
+        "examples": [
+          "Stealing encryption keys",
+          "Exfiltrating mission data"
+        ],
+        "countermeasures": [
+          "Data classification",
+          "Downlink monitoring",
+          "Encryption"
+        ],
+        "space_specific": true,
+        "detection_difficulty": "medium",
+        "exploitation_complexity": "low",
+        "risk_score": 60.0,
+        "impact_score": 75.0,
+        "likelihood_score": 80.0,
+        "detection_score": 60.0,
+        "mitigation_effectiveness": 60
+      },
+      {
+        "id": "EX-0001",
+        "name": "Replay Valid Commands",
+        "description": "Capture and replay legitimate commands to cause unintended actions",
+        "tactic_id": "ST0004",
+        "severity": "high",
+        "examples": [
+          "Recording and replaying thruster commands",
+          "Replaying mode change commands"
+        ],
+        "countermeasures": [
+          "Command counters",
+          "Timestamp validation",
+          "Nonce-based authentication"
+        ],
+        "space_specific": true,
+        "detection_difficulty": "medium",
+        "exploitation_complexity": "medium",
+        "risk_score": 45.0,
+        "impact_score": 75.0,
+        "likelihood_score": 60.0,
+        "detection_score": 60.0,
+        "mitigation_effectiveness": 60
+      },
+      {
+        "id": "IMP-0002",
+        "name": "Denial of Service",
+        "description": "Prevent spacecraft from performing its mission",
+        "tactic_id": "ST0009",
+        "severity": "critical",
+        "examples": [
+          "CPU exhaustion",
+          "Memory corruption",
+          "Thruster depletion"
+        ],
+        "countermeasures": [
+          "Resource monitoring",
+          "Watchdog timers",
+          "Graceful degradation"
+        ],
+        "space_specific": true,
+        "detection_difficulty": "easy",
+        "exploitation_complexity": "medium",
+        "risk_score": 40.0,
+        "impact_score": 100.0,
+        "likelihood_score": 60.0,
+        "detection_score": 40.0,
+        "mitigation_effectiveness": 60
+      }
+    ],
+    "mitigation_coverage": {
+      "overall_percentage": 100.0,
+      "total_techniques": 13,
+      "techniques_with_mitigation": 13,
+      "by_severity": {
+        "critical": {
+          "total": 7,
+          "mitigated": 7,
+          "percentage": 100.0
+        },
+        "high": {
+          "total": 5,
+          "mitigated": 5,
+          "percentage": 100.0
+        },
+        "medium": {
+          "total": 1,
+          "mitigated": 1,
+          "percentage": 100.0
+        },
+        "low": {
+          "total": 0,
+          "mitigated": 0,
+          "percentage": 0
+        }
+      }
+    }
+  }
+};
+        
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            updateStats();
+            renderMatrix();
+        });
+        
+        function updateStats() {
+            const analytics = matrixData.analytics;
+            const resilience = analytics.system_resilience;
+            
+            document.getElementById('resilience-score').textContent = resilience.weighted_resilience_score.toFixed(1) + '%';
+            document.getElementById('total-techniques').textContent = matrixData.techniques.length;
+            document.getElementById('critical-threats').textContent = matrixData.techniques.filter(t => t.severity === 'critical').length;
+            document.getElementById('coverage').textContent = resilience.coverage_percentage.toFixed(1) + '%';
+        }
+        
+        function renderMatrix() {
+            const container = document.getElementById('matrix-container');
+            const width = container.clientWidth;
+            const height = 600;
+            
+            const svg = d3.select('#sparta-matrix')
+                .attr('width', width)
+                .attr('height', height);
+            
+            const margin = {top: 100, right: 40, bottom: 40, left: 40};
+            const innerWidth = width - margin.left - margin.right;
+            const innerHeight = height - margin.top - margin.bottom;
+            
+            const g = svg.append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
+            
+            // Calculate dimensions
+            const tacticWidth = innerWidth / matrixData.tactics.length;
+            const cellHeight = 40;
+            
+            // Create gradient
+            const defs = svg.append('defs');
+            const gradient = defs.append('linearGradient')
+                .attr('id', 'tacticGradient')
+                .attr('x1', '0%')
+                .attr('x2', '100%');
+            
+            gradient.append('stop')
+                .attr('offset', '0%')
+                .style('stop-color', '#4F46E5');
+            
+            gradient.append('stop')
+                .attr('offset', '100%')
+                .style('stop-color', '#6366F1');
+            
+            // Render tactics
+            const tactics = g.selectAll(\.tactic')
+                .data(matrixData.tactics)
+                .enter()
+                .append('g')
+                .attr('transform', (d, i) => `translate(${i * tacticWidth}, 0)`);
+            
+            tactics.append('rect')
+                .attr('width', tacticWidth - 4)
+                .attr('height', 60)
+                .attr('rx', 8)
+                .attr('fill', 'url(#tacticGradient)');
+            
+            tactics.append('text')
+                .attr('x', tacticWidth / 2)
+                .attr('y', 30)
+                .attr('text-anchor', 'middle')
+                .attr('fill', 'white')
+                .attr('font-weight', '600')
+                .attr('font-size', '14px')
+                .text(d => d.name);
+            
+            // Render techniques
+            matrixData.tactics.forEach((tactic, tacticIndex) => {
+                const techniques = matrixData.techniques.filter(t => t.tactic_id === tactic.id);
+                
+                g.selectAll(`.technique-${tactic.id}`)
+                    .data(techniques)
+                    .enter()
+                    .append('rect')
+                    .attr('x', tacticIndex * tacticWidth)
+                    .attr('y', (d, i) => 80 + i * (cellHeight + 4))
+                    .attr('width', tacticWidth - 4)
+                    .attr('height', cellHeight)
+                    .attr('rx', 6)
+                    .attr('fill', d => getSeverityColor(d.severity))
+                    .attr('class', 'matrix-cell')
+                    .on('mouseover', showTooltip)
+                    .on('mouseout', hideTooltip);
+            });
+        }
+        
+        function getSeverityColor(severity) {
+            const colors = {
+                critical: '#DC2626',
+                high: '#F59E0B',
+                medium: '#3B82F6',
+                low: '#10B981'
+            };
+            return colors[severity] || '#6B7280';
+        }
+        
+        function showTooltip(event, d) {
+            // Implement tooltip
+        }
+        
+        function hideTooltip() {
+            // Hide tooltip
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,155 @@
+{
+  "name": "SPARTA Space Cybersecurity Sample Data",
+  "description": "Sample threat data based on The Aerospace Corporation SPARTA framework",
+  "version": "2.0",
+  "scenarios": [
+    {
+      "name": "Satellite Command Injection Attack",
+      "description": "Adversary gains unauthorized access to satellite command system",
+      "attack_chain": [
+        {
+          "step": 1,
+          "technique_id": "REC-0001",
+          "description": "Gather satellite technical documentation through OSINT"
+        },
+        {
+          "step": 2,
+          "technique_id": "IA-0004", 
+          "description": "Compromise ground station through phishing campaign"
+        },
+        {
+          "step": 3,
+          "technique_id": "EX-0001",
+          "description": "Replay captured commands to satellite"
+        },
+        {
+          "step": 4,
+          "technique_id": "IMP-0005",
+          "description": "Trigger unintended orbital maneuver"
+        }
+      ],
+      "impact": "Loss of satellite control, potential collision risk",
+      "likelihood": "medium",
+      "detection_indicators": [
+        "Unusual command patterns",
+        "Command counter anomalies",
+        "Unexpected thruster activations"
+      ]
+    },
+    {
+      "name": "Mission Data Exfiltration",
+      "description": "Stealing sensitive mission data from spacecraft",
+      "attack_chain": [
+        {
+          "step": 1,
+          "technique_id": "REC-0005",
+          "description": "Eavesdrop on downlink communications"
+        },
+        {
+          "step": 2,
+          "technique_id": "IA-0008",
+          "description": "Send rogue RF commands to spacecraft"
+        },
+        {
+          "step": 3,
+          "technique_id": "LM-0001",
+          "description": "Move laterally through spacecraft bus systems"
+        },
+        {
+          "step": 4,
+          "technique_id": "EXF-0003",
+          "description": "Downlink sensitive mission data"
+        }
+      ],
+      "impact": "Loss of mission confidentiality, competitive disadvantage",
+      "likelihood": "low",
+      "detection_indicators": [
+        "Unexpected downlink activity",
+        "Abnormal data access patterns",
+        "RF interference signatures"
+      ]
+    },
+    {
+      "name": "Spacecraft Denial of Service",
+      "description": "Rendering spacecraft inoperable through resource exhaustion",
+      "attack_chain": [
+        {
+          "step": 1,
+          "technique_id": "EX-0005",
+          "description": "Exploit firmware vulnerability"
+        },
+        {
+          "step": 2,
+          "technique_id": "PER-0002",
+          "description": "Install persistent backdoor"
+        },
+        {
+          "step": 3,
+          "technique_id": "DE-0003",
+          "description": "Disable telemetry to hide attack"
+        },
+        {
+          "step": 4,
+          "technique_id": "IMP-0002",
+          "description": "Execute denial of service attack"
+        }
+      ],
+      "impact": "Complete loss of spacecraft functionality",
+      "likelihood": "very_low",
+      "detection_indicators": [
+        "Telemetry blackout",
+        "CPU/memory anomalies before blackout",
+        "Firmware integrity check failures"
+      ]
+    }
+  ],
+  "threat_actors": [
+    {
+      "name": "Nation State Actor",
+      "motivation": "Strategic advantage, disruption of adversary capabilities",
+      "capabilities": ["Advanced persistent threats", "Zero-day exploits", "RF equipment"],
+      "typical_techniques": ["REC-0005", "IA-0008", "EX-0005", "PER-0002"]
+    },
+    {
+      "name": "Competitor",
+      "motivation": "Industrial espionage, competitive advantage",
+      "capabilities": ["Insider threats", "Social engineering"],
+      "typical_techniques": ["REC-0001", "IA-0004", "EXF-0003"]
+    },
+    {
+      "name": "Hacktivist",
+      "motivation": "Publicity, ideological goals",
+      "capabilities": ["Public exploits", "DDoS"],
+      "typical_techniques": ["EX-0001", "IMP-0002", "DE-0003"]
+    }
+  ],
+  "defensive_recommendations": [
+    {
+      "category": "Technical Controls",
+      "recommendations": [
+        "Implement strong command authentication",
+        "Use encryption for all communications",
+        "Deploy intrusion detection systems",
+        "Regular security updates and patches"
+      ]
+    },
+    {
+      "category": "Operational Controls",
+      "recommendations": [
+        "Security awareness training",
+        "Incident response procedures",
+        "Regular security assessments",
+        "Supply chain security"
+      ]
+    },
+    {
+      "category": "Physical Controls",
+      "recommendations": [
+        "Secure ground station facilities",
+        "RF shielding where appropriate",
+        "Access control to sensitive areas",
+        "Hardware security modules"
+      ]
+    }
+  ]
+}

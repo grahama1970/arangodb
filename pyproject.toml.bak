@@ -61,8 +61,7 @@ dependencies = [
     "httpx>=0.25.0",
     # Optional GPU support (commented out)
     # "faiss-gpu>=1.7.2",
-    # "faiss-gpu-cu12[fix-cuda]
-    "claude-test-reporter @ git+https://github.com/grahama1970/claude-test-reporter.git@main",
+    # "faiss-gpu-cu12[fix-cuda]",
     "pyautogui>=0.9.54",
     "pillow>=11.2.1",
 ]

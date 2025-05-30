@@ -1,0 +1,18 @@
+--- a/src/arangodb/cli/main.py
++++ b/src/arangodb/cli/main.py
+@@ -27,6 +27,7 @@ from arangodb.cli.temporal_commands import app as temporal_app
+ from arangodb.cli.visualization_commands import app as visualization_app
+ from arangodb.cli.qa_commands import app as qa_app
+ from arangodb.cli.agent_commands import app as agent_app
++from arangodb.cli.sparta_commands import app as sparta_app
+ 
+ 
+ from arangodb.cli.slash_mcp_mixin import add_slash_mcp_commands
+@@ -53,6 +54,7 @@ app.add_typer(temporal_app, name="temporal", help="Temporal operations and queri
+ app.add_typer(visualization_app, name="visualize", help="D3.js visualization generation")
+ app.add_typer(qa_app, name="qa", help="Q&A generation for LLM fine-tuning")
+ app.add_typer(agent_app, name="agent", help="Inter-module communication")
++app.add_typer(sparta_app, name="sparta", help="SPARTA space cybersecurity threat matrix")
+ 
+ # Apply slash MCP mixin
+ add_slash_mcp_commands(app, search_app, graph_app)

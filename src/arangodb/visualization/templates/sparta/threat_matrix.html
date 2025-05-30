@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>SPARTA Space Cybersecurity Threat Matrix</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #0a0a0a;
+            color: #ffffff;
+        }
+        
+        .matrix-container {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #1a1a1a;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 30px rgba(0, 100, 255, 0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #4a9eff;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-shadow: 0 0 20px rgba(74, 158, 255, 0.5);
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        
+        .matrix-svg {
+            width: 100%;
+            height: 800px;
+        }
+        
+        .tactic-header {
+            fill: #2a2a2a;
+            stroke: #4a9eff;
+            stroke-width: 2;
+        }
+        
+        .tactic-text {
+            fill: #4a9eff;
+            font-weight: bold;
+            font-size: 14px;
+            text-anchor: middle;
+        }
+        
+        .technique-cell {
+            fill: #1a1a1a;
+            stroke: #333;
+            stroke-width: 1;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .technique-cell:hover {
+            fill: #2a3f5f;
+            stroke: #4a9eff;
+            stroke-width: 2;
+        }
+        
+        .technique-cell.critical {
+            fill: #5a1f1f;
+        }
+        
+        .technique-cell.high {
+            fill: #4a2f1f;
+        }
+        
+        .technique-cell.medium {
+            fill: #3a3f1f;
+        }
+        
+        .technique-cell.low {
+            fill: #1f3a1f;
+        }
+        
+        .technique-text {
+            fill: #ccc;
+            font-size: 11px;
+            pointer-events: none;
+        }
+        
+        .tooltip {
+            position: absolute;
+            text-align: left;
+            padding: 12px;
+            font-size: 13px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #4a9eff;
+            border-radius: 6px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            color: #fff;
+            max-width: 400px;
+            box-shadow: 0 0 20px rgba(74, 158, 255, 0.5);
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 20px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border: 1px solid #444;
+            border-radius: 3px;
+        }
+        
+        .stats-panel {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            border: 1px solid #333;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .stat-item {
+            background: #1a1a1a;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #333;
+        }
+        
+        .stat-label {
+            color: #888;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+        
+        .stat-value {
+            color: #4a9eff;
+            font-size: 24px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="matrix-container">
+        <h1>SPARTA Space Cybersecurity Threat Matrix</h1>
+        <p class="subtitle">Space Attack Research and Tactic Analysis - Interactive Threat Visualization</p>
+        
+        <svg class="matrix-svg" id="threat-matrix"></svg>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #5a1f1f;"></div>
+                <span>Critical Threat</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #4a2f1f;"></div>
+                <span>High Threat</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #3a3f1f;"></div>
+                <span>Medium Threat</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #1f3a1f;"></div>
+                <span>Low Threat</span>
+            </div>
+        </div>
+        
+        <div class="stats-panel">
+            <h3>Threat Statistics</h3>
+            <div class="stats-grid" id="stats-grid"></div>
+        </div>
+    </div>
+    
+    <div class="tooltip" id="tooltip"></div>
+    
+    <script>
+        // SPARTA matrix data will be injected here
+        const matrixData = {{ matrix_data | tojson }};
+        
+        // Create the visualization
+        function createThreatMatrix(data) {
+            const svg = d3.select("#threat-matrix");
+            const width = svg.node().getBoundingClientRect().width;
+            const height = 800;
+            const margin = { top: 100, right: 20, bottom: 20, left: 20 };
+            const innerWidth = width - margin.left - margin.right;
+            const innerHeight = height - margin.top - margin.bottom;
+            
+            svg.attr("viewBox", '0 0 ' + width + ' ' + height);
+            
+            // Clear previous content
+            svg.selectAll("*").remove();
+            
+            const g = svg.append("g")
+                .attr("transform", 'translate(' + margin.left + ',' + margin.top + ')');
+            
+            // Calculate dimensions
+            const tacticWidth = innerWidth / data.tactics.length;
+            const techniqueHeight = 40;
+            const headerHeight = 60;
+            
+            // Create tooltip
+            const tooltip = d3.select("#tooltip");
+            
+            // Draw tactic headers
+            const tacticHeaders = g.selectAll(".tactic-group")
+                .data(data.tactics)
+                .enter()
+                .append("g")
+                .attr("class", "tactic-group")
+                .attr("transform", (d, i) => 'translate(' + (i * tacticWidth) + ', 0)');
+            
+            tacticHeaders.append("rect")
+                .attr("class", "tactic-header")
+                .attr("width", tacticWidth - 2)
+                .attr("height", headerHeight)
+                .attr("rx", 5);
+            
+            tacticHeaders.append("text")
+                .attr("class", "tactic-text")
+                .attr("x", tacticWidth / 2)
+                .attr("y", headerHeight / 2)
+                .attr("dy", "0.35em")
+                .text(d => d.name);
+            
+            // Draw techniques
+            data.tactics.forEach((tactic, tacticIndex) => {
+                const techniques = data.techniques.filter(t => t.tactic_id === tactic.id);
+                
+                g.selectAll('.technique-' + tactic.id)
+                    .data(techniques)
+                    .enter()
+                    .append("g")
+                    .attr("transform", (d, i) => 
+                        'translate(' + (tacticIndex * tacticWidth) + ', ' + (headerHeight + 10 + i * (techniqueHeight + 2)) + ')')
+                    .each(function(d) {
+                        const techGroup = d3.select(this);
+                        
+                        // Add rectangle
+                        techGroup.append("rect")
+                            .attr("class", 'technique-cell ' + d.severity)
+                            .attr("width", tacticWidth - 4)
+                            .attr("height", techniqueHeight)
+                            .attr("rx", 3)
+                            .on("mouseover", function(event) {
+                                tooltip.transition().duration(200).style("opacity", 1);
+                                tooltip.html('<strong>' + d.id + ': ' + d.name + '</strong><br/>' +
+                                    '<hr style="margin: 5px 0; border-color: #444;">' +
+                                    d.description + '<br/><br/>' +
+                                    '<strong>Severity:</strong> ' + d.severity.toUpperCase() + '<br/>' +
+                                    '<strong>Countermeasures:</strong> ' + (d.countermeasures || 'None specified'))
+                                .style("left", (event.pageX + 10) + "px")
+                                .style("top", (event.pageY - 28) + "px");
+                            })
+                            .on("mouseout", function() {
+                                tooltip.transition().duration(500).style("opacity", 0);
+                            });
+                        
+                        // Add text
+                        techGroup.append("text")
+                            .attr("class", "technique-text")
+                            .attr("x", 5)
+                            .attr("y", techniqueHeight / 2)
+                            .attr("dy", "0.35em")
+                            .text(d.id + ': ' + d.name)
+                            .call(wrap, tacticWidth - 10);
+                    });
+            });
+            
+            // Update statistics
+            updateStatistics(data);
+        }
+        
+        // Text wrapping function
+        function wrap(text, width) {
+            text.each(function() {
+                const text = d3.select(this);
+                const words = text.text().split(/\s+/).reverse();
+                let word;
+                let line = [];
+                let lineNumber = 0;
+                const lineHeight = 1.1;
+                const y = text.attr("y");
+                const dy = parseFloat(text.attr("dy"));
+                let tspan = text.text(null).append("tspan").attr("x", 5).attr("y", y).attr("dy", dy + "em");
+                
+                while (word = words.pop()) {
+                    line.push(word);
+                    tspan.text(line.join(" "));
+                    if (tspan.node().getComputedTextLength() > width) {
+                        line.pop();
+                        tspan.text(line.join(" "));
+                        line = [word];
+                        tspan = text.append("tspan").attr("x", 5).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+                    }
+                }
+            });
+        }
+        
+        // Update statistics panel
+        function updateStatistics(data) {
+            const stats = {
+                total_techniques: data.techniques.length,
+                critical: data.techniques.filter(t => t.severity === 'critical').length,
+                high: data.techniques.filter(t => t.severity === 'high').length,
+                medium: data.techniques.filter(t => t.severity === 'medium').length,
+                low: data.techniques.filter(t => t.severity === 'low').length,
+                tactics: data.tactics.length
+            };
+            
+            const statsGrid = d3.select("#stats-grid");
+            statsGrid.selectAll("*").remove();
+            
+            const statItems = [
+                { label: "Total Tactics", value: stats.tactics },
+                { label: "Total Techniques", value: stats.total_techniques },
+                { label: "Critical Threats", value: stats.critical },
+                { label: "High Threats", value: stats.high },
+                { label: "Medium Threats", value: stats.medium },
+                { label: "Low Threats", value: stats.low }
+            ];
+            
+            statItems.forEach(item => {
+                const div = statsGrid.append("div").attr("class", "stat-item");
+                div.append("div").attr("class", "stat-label").text(item.label);
+                div.append("div").attr("class", "stat-value").text(item.value);
+            });
+        }
+        
+        // Initialize the visualization
+        createThreatMatrix(matrixData);
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            createThreatMatrix(matrixData);
+        });
+    </script>
+</body>
+</html>

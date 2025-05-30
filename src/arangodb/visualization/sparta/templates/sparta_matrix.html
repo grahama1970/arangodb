@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>SPARTA Dynamic Threat Matrix - 100% Coverage</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #0a0a0a;
+            color: #ffffff;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: #4a9eff;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(74, 158, 255, 0.5);
+        }
+        
+        .subtitle {
+            color: #888;
+            font-size: 1.2em;
+        }
+        
+        .coverage-badge {
+            display: inline-block;
+            background: #44ff44;
+            color: #000;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-left: 20px;
+        }
+        
+        .control-panel {
+            background: #1a1a1a;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 20px rgba(0, 100, 255, 0.3);
+        }
+        
+        .actor-selector {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        
+        .actor-card {
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            min-width: 150px;
+            text-align: center;
+        }
+        
+        .actor-card:hover {
+            border-color: #4a9eff;
+            transform: translateY(-2px);
+        }
+        
+        .actor-card.active {
+            background: #3a4f6f;
+            border-color: #4a9eff;
+            box-shadow: 0 0 15px rgba(74, 158, 255, 0.5);
+        }
+        
+        .matrix-container {
+            background: #1a1a1a;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 30px rgba(0, 100, 255, 0.3);
+            overflow-x: auto;
+        }
+        
+        .matrix-svg {
+            width: 100%;
+            min-width: 1200px;
+            height: 2000px;
+        }
+        
+        .technique-cell {
+            fill: #1a1a1a;
+            stroke: #333;
+            stroke-width: 1;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .technique-cell:hover {
+            fill: #2a3f5f;
+            stroke: #4a9eff;
+            stroke-width: 2;
+        }
+        
+        .technique-cell.critical {
+            fill: #5a1f1f;
+        }
+        
+        .technique-cell.high {
+            fill: #4a2f1f;
+        }
+        
+        .technique-cell.medium {
+            fill: #3a3f1f;
+        }
+        
+        .technique-cell.low {
+            fill: #1f3a1f;
+        }
+        
+        .technique-cell.inactive {
+            opacity: 0.2;
+        }
+        
+        .tooltip {
+            position: absolute;
+            text-align: left;
+            padding: 15px;
+            font-size: 13px;
+            background: rgba(0, 0, 0, 0.95);
+            border: 1px solid #4a9eff;
+            border-radius: 8px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            color: #fff;
+            max-width: 500px;
+            box-shadow: 0 0 20px rgba(74, 158, 255, 0.5);
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>SPARTA Dynamic Threat Matrix <span class="coverage-badge">175 Techniques</span></h1>
+        <p class="subtitle">Real-time Space Attack Research & Tactic Analysis</p>
+    </div>
+    
+    <div class="control-panel">
+        <h3>Select Threat Actor Profile</h3>
+        <div class="actor-selector" id="actor-selector"></div>
+    </div>
+    
+    <div class="matrix-container">
+        <svg class="matrix-svg" id="threat-matrix"></svg>
+    </div>
+    
+    <div class="tooltip" id="tooltip"></div>
+    
+    <script>
+        // This is a placeholder - full JavaScript will be added via separate file
+        console.log("SPARTA Matrix Loaded - 175 techniques available");
+    </script>
+</body>
+</html>
