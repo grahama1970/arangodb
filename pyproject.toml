@@ -129,3 +129,10 @@ path = ["/home/graham/workspace/experiments/arangodb"]
 # Ensure VSCode and other editors respect the Python path
 [tool.vscode]
 python.analysis.extraPaths = ["/home/graham/workspace/experiments/arangodb"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+    "pytest-asyncio>=0.26.0",
+    "pytest-cov>=6.1.1",
+]
