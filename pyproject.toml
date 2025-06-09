@@ -34,7 +34,7 @@ dependencies = [
     "gitingest>=0.1.4",
     # Vector and embedding operations
     "torch>=2.2.0",
-    "numpy>=2.2.2",
+    "numpy==1.26.4",
     "scikit-learn>=1.6.1",
     "faiss-cpu>=1.11.0",
     "sentence-transformers>=4.1.0",
