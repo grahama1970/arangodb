@@ -1,3 +1,20 @@
+"""
+Module: workflow_tracking.py
+
+External Dependencies:
+- loguru: [Documentation URL]
+- arangodb: [Documentation URL]
+
+Sample Input:
+>>> # Add specific examples based on module functionality
+
+Expected Output:
+>>> # Add expected output examples
+
+Example Usage:
+>>> # Add usage examples
+"""
+
 #!/usr/bin/env python3
 """
 Workflow Tracking Module

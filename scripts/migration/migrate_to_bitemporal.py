@@ -1,3 +1,20 @@
+"""
+Module: migrate_to_bitemporal.py
+
+External Dependencies:
+- loguru: https://loguru.readthedocs.io/
+- arango: https://docs.python-arango.com/
+
+Sample Input:
+>>> # See function docstrings for specific examples
+
+Expected Output:
+>>> # See function docstrings for expected results
+
+Example Usage:
+>>> # Import and use as needed based on module functionality
+"""
+
 #!/usr/bin/env python3
 """
 Migration script to add bi-temporal fields to existing documents.

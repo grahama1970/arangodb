@@ -1,5 +1,7 @@
 """
 Core Utilities Module
+Module: __init__.py
+Description: Package initialization and exports
 
 This module provides shared utility functions for all core modules, including:
 - Embedding generation

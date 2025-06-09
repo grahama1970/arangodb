@@ -1,5 +1,6 @@
 """
 Q&A Generation CLI module.
+Module: cli.py
 
 This module provides commands for generating, validating, and exporting
 question-answer pairs from documents in ArangoDB.
@@ -149,7 +150,7 @@ def setup_qa_collections(
         progress.add_task("Creating views...", total=None)
         qa_setup.setup_views()
     
-    console.print("[bold green]✓[/] Q&A collections set up successfully")
+    console.print("[bold green][/] Q&A collections set up successfully")
 
 
 @app.command("generate")
@@ -202,7 +203,7 @@ def generate_qa_pairs(
     """
     Generate Q&A pairs for a document and store in ArangoDB.
     
-    Uses the document's graph relationships to generate diverse Q&A pairs,
+    Uses the document's graph relationships to generate diverse Q&A pairs,'
     validates them against the source content, and stores them in ArangoDB.
     """
     if not HAS_GENERATOR:
@@ -272,10 +273,10 @@ def generate_qa_pairs(
         validated_count = sum(1 for qa in qa_batch.qa_pairs if qa.citation_found)
         validation_rate = validated_count / len(qa_batch.qa_pairs) if qa_batch.qa_pairs else 0
         
-        console.print(f"[bold green]✓[/] Generated {len(qa_batch.qa_pairs)} Q&A pairs")
-        console.print(f"[bold green]✓[/] Validation rate: {validation_rate:.1%}")
-        console.print(f"[bold green]✓[/] Stored {len(qa_keys)} Q&A pairs in ArangoDB")
-        console.print(f"[bold green]✓[/] Created {len(rel_keys)} relationships")
+        console.print(f"[bold green][/] Generated {len(qa_batch.qa_pairs)} Q&A pairs")
+        console.print(f"[bold green][/] Validation rate: {validation_rate:.1%}")
+        console.print(f"[bold green][/] Stored {len(qa_keys)} Q&A pairs in ArangoDB")
+        console.print(f"[bold green][/] Created {len(rel_keys)} relationships")
         
         # Export to file if requested
         if output:
@@ -292,7 +293,7 @@ def generate_qa_pairs(
                 output_path = output_path.with_suffix(f".{format.value}")
             
             export_qa_pairs(qa_pairs, output_path, format.value)
-            console.print(f"[bold green]✓[/] Exported to {output_path}")
+            console.print(f"[bold green][/] Exported to {output_path}")
     
     # Run the async function
     asyncio.run(generate())
@@ -391,7 +392,7 @@ def validate_qa_pairs(
                 })
         
         # Print statistics
-        console.print(f"[bold green]✓[/] Validation complete")
+        console.print(f"[bold green][/] Validation complete")
         console.print(f"Validated: {validated} ({validated / len(results):.1%})")
         console.print(f"Partial: {partial} ({partial / len(results):.1%})")
         console.print(f"Failed: {failed} ({failed / len(results):.1%})")
@@ -488,12 +489,12 @@ def export(
         export_qa_pairs(train_pairs, train_path, format.value)
         export_qa_pairs(test_pairs, test_path, format.value)
         
-        console.print(f"[bold green]✓[/] Exported {len(train_pairs)} training pairs to {train_path}")
-        console.print(f"[bold green]✓[/] Exported {len(test_pairs)} test pairs to {test_path}")
+        console.print(f"[bold green][/] Exported {len(train_pairs)} training pairs to {train_path}")
+        console.print(f"[bold green][/] Exported {len(test_pairs)} test pairs to {test_path}")
     else:
         # Export all pairs
         export_qa_pairs(qa_pairs, output_path, format.value)
-        console.print(f"[bold green]✓[/] Exported {len(qa_pairs)} Q&A pairs to {output_path}")
+        console.print(f"[bold green][/] Exported {len(qa_pairs)} Q&A pairs to {output_path}")
 
 
 @app.command("list")
@@ -604,7 +605,7 @@ def list_qa_pairs(
             question = question[:47] + "..."
         
         # Format validation status
-        validated = "✓" if qa.get("citation_found", False) else "✗"
+        validated = "" if qa.get("citation_found", False) else ""
         
         # Format validation score
         score = qa.get("validation_score", 0)
@@ -797,7 +798,7 @@ def delete_qa_pairs(
     # Delete Q&A pairs
     deleted = connector.delete_qa_pairs_by_document(document_id)
     
-    console.print(f"[bold green]✓[/] Deleted {deleted} Q&A pairs for document {document_id}")
+    console.print(f"[bold green][/] Deleted {deleted} Q&A pairs for document {document_id}")
 
 
 def export_qa_pairs(qa_pairs: List[Dict[str, Any]], output_path: Path, format: str):
@@ -975,13 +976,13 @@ def process_marker_output(
                 progress.update(task, completed=True, description="Complete")
             
             # Print results
-            console.print(f"[bold green]✓[/] Processed document: {doc_id}")
-            console.print(f"[bold green]✓[/] Generated {len(qa_keys)} Q&A pairs")
-            console.print(f"[bold green]✓[/] Created {len(rel_keys)} document relationships")
+            console.print(f"[bold green][/] Processed document: {doc_id}")
+            console.print(f"[bold green][/] Generated {len(qa_keys)} Q&A pairs")
+            console.print(f"[bold green][/] Created {len(rel_keys)} document relationships")
             
             # Print graph integration results if used
             if graph_integration and qa_keys:
-                console.print(f"[bold green]✓[/] Created {edge_count} graph edges from Q&A pairs")
+                console.print(f"[bold green][/] Created {edge_count} graph edges from Q&A pairs")
                 
                 # Print relationship type distribution
                 if type_counts:
@@ -1006,7 +1007,7 @@ def process_marker_output(
                     output_path = output_path.with_suffix(f".{format.value}")
                 
                 export_qa_pairs(qa_pairs, output_path, format.value)
-                console.print(f"[bold green]✓[/] Exported to {output_path}")
+                console.print(f"[bold green][/] Exported to {output_path}")
         
         except Exception as e:
             console.print(f"[bold red]Error:[/] {str(e)}")
@@ -1222,7 +1223,7 @@ def marker_end_to_end(
             console.print(step_table)
             
             # Print final summary
-            console.print("\n[bold green]Workflow Complete ✓[/]")
+            console.print("\n[bold green]Workflow Complete [/]")
             console.print(f"Document: {results['document_id']}")
             console.print(f"Generated {results['qa_count']} Q&A pairs")
             console.print(f"Created {results['relationship_count']} document relationships")
@@ -1363,7 +1364,7 @@ def batch_process_marker_outputs(
         console.print(table)
         
         if output_dir:
-            console.print(f"[bold green]✓[/] Exported Q&A pairs to {output_dir}")
+            console.print(f"[bold green][/] Exported Q&A pairs to {output_dir}")
     
     # Run the async function
     asyncio.run(process_batch())
@@ -1451,7 +1452,7 @@ def integrate_qa_with_graph(
             progress.update(task, completed=True, description="Complete")
         
         # Print statistics
-        console.print(f"[bold green]✓[/] Created {edge_count} graph edges from Q&A pairs")
+        console.print(f"[bold green][/] Created {edge_count} graph edges from Q&A pairs")
         
         # Group by relationship type
         type_counts = {}
@@ -1505,7 +1506,7 @@ def integrate_qa_with_graph(
             with open(output, "w") as f:
                 json.dump(export_edges, f, indent=2)
             
-            console.print(f"[bold green]✓[/] Exported {len(export_edges)} edges to {output}")
+            console.print(f"[bold green][/] Exported {len(export_edges)} edges to {output}")
     
     # Run the async function
     asyncio.run(integrate())
@@ -1582,7 +1583,7 @@ def review_qa_edges(
             )
             
             if success:
-                console.print(f"[bold green]✓[/] Edge {approve} approved")
+                console.print(f"[bold green][/] Edge {approve} approved")
             else:
                 console.print(f"[bold red]Error:[/] Failed to approve edge {approve}")
             
@@ -1598,7 +1599,7 @@ def review_qa_edges(
             )
             
             if success:
-                console.print(f"[bold green]✓[/] Edge {reject} rejected")
+                console.print(f"[bold green][/] Edge {reject} rejected")
             else:
                 console.print(f"[bold red]Error:[/] Failed to reject edge {reject}")
             

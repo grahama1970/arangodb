@@ -1,5 +1,7 @@
 """
 Field name constants for ArangoDB collections.
+Module: field_constants.py
+Description: Functions for field constants operations
 
 This module defines the standard field names used across all collections
 to ensure consistency and prevent field naming issues.
@@ -157,4 +159,4 @@ if __name__ == "__main__":
     }
     
     print(json.dumps(constants, indent=2))
-    print("\n✅ Field constants defined successfully")
+    print("\n Field constants defined successfully")

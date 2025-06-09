@@ -1,5 +1,7 @@
 """
 Enhanced Entity Resolution for ArangoDB.
+Module: entity_resolution.py
+Description: Functions for entity resolution operations
 
 This module provides advanced entity resolution capabilities for ArangoDB,
 including exact name matching, semantic similarity matching, attribute merging,

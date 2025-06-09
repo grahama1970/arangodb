@@ -1,5 +1,7 @@
 """
 Fix for vector index creation in ArangoDB
+Module: arango_fix_vector_index.py
+Description: Functions for arango fix vector index operations
 
 This module provides a fix for creating proper vector indexes in ArangoDB
 to enable APPROX_NEAR_COSINE functionality.

@@ -1,5 +1,6 @@
 """
 Memory Agent Module
+Module: memory_agent.py
 
 Provides the MemoryAgent class for managing conversational memory in ArangoDB with
 temporal relationships and graph features.
@@ -91,7 +92,7 @@ class MemoryAgent:
     def setup_collections(self):
         """
         Ensure all required collections and views exist.
-        Creates them if they don't exist.
+        Creates them if they don't exist.'
         """
         # Check and create collections
         required_collections = [
@@ -173,8 +174,8 @@ class MemoryAgent:
         Store a user-agent message exchange with temporal metadata.
         
         Args:
-            user_message: The user's message text
-            agent_response: The agent's response text
+            user_message: The user's message text'
+            agent_response: The agent's response text'
             conversation_id: ID to group related messages (generated if None)
             episode_id: Optional episode ID to group conversations
             metadata: Optional additional metadata

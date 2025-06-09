@@ -1,3 +1,20 @@
+"""
+Module: log_utils.py
+Description: Utility functions and helpers for log utils
+
+External Dependencies:
+- None (uses only standard library)
+
+Sample Input:
+>>> # Add specific examples based on module functionality
+
+Expected Output:
+>>> # Add expected output examples
+
+Example Usage:
+>>> # Add usage examples
+"""
+
 import re
 import sys
 import json
@@ -16,11 +33,11 @@ class ValidationTracker:
     def check(self, test_name, expected, actual, description=None):
         self.total_tests += 1
         if expected == actual:
-            print(f"✅ PASS: {test_name}")
+            print(f" PASS: {test_name}")
             return True
         else:
             self.failed_tests += 1
-            print(f"❌ FAIL: {test_name}")
+            print(f" FAIL: {test_name}")
             print(f"  Expected: {expected}")
             print(f"  Actual: {actual}")
             if description:
@@ -29,24 +46,24 @@ class ValidationTracker:
             
     def pass_(self, test_name, description=None):
         self.total_tests += 1
-        print(f"✅ PASS: {test_name}")
+        print(f" PASS: {test_name}")
         if description:
             print(f"  Description: {description}")
     
     def fail(self, test_name, description=None):
         self.total_tests += 1
         self.failed_tests += 1
-        print(f"❌ FAIL: {test_name}")
+        print(f" FAIL: {test_name}")
         if description:
             print(f"  Description: {description}")
     
     def report_and_exit(self):
         print(f"\nResults: {self.total_tests - self.failed_tests} passed, {self.failed_tests} failed")
         if self.failed_tests > 0:
-            print("❌ VALIDATION FAILED")
+            print(" VALIDATION FAILED")
             sys.exit(1)
         else:
-            print("✅ VALIDATION PASSED - All tests produced expected results")
+            print(" VALIDATION PASSED - All tests produced expected results")
             sys.exit(0)
 
 def format_arango_result_for_display(result: Any, max_length: int = 200, max_items: int = 3) -> str:

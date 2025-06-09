@@ -1,9 +1,11 @@
 """
 Initializes LiteLLM Caching Configuration.
+Module: initialize_litellm_cache.py
+Description: Functions for initialize litellm cache operations
 
-This module sets up LiteLLM's caching mechanism. It attempts to configure
+This module sets up LiteLLM's caching mechanism. It attempts to configure'
 Redis as the primary cache backend. If Redis is unavailable or fails connection
-tests, it falls back to using LiteLLM's built-in in-memory cache. Includes
+tests, it falls back to using LiteLLM's built-in in-memory cache. Includes'
 a test function to verify cache functionality.
 
 Relevant Documentation:
@@ -87,7 +89,7 @@ def initialize_litellm_cache() -> None:
         logger.debug(
             f"LiteLLM cache config: {litellm.cache.__dict__ if hasattr(litellm.cache, '__dict__') else 'No cache config available'}"
         )
-        logger.info("✅ Redis caching enabled on localhost:6379")
+        logger.info(" Redis caching enabled on localhost:6379")
 
         # Try a test set/get to verify Redis is working
         try:
@@ -184,10 +186,10 @@ if __name__ == "__main__":
 
         if test_result:
             tests_passed_count += 1
-            logger.success("✅ Test 'cache_hit_miss': PASSED")
+            logger.success(" Test 'cache_hit_miss': PASSED")
         else:
             tests_failed_count += 1
-            logger.error("❌ Test 'cache_hit_miss': FAILED")
+            logger.error(" Test 'cache_hit_miss': FAILED")
             logger.error(
                 f"   Expected first call cache_hit=False/None, second call cache_hit=True."
             )
@@ -198,7 +200,7 @@ if __name__ == "__main__":
     except Exception as e:
         tests_failed_count += 1  # Count exception as failure
         logger.error(
-            f"❌ Test 'cache_hit_miss': FAILED due to exception during test execution."
+            f" Test 'cache_hit_miss': FAILED due to exception during test execution."
         )
         logger.error(f"   Exception: {e}", exc_info=True)
 
@@ -209,9 +211,9 @@ if __name__ == "__main__":
     print(f"Failed: {tests_failed_count}")
 
     if tests_failed_count == 0:
-        print("\n✅ VALIDATION COMPLETE - All LiteLLM cache tests passed.")
+        print("\n VALIDATION COMPLETE - All LiteLLM cache tests passed.")
         sys.exit(0)
     else:
-        print("\n❌ VALIDATION FAILED - LiteLLM cache test failed.")
+        print("\n VALIDATION FAILED - LiteLLM cache test failed.")
         # Error details already logged above
         sys.exit(1)

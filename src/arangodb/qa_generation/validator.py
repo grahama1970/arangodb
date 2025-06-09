@@ -1,5 +1,6 @@
 """
 Validation module for Q&A pairs using RapidFuzz.
+Module: validator.py
 
 This module validates generated Q&A pairs against the document corpus
 to ensure answers are grounded in actual content.

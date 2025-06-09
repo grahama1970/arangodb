@@ -1,5 +1,7 @@
 """
 Graph Traversal Search Module
+Module: graph_traverse.py
+Description: Implementation of graph traverse functionality
 
 This module provides graph traversal functionality for ArangoDB. It can be used to find
 related documents by traversing the graph starting from a given vertex.

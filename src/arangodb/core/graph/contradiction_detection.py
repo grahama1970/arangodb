@@ -1,5 +1,7 @@
 """
 Contradiction detection and resolution utilities for ArangoDB graph relationships.
+Module: contradiction_detection.py
+Description: Functions for contradiction detection operations
 
 This module provides functions to detect and resolve contradictions in graph relationships.
 It uses the bi-temporal data model to handle conflicting information efficiently.
@@ -1036,12 +1038,12 @@ if __name__ == "__main__":
         
         # Final validation result
         if all_validation_failures:
-            logger.error(f"❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
+            logger.error(f" VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
             for failure in all_validation_failures:
                 logger.error(f"  - {failure}")
             sys.exit(1)  # Exit with error code
         else:
-            logger.info(f"✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
+            logger.info(f" VALIDATION PASSED - All {total_tests} tests produced expected results")
             logger.info("Contradiction detection and resolution functionality is validated")
             sys.exit(0)  # Exit with success code
             

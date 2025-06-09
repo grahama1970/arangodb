@@ -1,3 +1,20 @@
+"""
+Module: generate_full_mcp.py
+Description: Model Context Protocol (MCP) integration
+
+External Dependencies:
+- arango: https://docs.python-arango.com/
+
+Sample Input:
+>>> # See function docstrings for specific examples
+
+Expected Output:
+>>> # See function docstrings for expected results
+
+Example Usage:
+>>> # Import and use as needed based on module functionality
+"""
+
 #!/usr/bin/env python3
 """
 Generate a complete MCP configuration including all sub-commands
@@ -120,8 +137,8 @@ def generate_full_mcp_config():
     with open(output_path, "w") as f:
         json.dump(config, f, indent=2)
     
-    print(f"✅ Generated complete MCP config: {output_path}")
-    print(f"📋 Includes {len(all_tools)} tools")
+    print(f" Generated complete MCP config: {output_path}")
+    print(f" Includes {len(all_tools)} tools")
     
     # List categories
     categories = {}
@@ -131,7 +148,7 @@ def generate_full_mcp_config():
             categories[category] = categories.get(category, 0) + 1
     
     if categories:
-        print("\n📊 Tool categories:")
+        print("\n Tool categories:")
         for category, count in sorted(categories.items()):
             print(f"  - {category}: {count} commands")
 

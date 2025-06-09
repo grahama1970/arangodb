@@ -1,3 +1,45 @@
+"""
+        
+        # Group by priority
+        high_priority = [t for t in task_data['tasks'] if t['severity'] == 'HIGH']
+        medium_priority = [t for t in task_data['tasks'] if t['severity'] == 'MEDIUM']
+        low_priority = [t for t in task_data['tasks'] if t['severity'] == 'LOW']
+        
+        if high_priority:
+            content += "### HIGH Priority\n\n"
+            for task in high_priority:
+                content += f"#### {task['id']}: {task['title']}\n"
+                content += f"**Module:** {task['module']}\n"
+                content += f"**Test:** {task['test']}\n"
+                content += f"**Error:** `{task['error'][:100]}...`\n\n"
+        
+        if medium_priority:
+            content += "### MEDIUM Priority\n\n"
+            for task in medium_priority:
+                content += f"#### {task['id']}: {task['title']}\n"
+                content += f"**Module:** {task['module']}\n"
+                content += f"**Test:** {task['test']}\n\n"
+        
+        if low_priority:
+            content += "### LOW Priority\n\n"
+            for task in low_priority:
+                content += f"#### {task['id']}: {task['title']}\n"
+                content += f"**Module:** {task['module']}\n\n"
+        
+        content += """
+"""
+Module: iterate.py
+
+Sample Input:
+>>> # See function docstrings for specific examples
+
+Expected Output:
+>>> # See function docstrings for expected results
+
+Example Usage:
+>>> # Import and use as needed based on module functionality
+"""
+
 #!/usr/bin/env python3
 """
 Master iteration script for automated bug fixing workflow.
@@ -174,35 +216,6 @@ class IterationManager:
 
 ## Priority Tasks
 
-"""
-        
-        # Group by priority
-        high_priority = [t for t in task_data['tasks'] if t['severity'] == 'HIGH']
-        medium_priority = [t for t in task_data['tasks'] if t['severity'] == 'MEDIUM']
-        low_priority = [t for t in task_data['tasks'] if t['severity'] == 'LOW']
-        
-        if high_priority:
-            content += "### HIGH Priority\n\n"
-            for task in high_priority:
-                content += f"#### {task['id']}: {task['title']}\n"
-                content += f"**Module:** {task['module']}\n"
-                content += f"**Test:** {task['test']}\n"
-                content += f"**Error:** `{task['error'][:100]}...`\n\n"
-        
-        if medium_priority:
-            content += "### MEDIUM Priority\n\n"
-            for task in medium_priority:
-                content += f"#### {task['id']}: {task['title']}\n"
-                content += f"**Module:** {task['module']}\n"
-                content += f"**Test:** {task['test']}\n\n"
-        
-        if low_priority:
-            content += "### LOW Priority\n\n"
-            for task in low_priority:
-                content += f"#### {task['id']}: {task['title']}\n"
-                content += f"**Module:** {task['module']}\n\n"
-        
-        content += """
 ## Validation Script
 
 Use this script to validate fixes:

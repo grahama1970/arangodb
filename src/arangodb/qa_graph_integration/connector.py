@@ -1,5 +1,6 @@
 """
 ArangoDB QA Connector Module
+Module: connector.py
 
 This module connects the QA generation module with the ArangoDB collections,
 providing methods to store generated Q&A pairs in the appropriate collections
@@ -487,7 +488,7 @@ if __name__ == "__main__":
             assert stored_qa["question"] == "What is the capital of France?", "Question mismatch"
             assert stored_qa["answer"] == "The capital of France is Paris.", "Answer mismatch"
             
-            print("✅ QA pair stored and verified successfully")
+            print(" QA pair stored and verified successfully")
             
             # Test relationship creation
             rel = connector.create_qa_relationship(
@@ -504,7 +505,7 @@ if __name__ == "__main__":
             except Exception as e:
                 print(f"⚠️ Skipping relationship test as document_objects/text_123 may not exist: {e}")
             
-            print("✅ QA relationship created successfully")
+            print(" QA relationship created successfully")
         except Exception as e:
             all_validation_failures.append(f"QA pair storage test failed: {str(e)}")
         
@@ -542,7 +543,7 @@ if __name__ == "__main__":
             qa_key = connector.store_qa_pair(storage_qa)
             print(f"Stored converted QA pair with key: {qa_key}")
             
-            print("✅ QA batch conversion and storage successful")
+            print(" QA batch conversion and storage successful")
         except Exception as e:
             all_validation_failures.append(f"QA batch conversion test failed: {str(e)}")
         
@@ -565,7 +566,7 @@ if __name__ == "__main__":
             # Verify we have the same number
             assert len(qa_with_rels) == len(qa_pairs), "Number of QA pairs with relationships mismatch"
             
-            print("✅ Query operations successful")
+            print(" Query operations successful")
         except Exception as e:
             all_validation_failures.append(f"Query operations test failed: {str(e)}")
         
@@ -584,16 +585,16 @@ if __name__ == "__main__":
     except Exception as e:
         logger.error(f"ArangoDB connection error: {e}")
         print("Skipping tests as ArangoDB is not available")
-        print(f"✅ VALIDATION PASSED (MOCK) - QA connector module is validated with mock data")
+        print(f" VALIDATION PASSED (MOCK) - QA connector module is validated with mock data")
         sys.exit(0)
     
     # Final validation result
     if all_validation_failures:
-        print(f"\n❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
+        print(f"\n VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
         for failure in all_validation_failures:
             print(f"  - {failure}")
         sys.exit(1)  # Exit with error code
     else:
-        print(f"\n✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
+        print(f"\n VALIDATION PASSED - All {total_tests} tests produced expected results")
         print("QA connector module is validated and ready for use")
         sys.exit(0)  # Exit with success code

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D3 Visualization Gallery - ArangoDB Memory Bank</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --color-primary-start: #4F46E5;
+            --color-primary-end: #6366F1;
+            --color-secondary: #6B7280;
+            --color-background: #F9FAFB;
+            --color-accent: #10B981;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen p-8">
+        <div class="max-w-7xl mx-auto">
+            <!-- Header -->
+            <div class="mb-12 text-center">
+                <h1 class="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
+                    D3 Visualization Gallery
+                </h1>
+                <p class="text-gray-600 text-lg">
+                    ArangoDB Memory Bank Visualization Examples
+                </p>
+            </div>
+            
+            <!-- Gallery Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                
+                <!-- Interactive Table -->
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+                    <div class="h-48 bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                        <svg class="w-24 h-24 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-2">Interactive Table</h3>
+                        <p class="text-gray-600 mb-4">Sortable, searchable data table with pagination and export</p>
+                        <div class="flex gap-2">
+                            <a href="example_table.html" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition">
+                                View Demo
+                            </a>
+                            <span class="px-4 py-2 bg-green-100 text-green-800 rounded">
+                                ✅ Compliant
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Force-Directed Graph -->
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+                    <div class="h-48 bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center">
+                        <svg class="w-24 h-24 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-2">Force-Directed Graph</h3>
+                        <p class="text-gray-600 mb-4">Interactive network visualization with physics simulation</p>
+                        <div class="flex gap-2">
+                            <a href="force_5nodes_.html" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition">
+                                View Demo
+                            </a>
+                            <span class="px-4 py-2 bg-yellow-100 text-yellow-800 rounded">
+                                ⚠️ Functional
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tree Layout -->
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+                    <div class="h-48 bg-gradient-to-br from-green-500 to-teal-600 flex items-center justify-center">
+                        <svg class="w-24 h-24 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+                        </svg>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-2">Tree Layout</h3>
+                        <p class="text-gray-600 mb-4">Hierarchical data visualization with expand/collapse</p>
+                        <div class="flex gap-2">
+                            <a href="pizza_test/pizza_category_tree.html" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition">
+                                View Demo
+                            </a>
+                            <span class="px-4 py-2 bg-yellow-100 text-yellow-800 rounded">
+                                ⚠️ Functional
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Memory Bank Graph -->
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+                    <div class="h-48 bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center">
+                        <svg class="w-24 h-24 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>
+                        </svg>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-2">Memory Bank Network</h3>
+                        <p class="text-gray-600 mb-4">Visualize memory relationships and connections</p>
+                        <div class="flex gap-2">
+                            <a href="memory_bank_graph.html" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition">
+                                View Demo
+                            </a>
+                            <span class="px-4 py-2 bg-yellow-100 text-yellow-800 rounded">
+                                ⚠️ Functional
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- SPARTA Matrix -->
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+                    <div class="h-48 bg-gradient-to-br from-red-500 to-orange-600 flex items-center justify-center">
+                        <svg class="w-24 h-24 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                        </svg>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-2">SPARTA Threat Matrix</h3>
+                        <p class="text-gray-600 mb-4">Space cybersecurity threat visualization matrix</p>
+                        <div class="flex gap-2">
+                            <a href="sparta/sparta_threat_matrix_enhanced.html" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition">
+                                View Demo
+                            </a>
+                            <span class="px-4 py-2 bg-yellow-100 text-yellow-800 rounded">
+                                ⚠️ Functional
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pizza Network -->
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+                    <div class="h-48 bg-gradient-to-br from-yellow-500 to-red-600 flex items-center justify-center">
+                        <svg class="w-24 h-24 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path>
+                        </svg>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-2">Pizza Ingredients Network</h3>
+                        <p class="text-gray-600 mb-4">Relationship visualization of pizza ingredients</p>
+                        <div class="flex gap-2">
+                            <a href="pizza_test/pizza_ingredients_network.html" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition">
+                                View Demo
+                            </a>
+                            <span class="px-4 py-2 bg-yellow-100 text-yellow-800 rounded">
+                                ⚠️ Functional
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <!-- Legend -->
+            <div class="mt-12 bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold mb-4">Compliance Status</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="flex items-center gap-3">
+                        <span class="px-4 py-2 bg-green-100 text-green-800 rounded">✅ Compliant</span>
+                        <span class="text-gray-600">Fully complies with 2025 Style Guide</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="px-4 py-2 bg-yellow-100 text-yellow-800 rounded">⚠️ Functional</span>
+                        <span class="text-gray-600">Works but needs style updates</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- CLI Commands -->
+            <div class="mt-8 bg-gray-800 text-white rounded-lg p-6">
+                <h2 class="text-xl font-semibold mb-4">Generate New Visualizations</h2>
+                <div class="space-y-3 font-mono text-sm">
+                    <div class="bg-gray-900 p-3 rounded">
+                        <span class="text-gray-400"># Generate interactive table</span><br>
+                        arangodb visualize table "FOR m IN memories LIMIT 100 RETURN m"
+                    </div>
+                    <div class="bg-gray-900 p-3 rounded">
+                        <span class="text-gray-400"># Generate force-directed graph</span><br>
+                        arangodb visualize generate "FOR v IN entities RETURN v" --layout force
+                    </div>
+                    <div class="bg-gray-900 p-3 rounded">
+                        <span class="text-gray-400"># Generate tree visualization</span><br>
+                        arangodb visualize generate "FOR v IN categories RETURN v" --layout tree
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</body>
+</html>

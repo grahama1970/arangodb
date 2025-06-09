@@ -1,5 +1,7 @@
 """
 Core Database Operations for ArangoDB
+Module: db_operations.py
+Description: Functions for db operations operations
 
 This module provides a unified interface for core database operations including:
 - Generic CRUD operations for any collection
@@ -254,7 +256,7 @@ def delete_document(
         db: ArangoDB database handle
         collection_name: Name of the collection
         document_key: Key of the document to delete
-        ignore_missing: Whether to ignore if document doesn't exist
+        ignore_missing: Whether to ignore if document doesn't exist'
         return_old: Whether to return the old document
         check_rev: Whether to check document revision
         rev: Document revision (required if check_rev is True)
@@ -882,11 +884,11 @@ if __name__ == "__main__":
     
     # Final validation result
     if all_validation_failures:
-        print(f"❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
+        print(f" VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
         for failure in all_validation_failures:
             print(f"  - {failure}")
         sys.exit(1)  # Exit with error code
     else:
-        print(f"✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
+        print(f" VALIDATION PASSED - All {total_tests} tests produced expected results")
         print("Core db_operations module is validated and ready for use")
         sys.exit(0)  # Exit with success code

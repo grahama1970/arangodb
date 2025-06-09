@@ -1,5 +1,7 @@
 """
 Q&A Generator that uses complete corpus from Marker.
+Module: generator_marker_aware.py
+Description: Implementation of generator marker aware functionality
 
 This generator is aware of Marker's validated corpus and uses it
 for answer validation instead of re-extracting from PDFs.

@@ -1,5 +1,7 @@
 """
 ArangoDB CLI Compaction Commands
+Module: compaction_commands.py
+Description: Functions for compaction commands operations
 
 This module provides command-line interface for conversation compaction operations using
 the core business logic layer. It handles conversation compaction, retrieval, and search
@@ -432,9 +434,9 @@ def cli_get_compaction(
                         name = step.get("name", f"Step {i+1}")
                         
                         if status == "completed":
-                            console.print(f"✅ {name}: {duration:.2f}s")
+                            console.print(f" {name}: {duration:.2f}s")
                         elif status == "failed":
-                            console.print(f"❌ {name}: {duration:.2f}s - {step.get('error', 'Unknown error')}")
+                            console.print(f" {name}: {duration:.2f}s - {step.get('error', 'Unknown error')}")
                         else:
                             console.print(f"⏳ {name}: {status}")
             

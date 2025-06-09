@@ -1,3 +1,20 @@
+"""
+Module: verify_unsloth_exporter.py
+Description: Implementation of verify unsloth exporter functionality
+
+External Dependencies:
+- pydantic: https://docs.pydantic.dev/
+
+Sample Input:
+>>> # See function docstrings for specific examples
+
+Expected Output:
+>>> # See function docstrings for expected results
+
+Example Usage:
+>>> # Import and use as needed based on module functionality
+"""
+
 #!/usr/bin/env python3
 """
 Standalone verification script for Unsloth export functionality.

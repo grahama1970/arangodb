@@ -1,5 +1,7 @@
 """
 LLM Utility Module
+Module: llm_utils.py
+Description: Utility functions and helpers for llm utils
 
 Provides helper functions for working with different LLM providers
 configured in the constants.py file. Simplifies switching between

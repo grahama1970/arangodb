@@ -1,5 +1,7 @@
 """
 Fixed Memory Commands with Consistent Interface
+Module: memory_commands.py
+Description: Functions for memory commands operations
 
 This module provides standardized memory commands following the stellar CLI template.
 All commands use consistent parameter patterns for LLM-friendly usage.

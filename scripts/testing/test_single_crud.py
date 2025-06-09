@@ -1,3 +1,30 @@
+"""
+Module: test_single_crud.py
+Description: Test suite for single_crud functionality
+
+External Dependencies:
+- arango: https://docs.python-arango.com/
+
+Sample Input:
+>>> # See function docstrings for specific examples
+
+Expected Output:
+>>> # See function docstrings for expected results
+
+Example Usage:
+>>> # Import and use as needed based on module functionality
+"""
+
+import sys
+from pathlib import Path
+
+# Add src to path for imports
+src_path = Path(__file__).parent.parent / "src"
+if src_path.exists() and str(src_path) not in sys.path:
+    sys.path.insert(0, str(src_path))
+
+
+
 #!/usr/bin/env python3
 """Test a single CRUD command to debug issues."""
 
@@ -13,9 +40,9 @@ collection_name = "test_cli_validation"
 
 if not db.has_collection(collection_name):
     db.create_collection(collection_name)
-    print(f"✓ Created collection: {collection_name}")
+    print(f" Created collection: {collection_name}")
 else:
-    print(f"✓ Collection already exists: {collection_name}")
+    print(f" Collection already exists: {collection_name}")
 
 # Create test document
 test_doc = {

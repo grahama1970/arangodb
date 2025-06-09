@@ -1,5 +1,7 @@
 """
 Document Embedding Validator
+Module: embedding_validator.py
+Description: Implementation of embedding validator functionality
 
 This module provides utilities for validating and ensuring consistent embeddings
 across documents in a collection. It ensures that:

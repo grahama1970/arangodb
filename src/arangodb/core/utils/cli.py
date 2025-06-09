@@ -1,5 +1,6 @@
 """
 Centralized CLI Utilities for Consistent Interface
+Module: cli.py
 
 This module provides standard utilities that ALL CLI commands must use
 to ensure perfect consistency across the entire CLI.
@@ -169,7 +170,7 @@ def _format_table(
             elif isinstance(value, datetime):
                 value = value.strftime("%Y-%m-%d %H:%M:%S")
             elif isinstance(value, bool):
-                value = "✓" if value else "✗"
+                value = "" if value else ""
             elif isinstance(value, (dict, list)):
                 value = json.dumps(value)[:50] + "..." if len(json.dumps(value)) > 50 else json.dumps(value)
             else:
@@ -199,7 +200,7 @@ def _format_single_item(data: Dict, title: str = "Details"):
         elif isinstance(value, datetime):
             value = value.strftime("%Y-%m-%d %H:%M:%S")
         elif isinstance(value, bool):
-            value = "✓" if value else "✗"
+            value = "" if value else ""
         elif isinstance(value, (dict, list)):
             value = json.dumps(value, indent=2)
         
@@ -225,11 +226,11 @@ def _format_errors(errors: List[Dict]):
 
 def format_success(message: str):
     """Format success messages consistently"""
-    return f"[green]✓ Success:[/green] {message}"
+    return f"[green] Success:[/green] {message}"
 
 def format_error(title: str, message: str):
     """Format error messages consistently"""
-    return f"[red]✗ {title}:[/red] {message}"
+    return f"[red] {title}:[/red] {message}"
 
 def format_warning(message: str):
     """Format warning messages consistently"""

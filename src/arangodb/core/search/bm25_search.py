@@ -1,5 +1,7 @@
 """
 # BM25 Text Search Module
+Module: bm25_search.py
+Description: Functions for bm25 search operations
 
 This module implements BM25 text search functionality for ArangoDB, providing
 relevancy-scored full-text search capabilities with filtering options.
@@ -290,17 +292,17 @@ if __name__ == "__main__":
     
     # Verify we got results
     if result["total"] > 0 and len(result["results"]) > 0:
-        print(f"✅ VALIDATION PASSED: BM25 search returned {result['total']} results")
+        print(f" VALIDATION PASSED: BM25 search returned {result['total']} results")
         print(f"First result score: {result['results'][0]['score']:.2f}")
     else:
-        print(f"❌ VALIDATION FAILED: No results returned for test query")
+        print(f" VALIDATION FAILED: No results returned for test query")
         exit(1)
     
     # Verify search metadata
     if result["search_engine"] == "bm25" and result["search_type"] == "text":
-        print("✅ Search metadata correctly populated")
+        print(" Search metadata correctly populated")
     else:
-        print("❌ Search metadata validation failed")
+        print(" Search metadata validation failed")
         exit(1)
     
     exit(0)

@@ -1,4 +1,5 @@
 """Data transformation utilities for ArangoDB to D3.js format conversion
+Module: data_transformer.py
 
 This module provides utilities to transform ArangoDB query results into D3.js compatible formats.
 Handles node and edge transformations, metadata extraction, and graph sampling for large datasets.
@@ -547,12 +548,12 @@ if __name__ == "__main__":
     
     # Final validation result
     if all_validation_failures:
-        print(f"❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
+        print(f" VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
         for failure in all_validation_failures:
             print(f"  - {failure}")
         exit(1)
     else:
-        print(f"✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
+        print(f" VALIDATION PASSED - All {total_tests} tests produced expected results")
         print("DataTransformer is validated and ready for use")
         print("\nTransformation metrics:")
         print(f"  - Nodes transformed: {result['metadata']['node_count']}")

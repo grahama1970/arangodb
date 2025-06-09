@@ -1,10 +1,12 @@
 """
 Q&A Generation Module for ArangoDB.
+Module: __init__.py
+Description: Package initialization and exports
 
-This module leverages ArangoDB's graph relationships to generate high-quality
+This module leverages ArangoDB's graph relationships to generate high-quality'
 question-answer pairs from documents processed by Marker.
 
-NOTE: Corpus extraction and validation are handled by Marker's Q&A-optimized
+NOTE: Corpus extraction and validation are handled by Marker's Q&A-optimized'
 processing pipeline. This module focuses on relationship-based Q&A generation
 using pre-validated content.
 """

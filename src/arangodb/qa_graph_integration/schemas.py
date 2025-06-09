@@ -1,5 +1,6 @@
 """
 QA Data Models and Schemas for ArangoDB
+Module: schemas.py
 
 This module defines Pydantic models for storing Q&A pairs in ArangoDB collections.
 It handles validation, schema consistency, and provides utilities for working with
@@ -261,7 +262,7 @@ if __name__ == "__main__":
         assert training_doc["messages"][1]["role"] == "assistant", f"Expected 'assistant', got {training_doc['messages'][1]['role']}"
         assert "thinking" in training_doc["messages"][1], "Assistant message should have 'thinking'"
         
-        print("✅ QAPair model validated successfully")
+        print(" QAPair model validated successfully")
     except Exception as e:
         all_validation_failures.append(f"QAPair model validation failed: {str(e)}")
     
@@ -300,7 +301,7 @@ if __name__ == "__main__":
             # This is expected
             pass
         
-        print("✅ QARelationship model validated successfully")
+        print(" QARelationship model validated successfully")
     except Exception as e:
         all_validation_failures.append(f"QARelationship model validation failed: {str(e)}")
     
@@ -343,7 +344,7 @@ if __name__ == "__main__":
         assert batch.qa_pairs[0].citation_found == True, "First QA pair should be validated"
         assert batch.qa_pairs[1].citation_found == False, "Second QA pair should not be validated"
         
-        print("✅ QABatch model validated successfully")
+        print(" QABatch model validated successfully")
     except Exception as e:
         all_validation_failures.append(f"QABatch model validation failed: {str(e)}")
     
@@ -377,17 +378,17 @@ if __name__ == "__main__":
         assert gen_config.reversal_ratio == 0.3, f"Expected 0.3, got {gen_config.reversal_ratio}"
         assert gen_config.model_name == "gemini-2.5-flash", f"Expected gemini-2.5-flash, got {gen_config.model_name}"
         
-        print("✅ Configuration models validated successfully")
+        print(" Configuration models validated successfully")
     except Exception as e:
         all_validation_failures.append(f"Configuration models validation failed: {str(e)}")
     
     # Final validation result
     if all_validation_failures:
-        print(f"\n❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
+        print(f"\n VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
         for failure in all_validation_failures:
             print(f"  - {failure}")
         sys.exit(1)  # Exit with error code
     else:
-        print(f"\n✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
+        print(f"\n VALIDATION PASSED - All {total_tests} tests produced expected results")
         print("QA schemas module is validated and ready for use")
         sys.exit(0)  # Exit with success code

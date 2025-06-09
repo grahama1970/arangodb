@@ -1,10 +1,29 @@
-"""Test script for FastAPI visualization server
-
-This script tests the server endpoints with sample data.
-
-Sample input: HTTP requests with graph data
-Expected output: HTML visualizations and API responses
 """
+Module: test_server.py
+Description: Test suite for server functionality
+
+External Dependencies:
+- loguru: https://loguru.readthedocs.io/
+
+Sample Input:
+>>> # See function docstrings for specific examples
+
+Expected Output:
+>>> # See function docstrings for expected results
+
+Example Usage:
+>>> # Import and use as needed based on module functionality
+"""
+
+import sys
+from pathlib import Path
+
+# Add src to path
+src_path = Path(__file__).parent.parent / "src"
+if src_path.exists() and str(src_path) not in sys.path:
+    sys.path.insert(0, str(src_path))
+
+import pytest
 
 import json
 import time
@@ -34,6 +53,8 @@ def get_test_graph():
     }
 
 
+@pytest.mark.asyncio
+@pytest.mark.asyncio
 async def test_endpoints():
     """Test server endpoints"""
     base_url = "http://localhost:8000"
@@ -178,12 +199,12 @@ async def test_endpoints():
     
     # Final validation result
     if all_validation_failures:
-        print(f"❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
+        print(f" VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
         for failure in all_validation_failures:
             print(f"  - {failure}")
         return False
     else:
-        print(f"✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
+        print(f" VALIDATION PASSED - All {total_tests} tests produced expected results")
         print("FastAPI server is working correctly")
         return True
 
@@ -202,11 +223,11 @@ async def main():
         async with httpx.AsyncClient() as client:
             response = await client.get("http://localhost:8000/", timeout=5.0)
             if response.status_code != 200:
-                print("❌ Server not responding. Please start the server first with:")
+                print(" Server not responding. Please start the server first with:")
                 print("   uvicorn src.arangodb.visualization.server.visualization_server:app --reload")
                 return
     except Exception as e:
-        print(f"❌ Cannot connect to server: {e}")
+        print(f" Cannot connect to server: {e}")
         print("Please start the server first with:")
         print("   uvicorn src.arangodb.visualization.server.visualization_server:app --reload")
         return

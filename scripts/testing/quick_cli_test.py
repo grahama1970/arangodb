@@ -1,3 +1,27 @@
+"""
+Module: quick_cli_test.py
+Description: Command line interface functionality
+
+Sample Input:
+>>> # See function docstrings for specific examples
+
+Expected Output:
+>>> # See function docstrings for expected results
+
+Example Usage:
+>>> # Import and use as needed based on module functionality
+"""
+
+import sys
+from pathlib import Path
+
+# Add src to path for imports
+src_path = Path(__file__).parent.parent / "src"
+if src_path.exists() and str(src_path) not in sys.path:
+    sys.path.insert(0, str(src_path))
+
+
+
 #!/usr/bin/env python3
 """Quick CLI test to verify key commands are working."""
 
@@ -35,10 +59,10 @@ def run_command(cmd, timeout=30):
         return result.returncode == 0
         
     except subprocess.TimeoutExpired:
-        print(f"❌ Command timed out after {timeout}s")
+        print(f" Command timed out after {timeout}s")
         return False
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f" Error: {e}")
         return False
 
 # Quick tests for critical commands
@@ -60,7 +84,7 @@ tests = [
 ]
 
 # Run tests
-print(f"🔧 Quick CLI Test - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+print(f" Quick CLI Test - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 print(f"Running {len(tests)} quick tests...")
 
 passed = 0
@@ -69,16 +93,16 @@ failed = 0
 for test_cmd in tests:
     if run_command(test_cmd, timeout=20):
         passed += 1
-        print("✅ PASSED")
+        print(" PASSED")
     else:
         failed += 1
-        print("❌ FAILED")
+        print(" FAILED")
 
 print(f"\n{'='*60}")
 print(f"SUMMARY: {passed} passed, {failed} failed")
 print(f"{'='*60}")
 
 if failed == 0:
-    print("✅ All quick tests passed!")
+    print(" All quick tests passed!")
 else:
-    print(f"❌ {failed} tests failed")
+    print(f" {failed} tests failed")

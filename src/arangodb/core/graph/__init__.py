@@ -1,5 +1,7 @@
 """
 Graph Operations Core Module
+Module: __init__.py
+Description: Package initialization and exports
 
 This module provides graph functionality for ArangoDB, including:
 - Graph traversal 

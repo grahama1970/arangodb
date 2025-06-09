@@ -1,5 +1,6 @@
 """
 Advanced relationship extraction from text for ArangoDB integration.
+Module: relationship_extraction.py
 
 This module provides sophisticated relationship extraction capabilities
 from unstructured text based on both rule-based parsing and LLM-based extraction.
@@ -957,11 +958,11 @@ if __name__ == "__main__":
     
     # Final validation result
     if all_validation_failures:
-        print(f"❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
+        print(f" VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
         for failure in all_validation_failures:
             print(f"  - {failure}")
         sys.exit(1)
     else:
-        print(f"✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
+        print(f" VALIDATION PASSED - All {total_tests} tests produced expected results")
         print("Advanced relationship extraction functionality is ready for use")
         sys.exit(0)

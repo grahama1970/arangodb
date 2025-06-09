@@ -1,5 +1,7 @@
 """
 Enhanced reversal Q&A generation to mitigate the reversal curse.
+Module: reversal_generator.py
+Description: Implementation of reversal generator functionality
 
 The reversal curse is when LLMs can answer "A is B" but fail at "B is A".
 This module provides sophisticated reversal generation strategies.

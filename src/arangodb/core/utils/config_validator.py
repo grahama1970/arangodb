@@ -1,5 +1,7 @@
 """
 Configuration Validation Module
+Module: config_validator.py
+Description: Configuration management and settings
 
 This module provides extensive validation for configuration settings,
 ensuring all required parameters are present and valid.
@@ -131,7 +133,7 @@ class GraphConfig(BaseModel):
             raise ValueError('Threshold/weight must be between 0 and 1')
         return v
     
-    @root_validator
+    @root_validator(skip_on_failure=True)
     def validate_weights(cls, values):
         """Validate weights sum to 1."""
         semantic_weight = values.get('semantic_weight')
@@ -183,7 +185,7 @@ class MainConfig(BaseModel):
     dataset: Optional[Dict[str, Any]] = Field(None, description="Dataset configuration")
     classification: Optional[Dict[str, Any]] = Field(None, description="Classification configuration")
     
-    @root_validator
+    @root_validator(skip_on_failure=True)
     def validate_compaction(cls, values):
         """Validate compaction configuration."""
         search = values.get('search')
@@ -339,14 +341,14 @@ if __name__ == "__main__":
             # Validate the current configuration
             print("Validating current configuration...")
             validated_config = validate_config(CONFIG)
-            print("✅ Configuration is valid!")
+            print(" Configuration is valid!")
             
             # Print config summary
             print_config_summary(validated_config)
             
             sys.exit(0)
         except ConfigurationError as e:
-            print(f"❌ Configuration is invalid: {e}")
+            print(f" Configuration is invalid: {e}")
             if hasattr(e, "details") and e.details:
                 print(f"Details: {e.details}")
             sys.exit(1)
@@ -397,9 +399,9 @@ if __name__ == "__main__":
         try:
             # Test validation with a valid config (will not compare with env vars)
             result = MainConfig(**valid_config).dict()
-            print("✅ Valid config test passed!")
+            print(" Valid config test passed!")
         except Exception as e:
-            print(f"❌ Valid config test failed: {e}")
+            print(f" Valid config test failed: {e}")
         
         # Test invalid config
         invalid_config = valid_config.copy()
@@ -407,8 +409,8 @@ if __name__ == "__main__":
         
         try:
             result = MainConfig(**invalid_config).dict()
-            print("❌ Invalid config test failed: accepted invalid config!")
+            print(" Invalid config test failed: accepted invalid config!")
         except Exception as e:
-            print(f"✅ Invalid config test passed: correctly rejected invalid config: {e}")
+            print(f" Invalid config test passed: correctly rejected invalid config: {e}")
         
         print("\nConfiguration validation module working correctly.")

@@ -1,3 +1,17 @@
+"""
+Module: task_utils.py
+Description: Utility functions and helper methods
+
+Sample Input:
+>>> # See function docstrings for specific examples
+
+Expected Output:
+>>> # See function docstrings for expected results
+
+Example Usage:
+>>> # Import and use as needed based on module functionality
+"""
+
 #!/usr/bin/env python3
 """
 Task Utilities for managing task lists and subtasks.
@@ -146,7 +160,7 @@ def update_progress_file(progress_file_path, task_id, task_name, is_complete=Fal
     
     # Update table
     table_pattern = rf"\| {task_id} \|.*\|"
-    table_line = f"| {task_id} | {'✅ Completed' if is_complete else '⏳ Not Started'} | | | | |"
+    table_line = f"| {task_id} | {' Completed' if is_complete else '⏳ Not Started'} | | | | |"
     
     if re.search(table_pattern, content):
         # Update existing table row
@@ -279,7 +293,7 @@ def mark_task_complete(task_file, task_number, issues=None, attempts=None, resea
     research_str = "Yes" if research and research.lower() == "yes" else "No"
     
     status_pattern = rf"\| {task_id} \| [^|]* \|[^|]*\|[^|]*\|[^|]*\|[^|]*\|"
-    status_replacement = f"| {task_id} | ✅ Completed | {issues or ''} | {attempts or ''} | {research_str} | {notes or ''} |"
+    status_replacement = f"| {task_id} |  Completed | {issues or ''} | {attempts or ''} | {research_str} | {notes or ''} |"
     
     if re.search(status_pattern, content):
         content = re.sub(status_pattern, status_replacement, content)

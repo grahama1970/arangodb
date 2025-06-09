@@ -1,5 +1,7 @@
 """
 Error Handling Improvements for Memory Operations
+Module: improved_error_handling.py
+Description: Functions for improved error handling operations
 
 This module provides enhanced error handling for memory operations in the ArangoDB Knowledge Graph System.
 It contains function wrappers and decorators that can be imported and applied to existing functions.

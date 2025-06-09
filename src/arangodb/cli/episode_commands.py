@@ -1,5 +1,7 @@
 """
 Episode Commands for ArangoDB Memory System CLI
+Module: episode_commands.py
+Description: Functions for episode commands operations
 
 This module provides CLI commands for managing episodes - temporal groupings
 of conversations and interactions in the memory system.
@@ -376,13 +378,13 @@ def link_entity_to_episode(
         success = episode_manager.link_entity_to_episode(episode_id, entity_id)
         
         if success:
-            console.print(f"[green]✓[/green] Linked entity '{entity_id}' to episode '{episode_id}'")
+            console.print(f"[green][/green] Linked entity '{entity_id}' to episode '{episode_id}'")
         else:
-            console.print(f"[red]✗[/red] Failed to link entity to episode")
+            console.print(f"[red][/red] Failed to link entity to episode")
             raise typer.Exit(code=1)
         
     except Exception as e:
-        console.print(f"[red]✗[/red] Failed to link entity: {str(e)}")
+        console.print(f"[red][/red] Failed to link entity: {str(e)}")
         raise typer.Exit(code=1)
 
 
@@ -399,13 +401,13 @@ def link_relationship_to_episode(
         success = episode_manager.link_relationship_to_episode(episode_id, relationship_id)
         
         if success:
-            console.print(f"[green]✓[/green] Linked relationship '{relationship_id}' to episode '{episode_id}'")
+            console.print(f"[green][/green] Linked relationship '{relationship_id}' to episode '{episode_id}'")
         else:
-            console.print(f"[red]✗[/red] Failed to link relationship to episode")
+            console.print(f"[red][/red] Failed to link relationship to episode")
             raise typer.Exit(code=1)
         
     except Exception as e:
-        console.print(f"[red]✗[/red] Failed to link relationship: {str(e)}")
+        console.print(f"[red][/red] Failed to link relationship: {str(e)}")
         raise typer.Exit(code=1)
 
 

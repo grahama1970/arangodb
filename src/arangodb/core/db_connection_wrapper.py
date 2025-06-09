@@ -1,5 +1,6 @@
 """
 Database Operations Wrapper
+Module: db_connection_wrapper.py
 
 Provides a class-based interface to ArangoDB operations for compatibility
 with Q&A generation module.

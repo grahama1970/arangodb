@@ -1,5 +1,6 @@
 """
 Memory Agent CLI Commands
+Module: memory_commands.py
 
 This module contains the CLI command implementations for the Memory Agent functionality.
 These commands are registered in the main CLI app under the 'memory' group.
@@ -255,10 +256,10 @@ if __name__ == "__main__":
         
         # Test the display function
         memory_display_results(sample_results, "Test Memory Results")
-        print("✅ Successfully displayed memory search results")
+        print(" Successfully displayed memory search results")
     except Exception as e:
         all_validation_failures.append(f"Display memory results test failed: {str(e)}")
-        print(f"❌ Display memory results test failed: {e}")
+        print(f" Display memory results test failed: {e}")
     
     # Test 2: Display related memories
     total_tests += 1
@@ -292,10 +293,10 @@ if __name__ == "__main__":
         
         # Test the display function
         memory_display_related(sample_related, "Test Related Memories")
-        print("✅ Successfully displayed related memories")
+        print(" Successfully displayed related memories")
     except Exception as e:
         all_validation_failures.append(f"Display related memories test failed: {str(e)}")
-        print(f"❌ Display related memories test failed: {e}")
+        print(f" Display related memories test failed: {e}")
     
     # Test 3: Display conversation messages
     total_tests += 1
@@ -323,18 +324,18 @@ if __name__ == "__main__":
         # Test the display function
         conversation_id = "conv12345"
         memory_display_conversation(sample_messages, conversation_id, "Test Conversation")
-        print("✅ Successfully displayed conversation messages")
+        print(" Successfully displayed conversation messages")
     except Exception as e:
         all_validation_failures.append(f"Display conversation test failed: {str(e)}")
-        print(f"❌ Display conversation test failed: {e}")
+        print(f" Display conversation test failed: {e}")
     
     # Final validation result
     if all_validation_failures:
-        print(f"\n❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
+        print(f"\n VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
         for failure in all_validation_failures:
             print(f"  - {failure}")
         sys.exit(1)  # Exit with error code
     else:
-        print(f"\n✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
+        print(f"\n VALIDATION PASSED - All {total_tests} tests produced expected results")
         print("Memory commands display functions are validated and ready for use")
         sys.exit(0)  # Exit with success code

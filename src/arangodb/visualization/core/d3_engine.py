@@ -1,4 +1,5 @@
 """D3.js Visualization Engine for ArangoDB
+Module: d3_engine.py
 
 This module provides a unified interface for generating D3.js visualizations from ArangoDB graph data.
 Supports multiple layout types including force-directed, hierarchical tree, radial, and Sankey diagrams.
@@ -653,11 +654,11 @@ if __name__ == "__main__":
     
     # Final validation result
     if all_validation_failures:
-        print(f"❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
+        print(f" VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
         for failure in all_validation_failures:
             print(f"  - {failure}")
         exit(1)
     else:
-        print(f"✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
+        print(f" VALIDATION PASSED - All {total_tests} tests produced expected results")
         print("D3VisualizationEngine is validated and ready for implementation")
         exit(0)

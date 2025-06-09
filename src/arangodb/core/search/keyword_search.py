@@ -1,5 +1,7 @@
 """
 Keyword Search Module
+Module: keyword_search.py
+Description: Functions for keyword search operations
 
 This module provides functionality for performing keyword searches with fuzzy matching
 using ArangoDB and RapidFuzz.

@@ -1,5 +1,6 @@
 """
 Context generator for extracting and generating context from documents.
+Module: context_generator.py
 
 This module provides functionality to generate summaries and context for documents
 and their sections, which can be used for QA generation and relationship extraction.
@@ -445,12 +446,12 @@ if __name__ == "__main__":
         
         # Final validation result
         if all_validation_failures:
-            print(f"\n❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
+            print(f"\n VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
             for failure in all_validation_failures:
                 print(f"  - {failure}")
             sys.exit(1)
         else:
-            print(f"\n✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
+            print(f"\n VALIDATION PASSED - All {total_tests} tests produced expected results")
             print("Context generator is validated and ready for use")
             sys.exit(0)
     

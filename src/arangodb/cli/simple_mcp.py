@@ -1,5 +1,7 @@
 """
 Simplified MCP Interface for ArangoDB
+Module: simple_mcp.py
+Description: Functions for simple mcp operations
 
 This module provides a flattened command structure for better MCP integration.
 Instead of nested commands like 'crud create', 'search semantic', we provide

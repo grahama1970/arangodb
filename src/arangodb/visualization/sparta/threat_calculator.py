@@ -1,5 +1,7 @@
 """
 SPARTA Threat Calculator - Algorithms for threat analysis and risk calculation
+
+Module: threat_calculator.py
 """
 
 from typing import Dict, List, Any, Tuple

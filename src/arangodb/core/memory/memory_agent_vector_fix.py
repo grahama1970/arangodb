@@ -1,5 +1,7 @@
 """
 Fixed Memory Agent Search with Vector Support
+Module: memory_agent_vector_fix.py
+Description: Functions for memory agent vector fix operations
 
 This module provides a fixed version of the memory agent search that uses
 APPROX_NEAR_COSINE when possible and falls back to text search when needed.

@@ -1,5 +1,7 @@
 """
 Q&A Edge Generator Module
+Module: edge_generator.py
+Description: Implementation of edge generator functionality
 
 Creates edge documents from Q&A pairs for integration with the ArangoDB graph.
 Uses SpaCy for entity extraction and integrates with existing relationship patterns.

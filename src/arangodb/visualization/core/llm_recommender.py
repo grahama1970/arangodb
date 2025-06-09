@@ -1,7 +1,8 @@
 """LLM-based visualization recommender using Vertex AI Gemini Flash 2.5
+Module: llm_recommender.py
 
 This module analyzes graph data and queries to recommend optimal visualization types
-and configurations using Google's Gemini Flash 2.5 model.
+and configurations using Google's Gemini Flash 2.5 model.'
 
 Links to third-party package documentation:
 - Vertex AI: https://cloud.google.com/vertex-ai/docs/python/latest
@@ -425,11 +426,11 @@ if __name__ == "__main__":
     
     # Final validation result
     if all_validation_failures:
-        print(f"\n❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
+        print(f"\n VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
         for failure in all_validation_failures:
             print(f"  - {failure}")
         exit(1)
     else:
-        print(f"\n✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
+        print(f"\n VALIDATION PASSED - All {total_tests} tests produced expected results")
         print("LLM recommender is working correctly")
         exit(0)

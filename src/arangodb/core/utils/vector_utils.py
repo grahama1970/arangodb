@@ -1,5 +1,7 @@
 """
 Vector Utilities for Embedding Management
+Module: vector_utils.py
+Description: Utility functions and helpers for vector utils
 
 This module provides utilities for managing vector embeddings, including:
 - Verifying embedding consistency across documents

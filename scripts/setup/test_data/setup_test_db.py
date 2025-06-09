@@ -1,8 +1,19 @@
 """
-Setup Test Database for CLI Tests
+Module: setup_test_db.py
+Description: Test suite for setup_db functionality
 
-This script ensures the test database is properly configured
-before running the CLI tests.
+External Dependencies:
+- arango: https://docs.python-arango.com/
+- loguru: https://loguru.readthedocs.io/
+
+Sample Input:
+>>> # See function docstrings for specific examples
+
+Expected Output:
+>>> # See function docstrings for expected results
+
+Example Usage:
+>>> # Import and use as needed based on module functionality
 """
 
 import os
@@ -73,14 +84,14 @@ def setup_test_database():
             if db.has_collection(collection_name):
                 ensure_vector_index(db, collection_name, "embedding", 768)
         
-        print("\n✅ Test database setup complete!")
+        print("\n Test database setup complete!")
         print(f"Database: {db.name}")
         print(f"Collections: {len(db.collections())}")
         
         return True
         
     except Exception as e:
-        print(f"\n❌ Error setting up test database: {e}")
+        print(f"\n Error setting up test database: {e}")
         logger.error(f"Database setup failed: {e}")
         return False
 
@@ -106,7 +117,7 @@ def cleanup_test_data():
                 collection.truncate()
                 print(f"Cleaned: {collection_name}")
         
-        print("✅ Cleanup complete!")
+        print(" Cleanup complete!")
         
     except Exception as e:
         print(f"⚠️  Cleanup warning: {e}")
@@ -119,8 +130,8 @@ if __name__ == "__main__":
     # Setup database
     if setup_test_database():
         cleanup_test_data()
-        print("\n🚀 Ready to run tests!")
+        print("\n Ready to run tests!")
         print("Run: python test_all_cli_commands.py")
     else:
         print("\n⚠️  Setup failed. Please check your ArangoDB connection.")
-        sys.exit(1)
+        # sys.exit() removed

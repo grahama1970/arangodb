@@ -1,5 +1,7 @@
 """
 SPARTA Matrix Generator - Generate enhanced D3.js visualizations
+
+Module: matrix_generator.py
 """
 
 from typing import Dict, List, Any, Optional

@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Data Table - ArangoDB Memory Bank</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --color-primary-start: #4F46E5;
+            --color-primary-end: #6366F1;
+            --color-secondary: #6B7280;
+            --color-background: #F9FAFB;
+            --color-accent: #10B981;
+            
+            --font-family-base: 'Inter', system-ui, sans-serif;
+            
+            --font-weight-regular: 400;
+            --font-weight-semibold: 600;
+            --font-weight-bold: 700;
+            
+            --border-radius-base: 8px;
+            --spacing-base: 8px;
+            
+            --transition-duration: 250ms;
+            --transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        body {
+            font-family: var(--font-family-base);
+            background-color: var(--color-background);
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Table specific styles following 2025 style guide */
+        .table-container {
+            background: white;
+            border-radius: var(--border-radius-base);
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th {
+            background: linear-gradient(135deg, var(--color-primary-start), var(--color-primary-end));
+            color: white;
+            font-weight: var(--font-weight-semibold);
+            text-align: left;
+            padding: 16px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            cursor: pointer;
+            user-select: none;
+            transition: all var(--transition-duration) var(--transition-timing);
+        }
+        
+        th:hover {
+            background: linear-gradient(135deg, #5B54E8, #7376F4);
+        }
+        
+        th.sorted-asc::after {
+            content: ' ↑';
+            opacity: 0.7;
+        }
+        
+        th.sorted-desc::after {
+            content: ' ↓';
+            opacity: 0.7;
+        }
+        
+        td {
+            padding: 16px;
+            border-bottom: 1px solid #E5E7EB;
+            color: #374151;
+            transition: all var(--transition-duration) var(--transition-timing);
+        }
+        
+        tr:hover td {
+            background-color: #F9FAFB;
+        }
+        
+        tr:last-child td {
+            border-bottom: none;
+        }
+        
+        /* Search input styles */
+        .search-container {
+            padding: 24px;
+            background: white;
+            border-bottom: 1px solid #E5E7EB;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #D1D5DB;
+            border-radius: var(--border-radius-base);
+            font-size: 16px;
+            transition: all var(--transition-duration) var(--transition-timing);
+            background-color: #F9FAFB;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--color-primary-start);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            background-color: white;
+        }
+        
+        /* Pagination styles */
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            border-top: 1px solid #E5E7EB;
+        }
+        
+        .pagination-info {
+            color: var(--color-secondary);
+            font-size: 14px;
+        }
+        
+        .pagination-controls {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .pagination-button {
+            padding: 8px 16px;
+            border: 1px solid #D1D5DB;
+            border-radius: var(--border-radius-base);
+            background: white;
+            color: var(--color-secondary);
+            cursor: pointer;
+            transition: all var(--transition-duration) var(--transition-timing);
+            font-weight: var(--font-weight-regular);
+        }
+        
+        .pagination-button:hover:not(:disabled) {
+            background: linear-gradient(135deg, var(--color-primary-start), var(--color-primary-end));
+            color: white;
+            border-color: transparent;
+        }
+        
+        .pagination-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .pagination-button.active {
+            background: linear-gradient(135deg, var(--color-primary-start), var(--color-primary-end));
+            color: white;
+            border-color: transparent;
+        }
+        
+        /* Loading skeleton styles */
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            border-radius: 4px;
+            height: 20px;
+            margin: 8px 0;
+        }
+        
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        /* Column visibility controls */
+        .column-controls {
+            padding: 16px 24px;
+            border-bottom: 1px solid #E5E7EB;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .column-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .column-toggle input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--color-primary-start);
+        }
+        
+        .column-toggle label {
+            cursor: pointer;
+            color: var(--color-secondary);
+            font-size: 14px;
+        }
+        
+        /* Export button */
+        .export-button {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, var(--color-accent), #0D9A6C);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius-base);
+            cursor: pointer;
+            font-weight: var(--font-weight-semibold);
+            transition: all var(--transition-duration) var(--transition-timing);
+        }
+        
+        .export-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .table-wrapper {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            table {
+                min-width: 600px;
+            }
+            
+            .pagination {
+                flex-direction: column;
+                gap: 16px;
+            }
+            
+            .column-controls {
+                flex-direction: column;
+            }
+        }
+        
+        /* Highlight animation for newly added rows */
+        .highlight-new {
+            animation: highlightRow 1s ease-out;
+        }
+        
+        @keyframes highlightRow {
+            0% {
+                background-color: rgba(16, 185, 129, 0.2);
+            }
+            100% {
+                background-color: transparent;
+            }
+        }
+        
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 48px;
+            color: var(--color-secondary);
+        }
+        
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 16px;
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Main container following 2025 style guide layout principles -->
+    <div class="min-h-screen p-4 md:p-8">
+        <div class="max-w-7xl mx-auto">
+            <!-- Header -->
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                    Interactive Data Table
+                </h1>
+                <p class="text-gray-600">Search, sort, and filter your data with ease</p>
+            </div>
+            
+            <!-- Main table card -->
+            <div class="table-container">
+                <!-- Controls section -->
+                <div class="search-container">
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <input 
+                            type="text" 
+                            id="searchInput" 
+                            class="search-input flex-1" 
+                            placeholder="Search across all columns..."
+                            aria-label="Search table data"
+                        />
+                        <button id="exportBtn" class="export-button">
+                            Export to CSV
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Column visibility toggles -->
+                <div id="columnControls" class="column-controls"></div>
+                
+                <!-- Table wrapper for responsive scrolling -->
+                <div class="table-wrapper">
+                    <table id="dataTable">
+                        <thead></thead>
+                        <tbody></tbody>
+                    </table>
+                    
+                    <!-- Empty state -->
+                    <div id="emptyState" class="empty-state hidden">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <p class="text-lg font-semibold mb-2">No data found</p>
+                        <p class="text-sm">Try adjusting your search or filters</p>
+                    </div>
+                </div>
+                
+                <!-- Pagination -->
+                <div id="pagination" class="pagination">
+                    <div class="pagination-info">
+                        Showing <span id="showingStart">0</span> to <span id="showingEnd">0</span> of <span id="totalRecords">0</span> entries
+                    </div>
+                    <div class="pagination-controls" id="paginationControls"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Table class following modern JavaScript best practices
+        class InteractiveTable {
+            constructor(containerId, options = {}) {
+                this.container = d3.select(`#${containerId}`);
+                this.options = {
+                    pageSize: options.pageSize || 10,
+                    columns: options.columns || [],
+                    data: options.data || [],
+                    ...options
+                };
+                
+                this.state = {
+                    currentPage: 1,
+                    sortColumn: null,
+                    sortDirection: 'asc',
+                    searchTerm: '',
+                    visibleColumns: new Set(),
+                    filteredData: []
+                };
+                
+                this.init();
+            }
+            
+            init() {
+                // Initialize column visibility
+                this.options.columns.forEach(col => {
+                    this.state.visibleColumns.add(col.key);
+                });
+                
+                this.setupEventListeners();
+                this.renderColumnControls();
+                this.updateTable();
+            }
+            
+            setupEventListeners() {
+                // Search functionality
+                d3.select('#searchInput').on('input', (event) => {
+                    this.state.searchTerm = event.target.value.toLowerCase();
+                    this.state.currentPage = 1;
+                    this.updateTable();
+                });
+                
+                // Export functionality
+                d3.select('#exportBtn').on('click', () => this.exportToCSV());
+            }
+            
+            renderColumnControls() {
+                const controls = d3.select('#columnControls');
+                controls.selectAll('.column-toggle').remove();
+                
+                this.options.columns.forEach(col => {
+                    const toggle = controls.append('div')
+                        .attr('class', 'column-toggle');
+                    
+                    const checkbox = toggle.append('input')
+                        .attr('type', 'checkbox')
+                        .attr('id', `col-${col.key}`)
+                        .property('checked', this.state.visibleColumns.has(col.key))
+                        .on('change', (event) => {
+                            if (event.target.checked) {
+                                this.state.visibleColumns.add(col.key);
+                            } else {
+                                this.state.visibleColumns.delete(col.key);
+                            }
+                            this.updateTable();
+                        });
+                    
+                    toggle.append('label')
+                        .attr('for', `col-${col.key}`)
+                        .text(col.label);
+                });
+            }
+            
+            filterData() {
+                let filtered = this.options.data;
+                
+                // Apply search filter
+                if (this.state.searchTerm) {
+                    filtered = filtered.filter(row => {
+                        return this.options.columns.some(col => {
+                            const value = String(row[col.key] || '').toLowerCase();
+                            return value.includes(this.state.searchTerm);
+                        });
+                    });
+                }
+                
+                // Apply sorting
+                if (this.state.sortColumn) {
+                    filtered = [...filtered].sort((a, b) => {
+                        const aVal = a[this.state.sortColumn];
+                        const bVal = b[this.state.sortColumn];
+                        
+                        // Handle different data types
+                        if (typeof aVal === 'number' && typeof bVal === 'number') {
+                            return this.state.sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
+                        }
+                        
+                        // String comparison
+                        const aStr = String(aVal || '').toLowerCase();
+                        const bStr = String(bVal || '').toLowerCase();
+                        
+                        if (this.state.sortDirection === 'asc') {
+                            return aStr.localeCompare(bStr);
+                        } else {
+                            return bStr.localeCompare(aStr);
+                        }
+                    });
+                }
+                
+                this.state.filteredData = filtered;
+                return filtered;
+            }
+            
+            updateTable() {
+                const filtered = this.filterData();
+                const visibleColumns = this.options.columns.filter(col => 
+                    this.state.visibleColumns.has(col.key)
+                );
+                
+                // Calculate pagination
+                const totalPages = Math.ceil(filtered.length / this.options.pageSize);
+                const startIdx = (this.state.currentPage - 1) * this.options.pageSize;
+                const endIdx = Math.min(startIdx + this.options.pageSize, filtered.length);
+                const pageData = filtered.slice(startIdx, endIdx);
+                
+                // Update table headers
+                const thead = this.container.select('thead');
+                thead.selectAll('tr').remove();
+                
+                if (visibleColumns.length > 0) {
+                    const headerRow = thead.append('tr');
+                    
+                    visibleColumns.forEach(col => {
+                        const th = headerRow.append('th')
+                            .text(col.label)
+                            .on('click', () => this.sort(col.key));
+                        
+                        if (this.state.sortColumn === col.key) {
+                            th.classed('sorted-asc', this.state.sortDirection === 'asc');
+                            th.classed('sorted-desc', this.state.sortDirection === 'desc');
+                        }
+                    });
+                }
+                
+                // Update table body
+                const tbody = this.container.select('tbody');
+                tbody.selectAll('tr').remove();
+                
+                if (pageData.length === 0) {
+                    d3.select('#emptyState').classed('hidden', false);
+                    this.container.style('display', 'none');
+                } else {
+                    d3.select('#emptyState').classed('hidden', true);
+                    this.container.style('display', null);
+                    
+                    pageData.forEach((row, i) => {
+                        const tr = tbody.append('tr');
+                        
+                        visibleColumns.forEach(col => {
+                            const value = row[col.key];
+                            const cell = tr.append('td');
+                            
+                            // Format based on column type
+                            if (col.formatter) {
+                                cell.html(col.formatter(value, row));
+                            } else if (col.type === 'date' && value) {
+                                cell.text(new Date(value).toLocaleDateString());
+                            } else if (col.type === 'number' && typeof value === 'number') {
+                                cell.text(value.toLocaleString());
+                            } else {
+                                cell.text(value || '');
+                            }
+                        });
+                        
+                        // Add highlight animation for new rows
+                        if (i === 0 && this.state.currentPage === 1) {
+                            tr.classed('highlight-new', true);
+                        }
+                    });
+                }
+                
+                // Update pagination info
+                d3.select('#showingStart').text(filtered.length > 0 ? startIdx + 1 : 0);
+                d3.select('#showingEnd').text(endIdx);
+                d3.select('#totalRecords').text(filtered.length);
+                
+                // Render pagination controls
+                this.renderPagination(totalPages);
+            }
+            
+            renderPagination(totalPages) {
+                const controls = d3.select('#paginationControls');
+                controls.selectAll('*').remove();
+                
+                // Previous button
+                controls.append('button')
+                    .attr('class', 'pagination-button')
+                    .property('disabled', this.state.currentPage === 1)
+                    .text('Previous')
+                    .on('click', () => {
+                        if (this.state.currentPage > 1) {
+                            this.state.currentPage--;
+                            this.updateTable();
+                        }
+                    });
+                
+                // Page numbers
+                const maxButtons = 5;
+                let startPage = Math.max(1, this.state.currentPage - Math.floor(maxButtons / 2));
+                let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+                
+                if (endPage - startPage < maxButtons - 1) {
+                    startPage = Math.max(1, endPage - maxButtons + 1);
+                }
+                
+                for (let i = startPage; i <= endPage; i++) {
+                    controls.append('button')
+                        .attr('class', 'pagination-button')
+                        .classed('active', i === this.state.currentPage)
+                        .text(i)
+                        .on('click', ((page) => () => {
+                            this.state.currentPage = page;
+                            this.updateTable();
+                        })(i));
+                }
+                
+                // Next button
+                controls.append('button')
+                    .attr('class', 'pagination-button')
+                    .property('disabled', this.state.currentPage === totalPages || totalPages === 0)
+                    .text('Next')
+                    .on('click', () => {
+                        if (this.state.currentPage < totalPages) {
+                            this.state.currentPage++;
+                            this.updateTable();
+                        }
+                    });
+            }
+            
+            sort(column) {
+                if (this.state.sortColumn === column) {
+                    this.state.sortDirection = this.state.sortDirection === 'asc' ? 'desc' : 'asc';
+                } else {
+                    this.state.sortColumn = column;
+                    this.state.sortDirection = 'asc';
+                }
+                
+                this.updateTable();
+            }
+            
+            exportToCSV() {
+                const filtered = this.filterData();
+                const visibleColumns = this.options.columns.filter(col => 
+                    this.state.visibleColumns.has(col.key)
+                );
+                
+                // Create CSV content
+                const headers = visibleColumns.map(col => col.label).join(',');
+                const rows = filtered.map(row => {
+                    return visibleColumns.map(col => {
+                        const value = row[col.key];
+                        // Escape quotes and wrap in quotes if contains comma
+                        const escaped = String(value || '').replace(/"/g, '""');
+                        return escaped.includes(',') ? `"${escaped}"` : escaped;
+                    }).join(',');
+                });
+                
+                const csv = [headers, ...rows].join('\n');
+                
+                // Download file
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', `data_export_${new Date().toISOString().split('T')[0]}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+            
+            // Public method to update data
+            setData(newData) {
+                this.options.data = newData;
+                this.state.currentPage = 1;
+                this.updateTable();
+            }
+            
+            // Public method to add a row
+            addRow(row) {
+                this.options.data.unshift(row);
+                this.state.currentPage = 1;
+                this.updateTable();
+            }
+        }
+        
+        // Initialize table with sample data or from server
+        document.addEventListener('DOMContentLoaded', () => {
+            // Example initialization - replace with actual data source
+            const table = new InteractiveTable('dataTable', {
+                pageSize: 10,
+                columns: [
+                    { key: 'id', label: 'ID', type: 'number' },
+                    { key: 'name', label: 'Name' },
+                    { key: 'type', label: 'Type' },
+                    { key: 'created_at', label: 'Created', type: 'date' },
+                    { key: 'score', label: 'Score', type: 'number' },
+                    { 
+                        key: 'status', 
+                        label: 'Status',
+                        formatter: (value) => {
+                            const colors = {
+                                active: 'text-green-600',
+                                pending: 'text-yellow-600',
+                                inactive: 'text-gray-500'
+                            };
+                            return `<span class="${colors[value] || ''}">${value}</span>`;
+                        }
+                    }
+                ],
+                data: [] // Will be populated from server or passed in
+            });
+            
+            // Make table instance globally available for data updates
+            window.dataTable = table;
+        });
+    </script>
+</body>
+</html>

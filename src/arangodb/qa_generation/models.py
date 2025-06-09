@@ -1,8 +1,10 @@
 """
 Data models for Q&A generation module.
+Module: models.py
+Description: Data models and schemas for models
 
 This module defines Pydantic models for structured Q&A generation,
-compatible with LiteLLM's response_format parameter.
+compatible with LiteLLM's response_format parameter.'
 """
 
 from enum import Enum

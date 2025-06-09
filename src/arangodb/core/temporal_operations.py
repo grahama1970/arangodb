@@ -1,5 +1,7 @@
 """
 Temporal Operations Module
+Module: temporal_operations.py
+Description: Functions for temporal operations operations
 
 Provides functions for bi-temporal data management including
 point-in-time queries, temporal validation, and invalidation.

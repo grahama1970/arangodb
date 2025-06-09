@@ -1,6 +1,8 @@
 """
 SPARTA Matrix Generator with Vercel V0 Design System
 Modern, responsive, interactive visualization following 2025 style guide
+
+Module: matrix_generator_v0.py
 """
 
 from typing import Dict, List, Any, Optional

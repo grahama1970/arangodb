@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Example: ArangoDB Memory Bank Table</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --color-primary-start: #4F46E5;
+            --color-primary-end: #6366F1;
+            --color-secondary: #6B7280;
+            --color-background: #F9FAFB;
+            --color-accent: #10B981;
+            
+            --font-family-base: 'Inter', system-ui, sans-serif;
+            
+            --font-weight-regular: 400;
+            --font-weight-semibold: 600;
+            --font-weight-bold: 700;
+            
+            --border-radius-base: 8px;
+            --spacing-base: 8px;
+            
+            --transition-duration: 250ms;
+            --transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        body {
+            font-family: var(--font-family-base);
+            background-color: var(--color-background);
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Copy all styles from table.html template */
+        .table-container {
+            background: white;
+            border-radius: var(--border-radius-base);
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th {
+            background: linear-gradient(135deg, var(--color-primary-start), var(--color-primary-end));
+            color: white;
+            font-weight: var(--font-weight-semibold);
+            text-align: left;
+            padding: 16px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            cursor: pointer;
+            user-select: none;
+            transition: all var(--transition-duration) var(--transition-timing);
+        }
+        
+        th:hover {
+            background: linear-gradient(135deg, #5B54E8, #7376F4);
+        }
+        
+        th.sorted-asc::after {
+            content: ' ↑';
+            opacity: 0.7;
+        }
+        
+        th.sorted-desc::after {
+            content: ' ↓';
+            opacity: 0.7;
+        }
+        
+        td {
+            padding: 16px;
+            border-bottom: 1px solid #E5E7EB;
+            color: #374151;
+            transition: all var(--transition-duration) var(--transition-timing);
+        }
+        
+        tr:hover td {
+            background-color: #F9FAFB;
+        }
+        
+        tr:last-child td {
+            border-bottom: none;
+        }
+        
+        /* Search input styles */
+        .search-container {
+            padding: 24px;
+            background: white;
+            border-bottom: 1px solid #E5E7EB;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #D1D5DB;
+            border-radius: var(--border-radius-base);
+            font-size: 16px;
+            transition: all var(--transition-duration) var(--transition-timing);
+            background-color: #F9FAFB;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--color-primary-start);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            background-color: white;
+        }
+        
+        /* Pagination styles */
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            border-top: 1px solid #E5E7EB;
+        }
+        
+        .pagination-info {
+            color: var(--color-secondary);
+            font-size: 14px;
+        }
+        
+        .pagination-controls {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .pagination-button {
+            padding: 8px 16px;
+            border: 1px solid #D1D5DB;
+            border-radius: var(--border-radius-base);
+            background: white;
+            color: var(--color-secondary);
+            cursor: pointer;
+            transition: all var(--transition-duration) var(--transition-timing);
+            font-weight: var(--font-weight-regular);
+        }
+        
+        .pagination-button:hover:not(:disabled) {
+            background: linear-gradient(135deg, var(--color-primary-start), var(--color-primary-end));
+            color: white;
+            border-color: transparent;
+        }
+        
+        .pagination-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .pagination-button.active {
+            background: linear-gradient(135deg, var(--color-primary-start), var(--color-primary-end));
+            color: white;
+            border-color: transparent;
+        }
+        
+        /* Column visibility controls */
+        .column-controls {
+            padding: 16px 24px;
+            border-bottom: 1px solid #E5E7EB;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .column-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .column-toggle input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--color-primary-start);
+        }
+        
+        .column-toggle label {
+            cursor: pointer;
+            color: var(--color-secondary);
+            font-size: 14px;
+        }
+        
+        /* Export button */
+        .export-button {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, var(--color-accent), #0D9A6C);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius-base);
+            cursor: pointer;
+            font-weight: var(--font-weight-semibold);
+            transition: all var(--transition-duration) var(--transition-timing);
+        }
+        
+        .export-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        /* Status badge styles */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .status-active {
+            background-color: #D1FAE5;
+            color: #065F46;
+        }
+        
+        .status-pending {
+            background-color: #FEF3C7;
+            color: #92400E;
+        }
+        
+        .status-expired {
+            background-color: #FEE2E2;
+            color: #991B1B;
+        }
+        
+        /* Tag styles */
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            margin: 2px;
+            background-color: #E0E7FF;
+            color: #3730A3;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 48px;
+            color: var(--color-secondary);
+        }
+        
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 16px;
+            opacity: 0.3;
+        }
+        
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .table-wrapper {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            table {
+                min-width: 600px;
+            }
+            
+            .pagination {
+                flex-direction: column;
+                gap: 16px;
+            }
+            
+            .column-controls {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen p-4 md:p-8">
+        <div class="max-w-7xl mx-auto">
+            <!-- Header -->
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                    ArangoDB Memory Bank Table
+                </h1>
+                <p class="text-gray-600">Interactive table visualization with search, sort, and filter capabilities</p>
+            </div>
+            
+            <!-- Main table card -->
+            <div class="table-container">
+                <!-- Controls section -->
+                <div class="search-container">
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <input 
+                            type="text" 
+                            id="searchInput" 
+                            class="search-input flex-1" 
+                            placeholder="Search across all columns..."
+                            aria-label="Search table data"
+                        />
+                        <button id="exportBtn" class="export-button">
+                            Export to CSV
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Column visibility toggles -->
+                <div id="columnControls" class="column-controls"></div>
+                
+                <!-- Table wrapper for responsive scrolling -->
+                <div class="table-wrapper">
+                    <table id="dataTable">
+                        <thead></thead>
+                        <tbody></tbody>
+                    </table>
+                    
+                    <!-- Empty state -->
+                    <div id="emptyState" class="empty-state hidden">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <p class="text-lg font-semibold mb-2">No data found</p>
+                        <p class="text-sm">Try adjusting your search or filters</p>
+                    </div>
+                </div>
+                
+                <!-- Pagination -->
+                <div id="pagination" class="pagination">
+                    <div class="pagination-info">
+                        Showing <span id="showingStart">0</span> to <span id="showingEnd">0</span> of <span id="totalRecords">0</span> entries
+                    </div>
+                    <div class="pagination-controls" id="paginationControls"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Copy the InteractiveTable class from table.html
+        class InteractiveTable {
+            constructor(containerId, options = {}) {
+                this.container = d3.select(`#${containerId}`);
+                this.options = {
+                    pageSize: options.pageSize || 10,
+                    columns: options.columns || [],
+                    data: options.data || [],
+                    ...options
+                };
+                
+                this.state = {
+                    currentPage: 1,
+                    sortColumn: null,
+                    sortDirection: 'asc',
+                    searchTerm: '',
+                    visibleColumns: new Set(),
+                    filteredData: []
+                };
+                
+                this.init();
+            }
+            
+            init() {
+                // Initialize column visibility
+                this.options.columns.forEach(col => {
+                    this.state.visibleColumns.add(col.key);
+                });
+                
+                this.setupEventListeners();
+                this.renderColumnControls();
+                this.updateTable();
+            }
+            
+            setupEventListeners() {
+                // Search functionality
+                d3.select('#searchInput').on('input', (event) => {
+                    this.state.searchTerm = event.target.value.toLowerCase();
+                    this.state.currentPage = 1;
+                    this.updateTable();
+                });
+                
+                // Export functionality
+                d3.select('#exportBtn').on('click', () => this.exportToCSV());
+            }
+            
+            renderColumnControls() {
+                const controls = d3.select('#columnControls');
+                controls.selectAll('.column-toggle').remove();
+                
+                this.options.columns.forEach(col => {
+                    const toggle = controls.append('div')
+                        .attr('class', 'column-toggle');
+                    
+                    const checkbox = toggle.append('input')
+                        .attr('type', 'checkbox')
+                        .attr('id', `col-${col.key}`)
+                        .property('checked', this.state.visibleColumns.has(col.key))
+                        .on('change', (event) => {
+                            if (event.target.checked) {
+                                this.state.visibleColumns.add(col.key);
+                            } else {
+                                this.state.visibleColumns.delete(col.key);
+                            }
+                            this.updateTable();
+                        });
+                    
+                    toggle.append('label')
+                        .attr('for', `col-${col.key}`)
+                        .text(col.label);
+                });
+            }
+            
+            filterData() {
+                let filtered = this.options.data;
+                
+                // Apply search filter
+                if (this.state.searchTerm) {
+                    filtered = filtered.filter(row => {
+                        return this.options.columns.some(col => {
+                            const value = String(row[col.key] || '').toLowerCase();
+                            return value.includes(this.state.searchTerm);
+                        });
+                    });
+                }
+                
+                // Apply sorting
+                if (this.state.sortColumn) {
+                    filtered = [...filtered].sort((a, b) => {
+                        const aVal = a[this.state.sortColumn];
+                        const bVal = b[this.state.sortColumn];
+                        
+                        // Handle different data types
+                        if (typeof aVal === 'number' && typeof bVal === 'number') {
+                            return this.state.sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
+                        }
+                        
+                        // String comparison
+                        const aStr = String(aVal || '').toLowerCase();
+                        const bStr = String(bVal || '').toLowerCase();
+                        
+                        if (this.state.sortDirection === 'asc') {
+                            return aStr.localeCompare(bStr);
+                        } else {
+                            return bStr.localeCompare(aStr);
+                        }
+                    });
+                }
+                
+                this.state.filteredData = filtered;
+                return filtered;
+            }
+            
+            updateTable() {
+                const filtered = this.filterData();
+                const visibleColumns = this.options.columns.filter(col => 
+                    this.state.visibleColumns.has(col.key)
+                );
+                
+                // Calculate pagination
+                const totalPages = Math.ceil(filtered.length / this.options.pageSize);
+                const startIdx = (this.state.currentPage - 1) * this.options.pageSize;
+                const endIdx = Math.min(startIdx + this.options.pageSize, filtered.length);
+                const pageData = filtered.slice(startIdx, endIdx);
+                
+                // Update table headers
+                const thead = this.container.select('thead');
+                thead.selectAll('tr').remove();
+                
+                if (visibleColumns.length > 0) {
+                    const headerRow = thead.append('tr');
+                    
+                    visibleColumns.forEach(col => {
+                        const th = headerRow.append('th')
+                            .text(col.label)
+                            .on('click', () => this.sort(col.key));
+                        
+                        if (this.state.sortColumn === col.key) {
+                            th.classed('sorted-asc', this.state.sortDirection === 'asc');
+                            th.classed('sorted-desc', this.state.sortDirection === 'desc');
+                        }
+                    });
+                }
+                
+                // Update table body
+                const tbody = this.container.select('tbody');
+                tbody.selectAll('tr').remove();
+                
+                if (pageData.length === 0) {
+                    d3.select('#emptyState').classed('hidden', false);
+                    this.container.style('display', 'none');
+                } else {
+                    d3.select('#emptyState').classed('hidden', true);
+                    this.container.style('display', null);
+                    
+                    pageData.forEach((row, i) => {
+                        const tr = tbody.append('tr');
+                        
+                        visibleColumns.forEach(col => {
+                            const value = row[col.key];
+                            const cell = tr.append('td');
+                            
+                            // Format based on column type
+                            if (col.formatter) {
+                                cell.html(col.formatter(value, row));
+                            } else if (col.type === 'date' && value) {
+                                cell.text(new Date(value).toLocaleDateString());
+                            } else if (col.type === 'number' && typeof value === 'number') {
+                                cell.text(value.toLocaleString());
+                            } else {
+                                cell.text(value || '');
+                            }
+                        });
+                    });
+                }
+                
+                // Update pagination info
+                d3.select('#showingStart').text(filtered.length > 0 ? startIdx + 1 : 0);
+                d3.select('#showingEnd').text(endIdx);
+                d3.select('#totalRecords').text(filtered.length);
+                
+                // Render pagination controls
+                this.renderPagination(totalPages);
+            }
+            
+            renderPagination(totalPages) {
+                const controls = d3.select('#paginationControls');
+                controls.selectAll('*').remove();
+                
+                // Previous button
+                controls.append('button')
+                    .attr('class', 'pagination-button')
+                    .property('disabled', this.state.currentPage === 1)
+                    .text('Previous')
+                    .on('click', () => {
+                        if (this.state.currentPage > 1) {
+                            this.state.currentPage--;
+                            this.updateTable();
+                        }
+                    });
+                
+                // Page numbers
+                const maxButtons = 5;
+                let startPage = Math.max(1, this.state.currentPage - Math.floor(maxButtons / 2));
+                let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+                
+                if (endPage - startPage < maxButtons - 1) {
+                    startPage = Math.max(1, endPage - maxButtons + 1);
+                }
+                
+                for (let i = startPage; i <= endPage; i++) {
+                    controls.append('button')
+                        .attr('class', 'pagination-button')
+                        .classed('active', i === this.state.currentPage)
+                        .text(i)
+                        .on('click', ((page) => () => {
+                            this.state.currentPage = page;
+                            this.updateTable();
+                        })(i));
+                }
+                
+                // Next button
+                controls.append('button')
+                    .attr('class', 'pagination-button')
+                    .property('disabled', this.state.currentPage === totalPages || totalPages === 0)
+                    .text('Next')
+                    .on('click', () => {
+                        if (this.state.currentPage < totalPages) {
+                            this.state.currentPage++;
+                            this.updateTable();
+                        }
+                    });
+            }
+            
+            sort(column) {
+                if (this.state.sortColumn === column) {
+                    this.state.sortDirection = this.state.sortDirection === 'asc' ? 'desc' : 'asc';
+                } else {
+                    this.state.sortColumn = column;
+                    this.state.sortDirection = 'asc';
+                }
+                
+                this.updateTable();
+            }
+            
+            exportToCSV() {
+                const filtered = this.filterData();
+                const visibleColumns = this.options.columns.filter(col => 
+                    this.state.visibleColumns.has(col.key)
+                );
+                
+                // Create CSV content
+                const headers = visibleColumns.map(col => col.label).join(',');
+                const rows = filtered.map(row => {
+                    return visibleColumns.map(col => {
+                        const value = row[col.key];
+                        // Escape quotes and wrap in quotes if contains comma
+                        const escaped = String(value || '').replace(/"/g, '""');
+                        return escaped.includes(',') ? `"${escaped}"` : escaped;
+                    }).join(',');
+                });
+                
+                const csv = [headers, ...rows].join('\n');
+                
+                // Download file
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', `data_export_${new Date().toISOString().split('T')[0]}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+            
+            // Public method to update data
+            setData(newData) {
+                this.options.data = newData;
+                this.state.currentPage = 1;
+                this.updateTable();
+            }
+            
+            // Public method to add a row
+            addRow(row) {
+                this.options.data.unshift(row);
+                this.state.currentPage = 1;
+                this.updateTable();
+            }
+        }
+        
+        // Initialize with example data
+        document.addEventListener('DOMContentLoaded', () => {
+            // Example memory bank data
+            const exampleData = [
+                {
+                    id: 'mem_001',
+                    entity_name: 'Python',
+                    entity_type: 'technology',
+                    content: 'Python is a high-level, interpreted programming language known for its simplicity and readability.',
+                    confidence: 0.95,
+                    created_at: '2024-01-15T10:30:00Z',
+                    expires_at: '2025-01-15T10:30:00Z',
+                    status: 'active',
+                    tags: ['programming', 'language', 'scripting']
+                },
+                {
+                    id: 'mem_002',
+                    entity_name: 'Machine Learning',
+                    entity_type: 'concept',
+                    content: 'Machine Learning is a subset of artificial intelligence that enables systems to learn from data.',
+                    confidence: 0.88,
+                    created_at: '2024-01-16T14:20:00Z',
+                    expires_at: '2025-01-16T14:20:00Z',
+                    status: 'active',
+                    tags: ['AI', 'technology', 'data science']
+                },
+                {
+                    id: 'mem_003',
+                    entity_name: 'JavaScript',
+                    entity_type: 'technology',
+                    content: 'JavaScript is a versatile programming language primarily used for web development.',
+                    confidence: 0.92,
+                    created_at: '2024-01-17T09:15:00Z',
+                    expires_at: '2024-12-17T09:15:00Z',
+                    status: 'pending',
+                    tags: ['programming', 'web', 'frontend']
+                },
+                {
+                    id: 'mem_004',
+                    entity_name: 'Neural Networks',
+                    entity_type: 'concept',
+                    content: 'Neural networks are computing systems inspired by biological neural networks in animal brains.',
+                    confidence: 0.85,
+                    created_at: '2024-01-18T16:45:00Z',
+                    expires_at: '2024-06-18T16:45:00Z',
+                    status: 'expired',
+                    tags: ['AI', 'deep learning', 'algorithms']
+                },
+                {
+                    id: 'mem_005',
+                    entity_name: 'React',
+                    entity_type: 'framework',
+                    content: 'React is a JavaScript library for building user interfaces, particularly single-page applications.',
+                    confidence: 0.90,
+                    created_at: '2024-01-19T11:00:00Z',
+                    expires_at: '2025-01-19T11:00:00Z',
+                    status: 'active',
+                    tags: ['JavaScript', 'frontend', 'UI']
+                },
+                {
+                    id: 'mem_006',
+                    entity_name: 'Docker',
+                    entity_type: 'technology',
+                    content: 'Docker is a platform that uses containerization to deploy applications in isolated environments.',
+                    confidence: 0.87,
+                    created_at: '2024-01-20T13:30:00Z',
+                    expires_at: '2025-01-20T13:30:00Z',
+                    status: 'active',
+                    tags: ['devops', 'containers', 'deployment']
+                },
+                {
+                    id: 'mem_007',
+                    entity_name: 'GraphQL',
+                    entity_type: 'technology',
+                    content: 'GraphQL is a query language for APIs that allows clients to request exactly what data they need.',
+                    confidence: 0.83,
+                    created_at: '2024-01-21T15:45:00Z',
+                    expires_at: '2025-01-21T15:45:00Z',
+                    status: 'active',
+                    tags: ['API', 'query language', 'web services']
+                },
+                {
+                    id: 'mem_008',
+                    entity_name: 'Kubernetes',
+                    entity_type: 'technology',
+                    content: 'Kubernetes is an open-source container orchestration platform for automating deployment and scaling.',
+                    confidence: 0.91,
+                    created_at: '2024-01-22T10:20:00Z',
+                    expires_at: '2025-01-22T10:20:00Z',
+                    status: 'active',
+                    tags: ['devops', 'orchestration', 'containers']
+                },
+                {
+                    id: 'mem_009',
+                    entity_name: 'TypeScript',
+                    entity_type: 'technology',
+                    content: 'TypeScript is a typed superset of JavaScript that compiles to plain JavaScript.',
+                    confidence: 0.89,
+                    created_at: '2024-01-23T08:00:00Z',
+                    expires_at: '2024-11-23T08:00:00Z',
+                    status: 'pending',
+                    tags: ['programming', 'JavaScript', 'types']
+                },
+                {
+                    id: 'mem_010',
+                    entity_name: 'Redis',
+                    entity_type: 'technology',
+                    content: 'Redis is an in-memory data structure store used as a database, cache, and message broker.',
+                    confidence: 0.86,
+                    created_at: '2024-01-24T17:10:00Z',
+                    expires_at: '2025-01-24T17:10:00Z',
+                    status: 'active',
+                    tags: ['database', 'cache', 'nosql']
+                },
+                {
+                    id: 'mem_011',
+                    entity_name: 'Git',
+                    entity_type: 'technology',
+                    content: 'Git is a distributed version control system for tracking changes in source code.',
+                    confidence: 0.94,
+                    created_at: '2024-01-25T12:45:00Z',
+                    expires_at: '2025-01-25T12:45:00Z',
+                    status: 'active',
+                    tags: ['version control', 'development', 'tools']
+                },
+                {
+                    id: 'mem_012',
+                    entity_name: 'AWS',
+                    entity_type: 'platform',
+                    content: 'Amazon Web Services is a comprehensive cloud computing platform offering various services.',
+                    confidence: 0.93,
+                    created_at: '2024-01-26T14:30:00Z',
+                    expires_at: '2025-01-26T14:30:00Z',
+                    status: 'active',
+                    tags: ['cloud', 'infrastructure', 'services']
+                }
+            ];
+            
+            // Define columns with custom formatters
+            const columns = [
+                { key: 'id', label: 'ID', type: 'string' },
+                { key: 'entity_name', label: 'Entity Name', type: 'string' },
+                { key: 'entity_type', label: 'Type', type: 'string' },
+                { key: 'content', label: 'Content', type: 'string' },
+                { 
+                    key: 'confidence', 
+                    label: 'Confidence', 
+                    type: 'number',
+                    formatter: (value) => `${(value * 100).toFixed(0)}%`
+                },
+                { key: 'created_at', label: 'Created', type: 'date' },
+                { key: 'expires_at', label: 'Expires', type: 'date' },
+                { 
+                    key: 'status', 
+                    label: 'Status',
+                    formatter: (value) => {
+                        const statusClass = `status-${value}`;
+                        return `<span class="status-badge ${statusClass}">${value}</span>`;
+                    }
+                },
+                { 
+                    key: 'tags', 
+                    label: 'Tags',
+                    formatter: (value) => {
+                        if (Array.isArray(value)) {
+                            return value.map(tag => `<span class="tag">${tag}</span>`).join('');
+                        }
+                        return '';
+                    }
+                }
+            ];
+            
+            // Initialize table
+            const table = new InteractiveTable('dataTable', {
+                pageSize: 5,
+                columns: columns,
+                data: exampleData
+            });
+            
+            // Make table instance globally available
+            window.dataTable = table;
+        });
+    </script>
+</body>
+</html>

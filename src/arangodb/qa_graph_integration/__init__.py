@@ -1,5 +1,7 @@
 """
 ArangoDB Question-Answer Generation Module
+Module: __init__.py
+Description: Package initialization and exports
 
 This module provides functionality for generating high-quality question-answer pairs
 from documents in ArangoDB. It leverages the graph structure and relationships between

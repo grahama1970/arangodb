@@ -1,5 +1,7 @@
 """
 Community detection algorithms for entity graph analysis.
+Module: community_detection.py
+Description: Implementation of community detection functionality
 
 This module implements community detection using the Louvain algorithm to automatically
 group related entities in the knowledge graph. Communities help organize and understand

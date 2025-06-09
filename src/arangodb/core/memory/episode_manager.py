@@ -1,5 +1,6 @@
 """
 Episode Manager for ArangoDB Memory System
+Module: episode_manager.py
 
 This module provides episode management functionality for grouping conversations
 and interactions into temporal contexts. Episodes enable the memory system to

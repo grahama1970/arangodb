@@ -1,4 +1,6 @@
 """Core visualization modules for ArangoDB
+Module: __init__.py
+Description: Package initialization and exports
 
 Provides the main visualization engine, data transformers, and LLM recommender.
 """

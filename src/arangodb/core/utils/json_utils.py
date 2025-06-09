@@ -1,3 +1,21 @@
+"""
+Module: json_utils.py
+Description: Utility functions and helpers for json utils
+
+External Dependencies:
+- arangodb: [Documentation URL]
+- tempfile: [Documentation URL]
+
+Sample Input:
+>>> # Add specific examples based on module functionality
+
+Expected Output:
+>>> # Add expected output examples
+
+Example Usage:
+>>> # Add usage examples
+"""
+
 import json
 import os
 from pathlib import Path
@@ -66,11 +84,11 @@ except ImportError:
         def check(self, test_name, expected, actual, description=None):
             self.total_tests += 1
             if expected == actual:
-                print(f"✅ PASS: {test_name}")
+                print(f" PASS: {test_name}")
                 return True
             else:
                 self.failed_tests += 1
-                print(f"❌ FAIL: {test_name}")
+                print(f" FAIL: {test_name}")
                 print(f"  Expected: {expected}")
                 print(f"  Actual: {actual}")
                 if description:
@@ -79,24 +97,24 @@ except ImportError:
                 
         def pass_(self, test_name, description=None):
             self.total_tests += 1
-            print(f"✅ PASS: {test_name}")
+            print(f" PASS: {test_name}")
             if description:
                 print(f"  Description: {description}")
         
         def fail(self, test_name, description=None):
             self.total_tests += 1
             self.failed_tests += 1
-            print(f"❌ FAIL: {test_name}")
+            print(f" FAIL: {test_name}")
             if description:
                 print(f"  Description: {description}")
         
         def report_and_exit(self):
             print(f"\nResults: {self.total_tests - self.failed_tests} passed, {self.failed_tests} failed")
             if self.failed_tests > 0:
-                print("❌ VALIDATION FAILED")
+                print(" VALIDATION FAILED")
                 sys.exit(1)
             else:
-                print("✅ VALIDATION PASSED - All tests produced expected results")
+                print(" VALIDATION PASSED - All tests produced expected results")
                 sys.exit(0)
 
 class PathEncoder(json.JSONEncoder):

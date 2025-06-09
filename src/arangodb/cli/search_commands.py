@@ -1,5 +1,7 @@
 """
 Fixed Search Commands with Consistent Interface
+Module: search_commands.py
+Description: Functions for search commands operations
 
 This module provides standardized search commands following the stellar CLI template.
 All commands use consistent parameter patterns for LLM-friendly usage.

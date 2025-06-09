@@ -1,5 +1,6 @@
 """
 ArangoDB Setup and Connection
+Module: arango_setup.py
 
 This module provides core functionality for setting up and interacting with ArangoDB.
 It handles database connections, collection creation, graph setup, and indexing.
@@ -20,7 +21,7 @@ Sample Input/Output:
 
 - ensure_collection(db: StandardDatabase, collection_name: str):
   - Input: Database instance and collection name
-  - Output: None (creates collection if it doesn't exist)
+  - Output: None (creates collection if it doesn't exist)'
 """
 
 import os
@@ -265,7 +266,7 @@ def ensure_collection(
     Args:
         db: Database instance
         collection_name: Name of the collection
-        is_edge_collection: Whether it's an edge collection
+        is_edge_collection: Whether it's an edge collection'
         
     Raises:
         CollectionCreateError: If collection creation fails
@@ -611,7 +612,7 @@ if __name__ == "__main__":
                 client = connect_arango()
             except RuntimeError as e:
                 if "ArangoDB connection requires" in str(e):
-                    print("✓ Correctly identified missing ArangoDB dependency")
+                    print(" Correctly identified missing ArangoDB dependency")
                     error_caught = True
                 else:
                     all_validation_failures.append(f"Unexpected error message: {e}")
@@ -621,7 +622,7 @@ if __name__ == "__main__":
             
             # Test mock ArangoClient
             mock_client = ArangoClient(hosts="http://localhost:8529")
-            print("✓ Successfully created mock ArangoClient")
+            print(" Successfully created mock ArangoClient")
             
             # Test ensure_database with mock client
             try:
@@ -633,7 +634,7 @@ if __name__ == "__main__":
                     ping_failed = True
                 
                 if ping_failed:
-                    print("✓ Mock database correctly fails ping operation")
+                    print(" Mock database correctly fails ping operation")
                 else:
                     all_validation_failures.append("Mock database did not fail ping as expected")
             except Exception as e:
@@ -823,11 +824,11 @@ if __name__ == "__main__":
     
     # Final validation result
     if all_validation_failures:
-        print(f"❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
+        print(f" VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
         for failure in all_validation_failures:
             print(f"  - {failure}")
         sys.exit(1)  # Exit with error code
     else:
-        print(f"✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
+        print(f" VALIDATION PASSED - All {total_tests} tests produced expected results")
         print("Core arango_setup module is validated and ready for use")
         sys.exit(0)  # Exit with success code

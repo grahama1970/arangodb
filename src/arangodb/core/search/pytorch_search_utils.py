@@ -1,5 +1,7 @@
 """
 PyTorch Vector Search Utilities
+Module: pytorch_search_utils.py
+Description: Utility functions and helpers for pytorch search utils
 
 This module provides PyTorch-based vector similarity search capabilities
 for ArangoDB documents, optimized for relationship building and nesting queries.
@@ -709,9 +711,9 @@ def print_result_details(result: Dict[str, Any]) -> None:
         # Truncate tag list if it's very long
         safe_tags = truncate_large_value(tags, max_list_elements_shown=10)
         
-        if isinstance(safe_tags, str):  # It's already a summary string
+        if isinstance(safe_tags, str):  # It's already a summary string'
             print(f"  {safe_tags}")
-        else:  # It's still a list
+        else:  # It's still a list'
             tag_colors = [Fore.BLUE, Fore.MAGENTA, Fore.CYAN, Fore.GREEN, Fore.YELLOW]
             for i, tag in enumerate(safe_tags):
                 color = tag_colors[i % len(tag_colors)]  # Cycle through colors
@@ -752,7 +754,7 @@ if __name__ == "__main__":
         # Verify has_pytorch_available function
         pytorch_check = has_pytorch_available()
         if pytorch_check == HAS_TORCH:
-            print(f"✅ has_pytorch_available() returns {pytorch_check} as expected")
+            print(f" has_pytorch_available() returns {pytorch_check} as expected")
         else:
             all_validation_failures.append(f"has_pytorch_available() returned {pytorch_check}, expected {HAS_TORCH}")
     except Exception as e:
@@ -764,18 +766,18 @@ if __name__ == "__main__":
     try:
         # Test clear_document_cache
         clear_document_cache()
-        print("✅ Document cache cleared successfully")
+        print(" Document cache cleared successfully")
         
         # Test truncate_large_value
         long_text = "This is a very long text that should be truncated" * 10
         truncated = truncate_large_value(long_text, max_str_len=30)
         if isinstance(truncated, str) and "..." in truncated:
-            print("✅ truncate_large_value works correctly for long text")
+            print(" truncate_large_value works correctly for long text")
         else:
             all_validation_failures.append(f"truncate_large_value failed: {truncated}")
             
         # Skip the list test since different implementations might handle it differently
-        print("✅ Skipping list truncation test (implementation dependent)")
+        print(" Skipping list truncation test (implementation dependent)")
         
         # Display what our implementation does for reference
         long_list = list(range(50))
@@ -813,7 +815,7 @@ if __name__ == "__main__":
             if (search_results.get("results") == [] and 
                 "search_engine" in search_results and 
                 "pytorch-failed" in search_results["search_engine"]):
-                print("✅ Correctly handled missing PyTorch dependency")
+                print(" Correctly handled missing PyTorch dependency")
             else:
                 all_validation_failures.append(f"Failed to handle missing PyTorch properly: {search_results}")
                 
@@ -829,7 +831,7 @@ if __name__ == "__main__":
             
             try:
                 print_result_details(mock_result)
-                print("✅ print_result_details works with mock data")
+                print(" print_result_details works with mock data")
             except Exception as e:
                 all_validation_failures.append(f"print_result_details failed: {e}")
             
@@ -846,7 +848,7 @@ if __name__ == "__main__":
                 print_search_results(mock_search_results)
                 mock_search_results["format"] = "json"
                 print_search_results(mock_search_results)
-                print("✅ print_search_results works with both table and JSON formats")
+                print(" print_search_results works with both table and JSON formats")
             except Exception as e:
                 all_validation_failures.append(f"print_search_results failed: {e}")
                 
@@ -881,7 +883,7 @@ if __name__ == "__main__":
             )
             
             if len(results) > 0:
-                print(f"✅ Vector search returned {len(results)} results in {search_time:.3f}s")
+                print(f" Vector search returned {len(results)} results in {search_time:.3f}s")
                 print(f"   Best match: ID={results[0]['id']}, Score={results[0]['similarity']:.4f}")
             else:
                 all_validation_failures.append("PyTorch vector search returned no results")
@@ -889,7 +891,7 @@ if __name__ == "__main__":
             # Check if torch.cuda.is_available() is called without errors
             try:
                 gpu_available = torch.cuda.is_available()
-                print(f"✅ GPU availability check succeeded: {gpu_available}")
+                print(f" GPU availability check succeeded: {gpu_available}")
             except Exception as e:
                 all_validation_failures.append(f"GPU availability check failed: {e}")
             
@@ -902,7 +904,7 @@ if __name__ == "__main__":
                 }
                 
                 print_result_details(formatted_result)
-                print("✅ print_result_details works with PyTorch results")
+                print(" print_result_details works with PyTorch results")
                 
                 formatted_results = {
                     "results": [formatted_result],
@@ -914,7 +916,7 @@ if __name__ == "__main__":
                 }
                 
                 print_search_results(formatted_results)
-                print("✅ print_search_results works with PyTorch results")
+                print(" print_search_results works with PyTorch results")
             except Exception as e:
                 all_validation_failures.append(f"Formatting functions failed with PyTorch results: {e}")
                 
@@ -942,7 +944,7 @@ if __name__ == "__main__":
                 try:
                     client = connect_arango()
                     db = ensure_database(client)
-                    print(f"✅ Successfully connected to ArangoDB (database: {db.name})")
+                    print(f" Successfully connected to ArangoDB (database: {db.name})")
                 except Exception as e:
                     all_validation_failures.append(f"Database connection failed: {e}")
                     raise  # Re-raise to skip the rest of the test
@@ -955,7 +957,7 @@ if __name__ == "__main__":
                     
                     if not collection_names:
                         print("⚠️ No collections found in database, cannot test document loading")
-                        print("✅ Skipping document loading test (empty database is acceptable)")
+                        print(" Skipping document loading test (empty database is acceptable)")
                     else:
                         test_collection = collection_names[0]
                         print(f"Using collection: {test_collection}")
@@ -968,12 +970,12 @@ if __name__ == "__main__":
                         )
                         
                         if embeddings is not None:
-                            print(f"✅ Successfully loaded documents from {test_collection}")
+                            print(f" Successfully loaded documents from {test_collection}")
                             print(f"   Found {len(ids)} documents with embedding dimension {dimension}")
                         else:
                             # This might be OK if the collection doesn't have embeddings
                             print(f"⚠️ No embeddings found in {test_collection}, but function completed")
-                            print("✅ Document loading function works with empty results")
+                            print(" Document loading function works with empty results")
                 except Exception as e:
                     all_validation_failures.append(f"Document loading failed: {e}")
                 
@@ -999,7 +1001,7 @@ if __name__ == "__main__":
                     
                     # Generate query embedding
                     query_embedding = get_embedding(test_query)
-                    print(f"✅ Generated test query embedding (dimension: {len(query_embedding)})")
+                    print(f" Generated test query embedding (dimension: {len(query_embedding)})")
                     
                     # Clear cache before test
                     clear_document_cache()
@@ -1041,7 +1043,7 @@ if __name__ == "__main__":
                     
                     num_results = len(search_results.get("results", []))
                     search_time = search_results.get("time", 0)
-                    print(f"✅ Search completed in {search_time:.3f}s, found {num_results} results")
+                    print(f" Search completed in {search_time:.3f}s, found {num_results} results")
                     
                     # Note: Having zero results is acceptable for testing with empty databases
                     if num_results == 0:
@@ -1051,12 +1053,12 @@ if __name__ == "__main__":
                     if search_results.get("results"):
                         first_result = search_results["results"][0]
                         print_result_details(first_result)
-                        print("✅ Successfully displayed first result details")
+                        print(" Successfully displayed first result details")
                     
                     # Test JSON format
                     search_results["format"] = "json"
                     print_search_results(search_results)
-                    print("✅ Successfully displayed results in JSON format")
+                    print(" Successfully displayed results in JSON format")
                     
                 except Exception as e:
                     all_validation_failures.append(f"Full search test failed: {e}")
@@ -1068,11 +1070,11 @@ if __name__ == "__main__":
     
     # Final validation result
     if all_validation_failures:
-        print(f"\n❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
+        print(f"\n VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
         for failure in all_validation_failures:
             print(f"  - {failure}")
         sys.exit(1)  # Exit with error code
     else:
-        print(f"\n✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
+        print(f"\n VALIDATION PASSED - All {total_tests} tests produced expected results")
         print("PyTorch search utils module is validated and ready for use")
         sys.exit(0)  # Exit with success code

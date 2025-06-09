@@ -1,5 +1,7 @@
 """
 Fixed CRUD Commands with Consistent Interface
+Module: crud_commands.py
+Description: Functions for crud commands operations
 
 This module provides standardized CRUD commands following the stellar CLI template.
 Works with ANY collection, not just lesson-specific operations.

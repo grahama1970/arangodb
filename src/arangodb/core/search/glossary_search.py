@@ -1,5 +1,6 @@
 """
 Glossary Search Module
+Module: glossary_search.py
 
 This module provides functionality for managing and searching glossary terms in ArangoDB.
 It handles term definitions, searching for terms in text, and highlighting matched terms.
@@ -112,7 +113,7 @@ class GlossaryService:
     def initialize_collection(self, truncate: bool = False) -> StandardCollection:
         """
         Initialize the glossary collection in ArangoDB.
-        Creates the collection if it doesn't exist.
+        Creates the collection if it doesn't exist.'
         
         Args:
             truncate: If True, truncate the collection if it exists (useful for testing)
@@ -632,10 +633,10 @@ if __name__ == "__main__":
         try:
             client = connect_arango()
             db = ensure_database(client)
-            print("✅ Successfully connected to ArangoDB")
+            print(" Successfully connected to ArangoDB")
         except Exception as e:
             all_validation_failures.append(f"ArangoDB connection failed: {str(e)}")
-            print(f"❌ ArangoDB connection failed: {str(e)}")
+            print(f" ArangoDB connection failed: {str(e)}")
             sys.exit(1)
         
         # Test 2: Initialize glossary collection
@@ -644,10 +645,10 @@ if __name__ == "__main__":
         try:
             glossary_service = GlossaryService(db)
             glossary_service.initialize_collection(truncate=True)
-            print("✅ Successfully initialized glossary collection")
+            print(" Successfully initialized glossary collection")
         except Exception as e:
             all_validation_failures.append(f"Glossary collection initialization failed: {str(e)}")
-            print(f"❌ Glossary collection initialization failed: {str(e)}")
+            print(f" Glossary collection initialization failed: {str(e)}")
             
         # Test 3: Add default terms
         total_tests += 1
@@ -655,13 +656,13 @@ if __name__ == "__main__":
         try:
             added_count = glossary_service.add_default_terms()
             if added_count > 0:
-                print(f"✅ Successfully added {added_count} default terms to glossary")
+                print(f" Successfully added {added_count} default terms to glossary")
             else:
                 all_validation_failures.append("No terms were added to glossary")
-                print("❌ No terms were added to glossary")
+                print(" No terms were added to glossary")
         except Exception as e:
             all_validation_failures.append(f"Adding default terms failed: {str(e)}")
-            print(f"❌ Adding default terms failed: {str(e)}")
+            print(f" Adding default terms failed: {str(e)}")
         
         # Test 4: Find terms in text
         total_tests += 1
@@ -682,17 +683,17 @@ if __name__ == "__main__":
             missing_terms = [term for term in expected_terms if term not in found_terms]
             
             if not missing_terms:
-                print(f"✅ Successfully found expected terms in text: {', '.join(found_terms)}")
+                print(f" Successfully found expected terms in text: {', '.join(found_terms)}")
             else:
                 all_validation_failures.append(f"Missing expected terms: {', '.join(missing_terms)}")
-                print(f"❌ Missing expected terms: {', '.join(missing_terms)}")
+                print(f" Missing expected terms: {', '.join(missing_terms)}")
                 
             # Also test the table output for manual verification
             print("\nTable output for human verification:")
             glossary_service.find_terms_in_text(sample_text, output="table")
         except Exception as e:
             all_validation_failures.append(f"Finding terms in text failed: {str(e)}")
-            print(f"❌ Finding terms in text failed: {str(e)}")
+            print(f" Finding terms in text failed: {str(e)}")
         
         # Test 5: Highlight terms
         total_tests += 1
@@ -702,23 +703,23 @@ if __name__ == "__main__":
             # Check that all expected terms are highlighted
             highlighted_terms_count = highlighted.count("**")
             if highlighted_terms_count >= 6:  # At least 3 terms * 2 markers per term
-                print("✅ Successfully highlighted terms in text")
+                print(" Successfully highlighted terms in text")
                 print(f"Highlighted text:\n{highlighted}")
             else:
                 all_validation_failures.append(f"Term highlighting failed, only {highlighted_terms_count//2} terms highlighted")
-                print(f"❌ Term highlighting failed, only {highlighted_terms_count//2} terms highlighted")
+                print(f" Term highlighting failed, only {highlighted_terms_count//2} terms highlighted")
         except Exception as e:
             all_validation_failures.append(f"Term highlighting failed: {str(e)}")
-            print(f"❌ Term highlighting failed: {str(e)}")
+            print(f" Term highlighting failed: {str(e)}")
         
         # Final validation result
         if all_validation_failures:
-            print(f"\n❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
+            print(f"\n VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
             for failure in all_validation_failures:
                 print(f"  - {failure}")
             sys.exit(1)  # Exit with error code
         else:
-            print(f"\n✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
+            print(f"\n VALIDATION PASSED - All {total_tests} tests produced expected results")
             print("GlossaryService functionality is validated and ready for use")
             sys.exit(0)  # Exit with success code
             

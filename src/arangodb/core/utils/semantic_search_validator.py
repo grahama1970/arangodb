@@ -1,5 +1,7 @@
 """
 Semantic Search Validator
+Module: semantic_search_validator.py
+Description: Functions for semantic search validator operations
 
 This module provides utilities to ensure that semantic search can be 
 performed safely and provides clear error messages when it cannot.

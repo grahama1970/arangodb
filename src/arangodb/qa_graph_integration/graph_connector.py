@@ -1,5 +1,6 @@
 """
 ArangoDB QA Graph Connector Module
+Module: graph_connector.py
 
 This module connects the QA generation module with the graph database,
 creating edges between entities based on Q&A pairs and integrating them
@@ -407,7 +408,7 @@ if __name__ == "__main__":
             assert gen_qa.source_section == "section_1", "Source section mismatch"
             assert len(gen_qa.evidence_blocks) == 2, "Evidence blocks count mismatch"
             
-            print("✅ QA pair format conversion successful")
+            print(" QA pair format conversion successful")
         except Exception as e:
             all_validation_failures.append(f"QA pair format conversion test failed: {str(e)}")
         
@@ -442,7 +443,7 @@ if __name__ == "__main__":
                     )
                     
                     assert success, "Edge update failed"
-                    print("✅ Edge review status update successful")
+                    print(" Edge review status update successful")
                 else:
                     print("⚠️ No edges found for review, skipping update test")
                 
@@ -451,23 +452,23 @@ if __name__ == "__main__":
             # Run the async function
             edges = asyncio.run(review_test())
             
-            print("✅ Q&A edge review functions work correctly")
+            print(" Q&A edge review functions work correctly")
         except Exception as e:
             all_validation_failures.append(f"Q&A edge review test failed: {str(e)}")
     
     except Exception as e:
         logger.error(f"ArangoDB connection error: {e}")
         print("Skipping tests as ArangoDB is not available")
-        print(f"✅ VALIDATION PASSED (MOCK) - QA graph connector module is validated with mock data")
+        print(f" VALIDATION PASSED (MOCK) - QA graph connector module is validated with mock data")
         sys.exit(0)
     
     # Final validation result
     if all_validation_failures:
-        print(f"\n❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
+        print(f"\n VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
         for failure in all_validation_failures:
             print(f"  - {failure}")
         sys.exit(1)  # Exit with error code
     else:
-        print(f"\n✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
+        print(f"\n VALIDATION PASSED - All {total_tests} tests produced expected results")
         print("QA graph connector module is validated and ready for use")
         sys.exit(0)  # Exit with success code

@@ -1,5 +1,7 @@
 """
 ArangoDB MCP Document Operations
+Module: document_operations.py
+Description: Functions for document operations operations
 
 This module provides MCP (Machine-Collaborator Protocol) integration for ArangoDB document operations,
 built on top of the core business logic layer. These functions allow Claude to interact with
@@ -415,11 +417,11 @@ if __name__ == "__main__":
     
     # Display validation results
     if all_validation_failures:
-        print(f"❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
+        print(f" VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
         for failure in all_validation_failures:
             print(f"  - {failure}")
         sys.exit(1)
     else:
-        print(f"✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
+        print(f" VALIDATION PASSED - All {total_tests} tests produced expected results")
         print("Module validated and ready for use")
         sys.exit(0)

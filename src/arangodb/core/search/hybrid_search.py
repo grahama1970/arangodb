@@ -1,5 +1,6 @@
 """
 # Hybrid Search Module for PDF Extractor
+Module: hybrid_search.py
 
 This module provides a combined search approach that leverages BM25 text search,
 semantic vector search, tag filtering, and optionally graph traversal capabilities,
@@ -152,7 +153,7 @@ class PerplexityResponse(BaseModel):
 def call_perplexity_structured(prompt: str, model: str = "sonar-small-online"):
     """Call Perplexity API with retry logic and get structured output."""
     system_prompt = """
-    You are an expert research assistant. Based on the user's query, provide information in a structured JSON format.
+    You are an expert research assistant. Based on the user's query, provide information in a structured JSON format.'
     Extract 3-5 highly relevant topics related to the query.
     For each topic include:
     - A clear title
@@ -326,7 +327,7 @@ def enrich_with_perplexity(db, query_text, search_results, top_n=3):
         {context}
         
         Please provide additional relevant information that complements or expands on what I already know.
-        Focus on facts that aren't mentioned in my database information.
+        Focus on facts that aren't mentioned in my database information.'
         """
         
         # Make API call for structured data
@@ -390,7 +391,7 @@ def hybrid_search(
 
     Args:
         db: ArangoDB database connection
-        query_text: The user's search query
+        query_text: The user's search query'
         collections: Optional list of collections to search in
         filter_expr: Optional AQL filter expression
         tag_list: Optional list of tags to filter results
@@ -547,7 +548,7 @@ def hybrid_search(
             filter_expr=tag_filtered_filter_expr,  # Use our combined filter
             min_score=min_score.get("bm25", 0.1),
             top_n=initial_k,
-            tag_list=None,  # No tag filtering here, we've already handled it
+            tag_list=None,  # No tag filtering here, we've already handled it'
             output_format="json",
             fields_to_search=fields_to_search  # Pass through optional fields
         )
@@ -581,7 +582,7 @@ def hybrid_search(
             filter_expr=tag_filtered_filter_expr,  # Use our combined filter
             min_score=min_score.get("semantic", 0.7),
             top_n=initial_k,
-            tag_list=None,  # No tag filtering here, we've already handled it
+            tag_list=None,  # No tag filtering here, we've already handled it'
             output_format="json"
         )
         semantic_time = time.time() - semantic_time_start
@@ -972,7 +973,7 @@ def search_with_config(
     
     Args:
         db: ArangoDB database connection
-        query_text: The user's search query
+        query_text: The user's search query'
         config: SearchConfig object (uses default if None)
         collections: Optional list of collections to search in
         output_format: Output format ("table" or "json")
@@ -1185,7 +1186,7 @@ if __name__ == "__main__":
     
     # Verify we got results
     if result["total"] > 0 and len(result["results"]) > 0:
-        print(f"✅ VALIDATION PASSED: Hybrid search returned {result['total']} results")
+        print(f" VALIDATION PASSED: Hybrid search returned {result['total']} results")
         print(f"First result hybrid score: {result['results'][0].get('hybrid_score', 0):.2f}")
         
         # Show component scores if available
@@ -1195,14 +1196,14 @@ if __name__ == "__main__":
         if "semantic_score" in first_result:
             print(f"Semantic component score: {first_result['semantic_score']:.2f}")
     else:
-        print(f"❌ VALIDATION FAILED: No results returned for test query")
+        print(f" VALIDATION FAILED: No results returned for test query")
         sys.exit(1)
     
     # Verify search metadata
     if "search_engine" in result and "hybrid" in result["search_engine"]:
-        print("✅ Search metadata correctly populated")
+        print(" Search metadata correctly populated")
     else:
-        print("❌ Search metadata validation failed")
+        print(" Search metadata validation failed")
         sys.exit(1)
     
     print(f"Hybrid search completed in {result.get('time', 0):.3f}s")

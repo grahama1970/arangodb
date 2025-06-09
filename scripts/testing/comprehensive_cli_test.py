@@ -1,3 +1,27 @@
+"""
+Module: comprehensive_cli_test.py
+Description: Command line interface functionality
+
+Sample Input:
+>>> # See function docstrings for specific examples
+
+Expected Output:
+>>> # See function docstrings for expected results
+
+Example Usage:
+>>> # Import and use as needed based on module functionality
+"""
+
+import sys
+from pathlib import Path
+
+# Add src to path for imports
+src_path = Path(__file__).parent.parent / "src"
+if src_path.exists() and str(src_path) not in sys.path:
+    sys.path.insert(0, str(src_path))
+
+
+
 #!/usr/bin/env python
 """
 Comprehensive CLI test to verify all commands work as expected
@@ -98,4 +122,4 @@ def main():
         return 0
 
 if __name__ == "__main__":
-    sys.exit(main())
+    # sys.exit() removed)

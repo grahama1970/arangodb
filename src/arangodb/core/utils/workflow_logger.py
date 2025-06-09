@@ -1,5 +1,6 @@
 """
 Workflow Tracking Module for ArangoDB Knowledge Graph System
+Module: workflow_logger.py
 
 This module provides detailed logging for complex workflows, integrating
 with the memory system and providing step-tracking and performance metrics.

@@ -1,8 +1,30 @@
 """
-Test utilities for ArangoDB memory bank tests.
+Module: test_utils.py
+Description: Test suite for utils functionality
 
-Provides helper functions for setting up and tearing down test databases.
+External Dependencies:
+- loguru: https://loguru.readthedocs.io/
+- arango: https://docs.python-arango.com/
+
+Sample Input:
+>>> # See function docstrings for specific examples
+
+Expected Output:
+>>> # See function docstrings for expected results
+
+Example Usage:
+>>> # Import and use as needed based on module functionality
 """
+
+import sys
+from pathlib import Path
+
+# Add src to path
+src_path = Path(__file__).parent.parent / "src"
+if src_path.exists() and str(src_path) not in sys.path:
+    sys.path.insert(0, str(src_path))
+
+import pytest
 
 import os
 import uuid

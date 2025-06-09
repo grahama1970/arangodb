@@ -1,5 +1,7 @@
 """
 Error Handling Module for ArangoDB Knowledge Graph System
+Module: error_handler.py
+Description: API handlers and endpoints for error handler
 
 This module provides centralized error handling for the ArangoDB Knowledge Graph System,
 with categorized errors, retry logic, and human-friendly error messages.

@@ -1,5 +1,6 @@
 """
 Q&A Edge Review CLI Module
+Module: review_cli.py
 
 Provides CLI commands for reviewing QA-derived edges,
 allowing manual inspection and approval/rejection of edges
@@ -437,7 +438,7 @@ def update_status(
         
         # Update edge
         db.db.update_document(edge_id, update_doc)
-        console.print(f"[bold green]✓[/] Updated status to {status.value}")
+        console.print(f"[bold green][/] Updated status to {status.value}")
         
         # Get updated edge
         updated_edge = db.db.document(edge_id)
@@ -601,10 +602,10 @@ def batch_review(
             
             if action == ReviewAction.APPROVE:
                 approved += 1
-                console.print("[green]✓ Approved[/green]")
+                console.print("[green] Approved[/green]")
             else:
                 rejected += 1
-                console.print("[red]✗ Rejected[/red]")
+                console.print("[red] Rejected[/red]")
         except Exception as e:
             console.print(f"[bold red]Error updating edge: {str(e)}[/bold red]")
             skipped += 1
@@ -770,7 +771,7 @@ def bulk_update(
                 
                 progress.update(task, completed=True, description="Complete")
             
-            console.print(f"[bold green]✓[/] Updated {len(updated_keys)} QA edges to '{status.value}'")
+            console.print(f"[bold green][/] Updated {len(updated_keys)} QA edges to '{status.value}'")
     
     except Exception as e:
         console.print(f"[bold red]Error:[/] {str(e)}")
@@ -1107,7 +1108,7 @@ def generate_review_aql(
                 f.write(f"// {query_info['description']}\n")
                 f.write(query_info['query'].strip() + "\n\n")
         
-        console.print(f"[bold green]✓[/] Wrote {len(queries)} AQL queries to {output}")
+        console.print(f"[bold green][/] Wrote {len(queries)} AQL queries to {output}")
     else:
         # Display queries to console
         for query_info in queries:
@@ -1264,7 +1265,7 @@ def export_qa_edges(
             console.print(f"[bold red]Error:[/] {str(e)}")
             return
     
-    console.print(f"[bold green]✓[/] Exported {len(results)} QA edges to {output_path}")
+    console.print(f"[bold green][/] Exported {len(results)} QA edges to {output_path}")
 
 
 if __name__ == "__main__":
@@ -1282,18 +1283,18 @@ if __name__ == "__main__":
                            "bulk-update", "stats", "generate-aql", "export"]
         for cmd in expected_commands:
             assert cmd in app.registered_commands, f"Command '{cmd}' not defined"
-        print("✅ All commands defined correctly")
+        print(" All commands defined correctly")
     except Exception as e:
         all_validation_failures.append(f"Command definition test failed: {str(e)}")
     
     # Final validation result
     if all_validation_failures:
-        print(f"\n❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
+        print(f"\n VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
         for failure in all_validation_failures:
             print(f"  - {failure}")
         sys.exit(1)  # Exit with error code
     else:
-        print(f"\n✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
+        print(f"\n VALIDATION PASSED - All {total_tests} tests produced expected results")
         print("QA Review CLI is validated and ready for use")
         sys.exit(0)  # Exit with success code
     

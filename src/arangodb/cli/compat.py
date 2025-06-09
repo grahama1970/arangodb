@@ -1,5 +1,7 @@
 """
 Compatibility wrapper for old CLI commands
+Module: compat.py
+Description: Functions for compat operations
 
 This module provides backward compatibility while showing deprecation warnings.
 """

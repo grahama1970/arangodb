@@ -1,5 +1,7 @@
 """
 Verify the QA exporter functionality.
+Module: verify_exporter.py
+Description: Functions for verify exporter operations
 
 This module tests the QA exporter with sample data to ensure it works
 correctly for both JSONL and JSON formats with train/validation/test splits.
@@ -18,10 +20,9 @@ from .test_utils import MockContextGenerator
 # Patch the context generator import in exporter.py
 import importlib.util
 import sys
-from unittest.mock import MagicMock
-
+# REMOVED: # REMOVED: 
 # Create a mock module
-mock_module = MagicMock()
+mock_module = Magicobject()
 mock_module.ContextGenerator = MockContextGenerator
 sys.modules['src.arangodb.core.context_generator'] = mock_module
 

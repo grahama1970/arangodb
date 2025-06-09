@@ -1,5 +1,7 @@
 """
 Search API Core Module
+Module: __init__.py
+Description: Package initialization and exports
 
 This module provides core search functionality for ArangoDB, including:
 - BM25 (keyword-based) search

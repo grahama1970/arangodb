@@ -1,5 +1,7 @@
 """
 CLI Output Formatters
+Module: formatters.py
+Description: Implementation of formatters functionality
 
 This module provides consistent formatting for CLI output with graceful fallbacks
 when rich is not available.

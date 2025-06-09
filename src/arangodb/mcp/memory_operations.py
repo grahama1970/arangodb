@@ -1,5 +1,7 @@
 """
 ArangoDB MCP Memory Operations
+Module: memory_operations.py
+Description: Functions for memory operations operations
 
 This module provides MCP (Machine-Collaborator Protocol) integration for ArangoDB memory operations,
 built on top of the core business logic layer. These functions allow Claude to interact with
@@ -50,8 +52,8 @@ def mcp_store_conversation(
     Store a user-agent message exchange in the memory database.
     
     Args:
-        user_message: The user's message to store
-        agent_response: The agent's response to store
+        user_message: The user's message to store'
+        agent_response: The agent's response to store'
         conversation_id: Optional ID for the conversation
         metadata: Additional metadata for the conversation
         timestamp: ISO-8601 formatted timestamp when the conversation occurred
@@ -316,11 +318,11 @@ if __name__ == "__main__":
     
     # Display validation results
     if all_validation_failures:
-        print(f"❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
+        print(f" VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
         for failure in all_validation_failures:
             print(f"  - {failure}")
         sys.exit(1)
     else:
-        print(f"✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
+        print(f" VALIDATION PASSED - All {total_tests} tests produced expected results")
         print("Module validated and ready for use")
         sys.exit(0)

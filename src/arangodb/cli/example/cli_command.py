@@ -1,5 +1,7 @@
 """
 Example CLI Command using the formatters module with output format support.
+Module: cli_command.py
+Description: Functions for cli command operations
 
 This module demonstrates how to integrate the CLI formatters module into a Typer command,
 making it easy to switch between output formats with the --output option.

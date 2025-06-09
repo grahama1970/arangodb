@@ -1,3 +1,20 @@
+"""
+Module: enhanced_validation_tracker.py
+
+External Dependencies:
+- traceback: [Documentation URL]
+- : [Documentation URL]
+
+Sample Input:
+>>> # Add specific examples based on module functionality
+
+Expected Output:
+>>> # Add expected output examples
+
+Example Usage:
+>>> # Add usage examples
+"""
+
 #!/usr/bin/env python3
 """
 Enhanced ValidationTracker with Test Reporting Integration
@@ -53,7 +70,7 @@ class EnhancedValidationTracker:
         self.current_test_name = test_name
         self.current_test_start = time.time()
         self.current_test_queries = []
-        print(f"\n🧪 Starting test: {test_name}")
+        print(f"\n Starting test: {test_name}")
     
     def log_arango_query(self, query: str, result: Any = None, error: str = None):
         """Log an ArangoDB query and its result."""
@@ -66,9 +83,9 @@ class EnhancedValidationTracker:
         self.current_test_queries.append(query_info)
         
         if error:
-            print(f"🗄️ ArangoDB Query Error: {error}")
+            print(f"️ ArangoDB Query Error: {error}")
         else:
-            print(f"🗄️ ArangoDB Query: {query[:100]}...")
+            print(f"️ ArangoDB Query: {query[:100]}...")
     
     def check(self, test_name: str, expected: Any, actual: Any, description: str = None) -> bool:
         """Enhanced check with detailed tracking."""
@@ -79,7 +96,7 @@ class EnhancedValidationTracker:
         duration = time.time() - self.current_test_start
         
         if expected == actual:
-            print(f"✅ PASS: {test_name}")
+            print(f" PASS: {test_name}")
             
             result = create_test_result(
                 test_id=f"TEST_{self.total_tests:03d}",
@@ -96,7 +113,7 @@ class EnhancedValidationTracker:
             return True
         else:
             self.failed_tests += 1
-            print(f"❌ FAIL: {test_name}")
+            print(f" FAIL: {test_name}")
             print(f"  Expected: {expected}")
             print(f"  Actual: {actual}")
             if description:
@@ -129,7 +146,7 @@ class EnhancedValidationTracker:
         self.total_tests += 1
         duration = time.time() - self.current_test_start
         
-        print(f"✅ PASS: {test_name}")
+        print(f" PASS: {test_name}")
         if description:
             print(f"  Description: {description}")
         
@@ -153,7 +170,7 @@ class EnhancedValidationTracker:
         self.failed_tests += 1
         duration = time.time() - self.current_test_start
         
-        print(f"❌ FAIL: {test_name}")
+        print(f" FAIL: {test_name}")
         if description:
             print(f"  Description: {description}")
         if error_message:
@@ -232,15 +249,15 @@ class EnhancedValidationTracker:
                 suite_result = self.generate_test_suite_result()
                 report_path = reporter.save_report(suite_result, 
                                                  f"validation_{self.module_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md")
-                print(f"📄 Detailed report generated: {report_path}")
+                print(f" Detailed report generated: {report_path}")
             except Exception as e:
                 print(f"Warning: Could not generate markdown report: {e}")
         
         if self.failed_tests > 0:
-            print("❌ VALIDATION FAILED")
+            print(" VALIDATION FAILED")
             sys.exit(1)
         else:
-            print("✅ VALIDATION PASSED - All tests produced expected results")
+            print(" VALIDATION PASSED - All tests produced expected results")
             sys.exit(0)
     
     def context_manager(self, test_name: str):
@@ -261,7 +278,7 @@ class TestContext:
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_type is not None:
             self.tracker.error(self.test_name, exc_val)
-            return False  # Don't suppress the exception
+            return False  # Don't suppress the exception'
         return True
 
 # Example usage and validation

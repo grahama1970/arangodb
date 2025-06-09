@@ -1,5 +1,7 @@
 """
 ArangoDB MCP Layer
+Module: __init__.py
+Description: Package initialization and exports
 
 This module provides MCP (Machine-Collaborator Protocol) integration for ArangoDB operations,
 built on top of the core business logic layer. MCP allows Claude to integrate with

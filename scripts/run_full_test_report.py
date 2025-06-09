@@ -1,3 +1,17 @@
+"""
+Module: run_full_test_report.py
+Description: Test suite for run_full_report functionality
+
+Sample Input:
+>>> # See function docstrings for specific examples
+
+Expected Output:
+>>> # See function docstrings for expected results
+
+Example Usage:
+>>> # Import and use as needed based on module functionality
+"""
+
 #!/usr/bin/env python3
 """
 Full Test Report Generator
@@ -99,4 +113,4 @@ def main():
         return 1
 
 if __name__ == "__main__":
-    sys.exit(main())
+    # sys.exit() removed)

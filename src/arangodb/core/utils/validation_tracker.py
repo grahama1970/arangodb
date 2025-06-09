@@ -1,5 +1,6 @@
 """
 Validation Tracker Framework
+Module: validation_tracker.py
 
 This module provides a reusable framework for tracking test results and validation
 in a standardized way that complies with the Global Coding Standards.
@@ -152,7 +153,7 @@ class ValidationTracker:
             
             for idx, result in enumerate(self.test_results, 1):
                 # Format header with result status and color
-                status_marker = "✅" if result["result"] == "PASS" else "❌"
+                status_marker = "" if result["result"] == "PASS" else ""
                 header = f"{idx}. {status_marker} {result['test_name']} - {result['result']}"
                 report_lines.append(header)
                 
@@ -169,9 +170,9 @@ class ValidationTracker:
         
         # Summary line
         if self.failed_tests == 0:
-            report_lines.append(f"✅ VALIDATION PASSED - All {self.total_tests} tests produced expected results")
+            report_lines.append(f" VALIDATION PASSED - All {self.total_tests} tests produced expected results")
         else:
-            report_lines.append(f"❌ VALIDATION FAILED - {self.failed_tests} of {self.total_tests} tests failed")
+            report_lines.append(f" VALIDATION FAILED - {self.failed_tests} of {self.total_tests} tests failed")
         
         report_lines.append(f"{'=' * 60}")
         return "\n".join(report_lines)

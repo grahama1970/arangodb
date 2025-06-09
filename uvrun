@@ -1,8 +1,0 @@
-#!/bin/bash
-# Load environment variables from .env file
-set -a
-source .env
-set +a
-
-# Run the command with uv
-uv run 

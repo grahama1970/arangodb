@@ -1,4 +1,6 @@
 """ArangoDB Visualization Package
+Module: __init__.py
+Description: Package initialization and exports
 
 This package provides D3.js-based visualization capabilities for ArangoDB graph data.
 Supports multiple layout types including force-directed, hierarchical tree, radial,

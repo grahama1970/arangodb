@@ -1,5 +1,7 @@
 """
 ArangoDB CLI Main Entry Point
+Module: __main__.py
+Description: Module for   main   functionality
 
 This module enables the CLI to be run as a package using the pattern:
 python -m arangodb.cli <command>

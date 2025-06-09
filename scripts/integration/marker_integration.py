@@ -1,3 +1,22 @@
+"""
+Module: marker_integration.py
+Description: Document processing and marking functionality
+
+External Dependencies:
+- numpy: https://numpy.org/doc/
+- loguru: https://loguru.readthedocs.io/
+- arango: https://docs.python-arango.com/
+
+Sample Input:
+>>> # See function docstrings for specific examples
+
+Expected Output:
+>>> # See function docstrings for expected results
+
+Example Usage:
+>>> # Import and use as needed based on module functionality
+"""
+
 #!/usr/bin/env python3
 """
 Marker PDF to ArangoDB integration script.

@@ -1,9 +1,17 @@
 """
-Agent Memory Usage Example
-==========================
+Module: agent_memory_usage_example.py
 
-This script demonstrates how an AI agent would use the ArangoDB memory system
-with Graphiti integration for maintaining conversation context and building knowledge.
+External Dependencies:
+- arango: https://docs.python-arango.com/
+
+Sample Input:
+>>> # See function docstrings for specific examples
+
+Expected Output:
+>>> # See function docstrings for expected results
+
+Example Usage:
+>>> # Import and use as needed based on module functionality
 """
 
 from datetime import datetime, timedelta
@@ -177,7 +185,7 @@ if __name__ == "__main__":
     # Run the demonstration
     demonstrate_agent_memory()
     
-    print(f"\n{Fore.GREEN}✓ Memory system demonstration complete{Style.RESET_ALL}")
+    print(f"\n{Fore.GREEN} Memory system demonstration complete{Style.RESET_ALL}")
     print(f"{Fore.BLUE}Key Takeaways:{Style.RESET_ALL}")
     print("1. Agents can search past conversations for context")
     print("2. All interactions are automatically stored with embeddings")

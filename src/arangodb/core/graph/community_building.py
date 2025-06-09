@@ -1,5 +1,6 @@
 """
 Community building and detection for ArangoDB knowledge graph.
+Module: community_building.py
 
 This module provides functionality for detecting and managing communities
 in the knowledge graph using graph algorithms and metadata analysis.
@@ -1359,11 +1360,11 @@ if __name__ == "__main__":
     
     # Final validation result
     if all_validation_failures:
-        print(f"❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
+        print(f" VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
         for failure in all_validation_failures:
             print(f"  - {failure}")
         sys.exit(1)
     else:
-        print(f"✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
+        print(f" VALIDATION PASSED - All {total_tests} tests produced expected results")
         print("Community building functionality is ready for use")
         sys.exit(0)

@@ -1,3 +1,22 @@
+"""
+Module: sparta_dynamic_pipeline.py
+
+External Dependencies:
+- asyncio: [Documentation URL]
+- arango: [Documentation URL]
+- websocket: [Documentation URL]
+- threading: [Documentation URL]
+
+Sample Input:
+>>> # Add specific examples based on module functionality
+
+Expected Output:
+>>> # Add expected output examples
+
+Example Usage:
+>>> # Add usage examples
+"""
+
 #!/usr/bin/env python3
 """
 SPARTA Dynamic Pipeline

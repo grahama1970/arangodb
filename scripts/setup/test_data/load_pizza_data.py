@@ -1,3 +1,20 @@
+"""
+Module: load_pizza_data.py
+
+External Dependencies:
+- arango: https://docs.python-arango.com/
+- loguru: https://loguru.readthedocs.io/
+
+Sample Input:
+>>> # See function docstrings for specific examples
+
+Expected Output:
+>>> # See function docstrings for expected results
+
+Example Usage:
+>>> # Import and use as needed based on module functionality
+"""
+
 #!/usr/bin/env python3
 """Load pizza test data into memory_bank database
 
@@ -161,7 +178,7 @@ def load_pizza_data():
     if result:
         logger.info(f"Sample pizza with ingredients: {result[0]}")
     
-    logger.info("\n✅ Pizza data loaded successfully!")
+    logger.info("\n Pizza data loaded successfully!")
     return True
 
 

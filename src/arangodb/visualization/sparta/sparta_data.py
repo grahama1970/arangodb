@@ -1,6 +1,14 @@
 """
-SPARTA Data Processor - Handles SPARTA threat matrix data
-Based on The Aerospace Corporation's Space Attack Research and Tactic Analysis framework
+Module: sparta_data.py
+
+Sample Input:
+>>> # See function docstrings for specific examples
+
+Expected Output:
+>>> # See function docstrings for expected results
+
+Example Usage:
+>>> # Import and use as needed based on module functionality
 """
 
 from typing import Dict, List, Any, Optional

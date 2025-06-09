@@ -1,5 +1,6 @@
 """
 Dependency Checker Module
+Module: dependency_checker.py
 
 This module provides centralized dependency checking and mock type generation
 for optional dependencies throughout the ArangoDB package.
@@ -116,7 +117,7 @@ def check_dependency(
 
 def get_mock_class(full_class_path: str) -> Type:
     """
-    Get a mock class for type annotations when the actual class isn't available.
+    Get a mock class for type annotations when the actual class isn't available.'
     
     Args:
         full_class_path: Full import path of the class (e.g., 'arango.database.StandardDatabase')
@@ -234,11 +235,11 @@ if __name__ == "__main__":
     
     # Display validation results
     if all_validation_failures:
-        print(f"❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
+        print(f" VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
         for failure in all_validation_failures:
             print(f"  - {failure}")
         sys.exit(1)
     else:
-        print(f"✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
+        print(f" VALIDATION PASSED - All {total_tests} tests produced expected results")
         print("Module validated and ready for use")
         sys.exit(0)

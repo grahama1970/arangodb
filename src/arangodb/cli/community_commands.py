@@ -1,5 +1,7 @@
 """
 Community Detection CLI Commands for ArangoDB
+Module: community_commands.py
+Description: Functions for community commands operations
 
 This module provides command-line interface for community detection operations
 within the knowledge graph. It uses the community detection algorithm to identify

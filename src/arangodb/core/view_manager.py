@@ -1,5 +1,7 @@
 """
 View Manager for ArangoDB
+Module: view_manager.py
+Description: Functions for view manager operations
 
 Provides optimized view management to prevent unnecessary view recreation.
 Implements caching and smart view updates only when configuration changes.

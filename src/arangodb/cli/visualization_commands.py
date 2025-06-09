@@ -1,4 +1,6 @@
 """CLI commands for D3.js visualization integration
+Module: visualization_commands.py
+Description: Functions for visualization commands operations
 
 This module provides CLI commands for generating D3.js visualizations from ArangoDB queries.
 
@@ -20,6 +22,7 @@ from rich.panel import Panel
 # Import visualization components
 from ..visualization.core.d3_engine import D3VisualizationEngine, VisualizationConfig
 from ..visualization.core.data_transformer import DataTransformer
+from ..visualization.core.table_engine import TableEngine
 from ..core.arango_setup import connect_arango, ensure_database
 
 # Create Typer app
@@ -315,6 +318,79 @@ def server(
 
 
 @app.command()
+def table(
+    query: str = typer.Argument(..., help="AQL query to fetch data for table"),
+    output: Optional[Path] = typer.Option(None, help="Output file path (default: auto-generated)"),
+    title: Optional[str] = typer.Option(None, help="Table title"),
+    page_size: int = typer.Option(10, help="Number of rows per page"),
+    open_browser: bool = typer.Option(True, help="Open table in browser"),
+    db_name: str = typer.Option("epistemic_test", help="Database name"),
+    collection: Optional[str] = typer.Option(None, help="Collection name for context"),
+    columns: Optional[str] = typer.Option(None, help="Comma-separated list of columns to display")
+):
+    """Generate an interactive table from an AQL query"""
+    try:
+        console.print(f"[bold blue]Executing query:[/bold blue] {query}")
+        
+        # Initialize database connection
+        client = connect_arango()
+        if db_name == "epistemic_test":
+            db = ensure_database(client)
+        else:
+            db = client.db(db_name, username='root', password='password')
+        
+        # Execute query
+        cursor = db.aql.execute(query)
+        result = list(cursor)
+        
+        if not result:
+            console.print("[red]Query returned no results[/red]")
+            return
+        
+        console.print(f"[green]Query returned {len(result)} rows[/green]")
+        
+        # Initialize table engine
+        engine = TableEngine()
+        
+        # Parse columns if provided
+        custom_columns = None
+        if columns:
+            column_names = [c.strip() for c in columns.split(',')]
+            custom_columns = [{"key": col, "label": col.replace('_', ' ').title(), "type": "string"} 
+                            for col in column_names]
+        
+        # Generate table HTML
+        html = engine.generate_table(
+            data=result,
+            columns=custom_columns,
+            title=title or f"Table: {collection or 'Query Results'}",
+            page_size=page_size,
+            collection_name=collection
+        )
+        
+        # Save to file
+        if not output:
+            timestamp = Path().name
+            output = DEFAULT_OUTPUT_DIR / f"table_{len(result)}rows_{timestamp}.html"
+        
+        output.parent.mkdir(parents=True, exist_ok=True)
+        
+        with open(output, 'w', encoding='utf-8') as f:
+            f.write(html)
+        
+        console.print(f"[green]Table saved to: {output}[/green]")
+        
+        # Open in browser
+        if open_browser:
+            webbrowser.open(f"file://{output.absolute()}")
+        
+    except Exception as e:
+        console.print(f"[red]Error: {e}[/red]")
+        logger.error(f"Table generation failed: {e}")
+        raise typer.Exit(1)
+
+
+@app.command()
 def layouts():
     """List available visualization layouts"""
     table = Table(title="Available Visualization Layouts")
@@ -338,7 +414,8 @@ def layouts():
 @app.command()
 def examples():
     """Show example AQL queries for visualization"""
-    examples = [
+    # Graph visualization examples
+    graph_examples = [
         {
             "title": "Find all document relationships",
             "query": "FOR doc IN documents\n  FOR v, e IN 1..3 OUTBOUND doc relationships\n  RETURN {nodes: UNION([doc], v), links: e}",
@@ -356,12 +433,44 @@ def examples():
         }
     ]
     
-    for i, example in enumerate(examples, 1):
+    # Table visualization examples
+    table_examples = [
+        {
+            "title": "List all memories with details",
+            "query": "FOR m IN memories\n  LIMIT 100\n  RETURN m",
+            "command": "arangodb visualize table"
+        },
+        {
+            "title": "Show entities with relationships count",
+            "query": "FOR e IN entities\n  LET rel_count = LENGTH(FOR v IN 1..1 ANY e relationships RETURN 1)\n  RETURN {name: e.name, type: e.type, relationships: rel_count, created: e.created_at}",
+            "command": "arangodb visualize table --columns name,type,relationships,created"
+        },
+        {
+            "title": "Recent memories sorted by confidence",
+            "query": "FOR m IN memories\n  FILTER m.created_at > DATE_SUBTRACT(DATE_NOW(), 7, 'days')\n  SORT m.confidence DESC\n  LIMIT 50\n  RETURN m",
+            "command": "arangodb visualize table --page-size 25"
+        }
+    ]
+    
+    console.print("[bold cyan]Graph Visualization Examples:[/bold cyan]\n")
+    for i, example in enumerate(graph_examples, 1):
         panel = Panel(
             f"[bold]{example['title']}[/bold]\n\n"
             f"[cyan]Query:[/cyan]\n{example['query']}\n\n"
             f"[yellow]Recommended layout:[/yellow] {example['layout']}",
-            title=f"Example {i}",
+            title=f"Graph Example {i}",
+            expand=False
+        )
+        console.print(panel)
+        console.print()
+    
+    console.print("[bold cyan]Table Visualization Examples:[/bold cyan]\n")
+    for i, example in enumerate(table_examples, 1):
+        panel = Panel(
+            f"[bold]{example['title']}[/bold]\n\n"
+            f"[cyan]Query:[/cyan]\n{example['query']}\n\n"
+            f"[yellow]Command:[/yellow] {example['command']}",
+            title=f"Table Example {i}",
             expand=False
         )
         console.print(panel)

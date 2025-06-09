@@ -1,6 +1,8 @@
 """
 Enhanced SPARTA Data Processor with comprehensive threat techniques
 Based on SPARTA v2.0 from The Aerospace Corporation
+
+Module: sparta_data_enhanced.py
 """
 
 from typing import Dict, List, Any, Optional, Tuple

@@ -1,5 +1,6 @@
 """
 QA Export Utilities
+Module: exporter.py
 
 This module provides functions for exporting Q&A pairs to various formats
 for model fine-tuning and data analysis.
@@ -400,7 +401,7 @@ def export_to_openai_format(
     export_format = QAExportFormat(
         format="jsonl",
         compress=compress,
-        include_metadata=False  # OpenAI doesn't need metadata
+        include_metadata=False  # OpenAI doesn't need metadata'
     )
     
     exporter = QAExporter(export_format)
@@ -559,8 +560,8 @@ if __name__ == "__main__":
                     assert data["messages"][0]["role"] == "user", f"Expected 'user' role, got {data['messages'][0]['role']}"
                     assert data["messages"][1]["role"] == "assistant", f"Expected 'assistant' role, got {data['messages'][1]['role']}"
             
-            print(f"✅ Exported {len(qa_pairs)} Q&A pairs to {exported_path}")
-            print("✅ JSONL export successful")
+            print(f" Exported {len(qa_pairs)} Q&A pairs to {exported_path}")
+            print(" JSONL export successful")
         except Exception as e:
             all_validation_failures.append(f"JSONL export test failed: {str(e)}")
         
@@ -591,8 +592,8 @@ if __name__ == "__main__":
                 assert "answer" in header, "Missing 'answer' in header"
                 assert "thinking" in header, "Missing 'thinking' in header"
             
-            print(f"✅ Exported {len(qa_pairs)} Q&A pairs to {exported_path}")
-            print("✅ CSV export successful")
+            print(f" Exported {len(qa_pairs)} Q&A pairs to {exported_path}")
+            print(" CSV export successful")
         except Exception as e:
             all_validation_failures.append(f"CSV export test failed: {str(e)}")
         
@@ -667,11 +668,11 @@ if __name__ == "__main__":
                 assert metadata["split_ratio"]["val"] == 0.2, f"Expected val ratio 0.2, got {metadata['split_ratio']['val']}"
                 assert metadata["split_ratio"]["test"] == 0.2, f"Expected test ratio 0.2, got {metadata['split_ratio']['test']}"
             
-            print(f"✅ Exported {len(more_qa_pairs)} Q&A pairs with split:")
+            print(f" Exported {len(more_qa_pairs)} Q&A pairs with split:")
             print(f"   - Train: {metadata['train_pairs']} pairs")
             print(f"   - Val: {metadata['val_pairs']} pairs")
             print(f"   - Test: {metadata['test_pairs']} pairs")
-            print("✅ Split export successful")
+            print(" Split export successful")
         except Exception as e:
             all_validation_failures.append(f"Split export test failed: {str(e)}")
         
@@ -705,9 +706,9 @@ if __name__ == "__main__":
                 for item in openai_data:
                     assert "thinking" not in item["messages"][1], "OpenAI format should not have 'thinking'"
             
-            print(f"✅ Exported to UnSloth format: {unsloth_path}")
-            print(f"✅ Exported to OpenAI format: {openai_path}")
-            print("✅ Format-specific export successful")
+            print(f" Exported to UnSloth format: {unsloth_path}")
+            print(f" Exported to OpenAI format: {openai_path}")
+            print(" Format-specific export successful")
         except Exception as e:
             all_validation_failures.append(f"Format-specific export test failed: {str(e)}")
     
@@ -717,11 +718,11 @@ if __name__ == "__main__":
     
     # Final validation result
     if all_validation_failures:
-        print(f"\n❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
+        print(f"\n VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
         for failure in all_validation_failures:
             print(f"  - {failure}")
         sys.exit(1)  # Exit with error code
     else:
-        print(f"\n✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
+        print(f"\n VALIDATION PASSED - All {total_tests} tests produced expected results")
         print("QA exporter module is validated and ready for use")
         sys.exit(0)  # Exit with success code

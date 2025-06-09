@@ -1,5 +1,7 @@
 """
 ArangoDB Core Module
+Module: __init__.py
+Description: Package initialization and exports
 
 This module provides the core business logic for ArangoDB operations, search functionality, 
 memory agent, and graph traversal, independent of user interfaces.

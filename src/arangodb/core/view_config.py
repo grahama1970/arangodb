@@ -1,5 +1,7 @@
 """
 View Configuration Module
+Module: view_config.py
+Description: Configuration management and settings
 
 Provides centralized configuration for ArangoDB views and their management policies.
 """
@@ -119,4 +121,4 @@ if __name__ == "__main__":
     # Test environment variable
     print(f"\nEnvironment Policy: {env_policy}")
     
-    print("\n✅ View configuration module loaded successfully")
+    print("\n View configuration module loaded successfully")

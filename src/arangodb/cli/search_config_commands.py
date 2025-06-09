@@ -1,5 +1,7 @@
 """
 Search Configuration CLI Commands
+Module: search_config_commands.py
+Description: Configuration management and settings
 
 Provides CLI interface for managing and using search configurations.
 """

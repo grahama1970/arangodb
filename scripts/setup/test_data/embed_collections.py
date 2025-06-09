@@ -1,3 +1,20 @@
+"""
+Module: embed_collections.py
+
+External Dependencies:
+- loguru: https://loguru.readthedocs.io/
+- arango: https://docs.python-arango.com/
+
+Sample Input:
+>>> # See function docstrings for specific examples
+
+Expected Output:
+>>> # See function docstrings for expected results
+
+Example Usage:
+>>> # Import and use as needed based on module functionality
+"""
+
 #!/usr/bin/env python3
 """
 Utility to generate embeddings for all documents in specified collections.
@@ -224,7 +241,7 @@ def validate_embeddings(db_name: str, collection_name: str, sample_size: int = 5
         cursor = db.aql.execute(query)
         results = list(cursor)
         
-        print(f"\n✅ Validation for {collection_name}:")
+        print(f"\n Validation for {collection_name}:")
         for doc in results:
             print(f"  - {doc['_key']}: {doc.get('name', 'N/A')}")
             print(f"    Embedding length: {doc['embedding_length']}")
@@ -263,7 +280,7 @@ if __name__ == "__main__":
             "embedding_fields": ["name", "dietary_preferences", "tags"]
         },
         {
-            "collection_name": "pizza_reviews",  # We'll create this collection
+            "collection_name": "pizza_reviews",  # We'll create this collection'
             "embedding_fields": ["review_text", "summary", "tags"]
         },
         {
@@ -273,13 +290,13 @@ if __name__ == "__main__":
     ]
     
     # Embed all collections
-    print("🔧 Embedding Pizza Database Collections")
+    print(" Embedding Pizza Database Collections")
     print("=" * 50)
     
     stats = embed_multiple_collections("pizza_test", pizza_collections)
     
     # Print summary
-    print("\n📊 Embedding Summary:")
+    print("\n Embedding Summary:")
     for collection, stat in stats.items():
         print(f"\n{collection}:")
         print(f"  - Total documents: {stat['total_documents']}")
@@ -288,7 +305,7 @@ if __name__ == "__main__":
         print(f"  - Documents failed: {stat['documents_failed']}")
     
     # Validate embeddings
-    print("\n🔍 Validating Embeddings:")
+    print("\n Validating Embeddings:")
     for config in pizza_collections:
         if stats.get(config["collection_name"], {}).get("total_documents", 0) > 0:
             validate_embeddings("pizza_test", config["collection_name"], sample_size=3)

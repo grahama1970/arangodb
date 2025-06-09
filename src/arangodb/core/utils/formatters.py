@@ -1,6 +1,9 @@
 """
 Utility functions for formatting documents for display
 """
+Module: formatters.py
+Description: Functions for formatters operations
+Description: Functions for formatters operations
 
 import json
 from typing import Any, Dict, List, Optional, Union

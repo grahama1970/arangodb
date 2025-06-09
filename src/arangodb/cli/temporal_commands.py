@@ -1,5 +1,7 @@
 """
 Temporal Commands for ArangoDB Memory System CLI
+Module: temporal_commands.py
+Description: Functions for temporal commands operations
 
 This module provides CLI commands for temporal operations including
 point-in-time queries, historical views, and temporal validation.

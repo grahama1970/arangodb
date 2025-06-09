@@ -1,5 +1,7 @@
 """
 Q&A Generation CLI using Typer.
+Module: cli.py
+Description: Implementation of cli functionality
 
 This module provides a command-line interface for generating Q&A pairs
 from documents processed by Marker and stored in ArangoDB.

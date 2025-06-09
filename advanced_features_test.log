@@ -1,0 +1,393 @@
+2025-06-07 17:26:18.163 | INFO     | test_advanced_features:run_cli_command:40 - Running: search semantic --query "Italian classic with tomatoes and cheese" --collection pizzas --db pizza_test --limit 3
+2025-06-07 17:26:18.377 | ERROR    | test_advanced_features:run_cli_command:50 - Command failed: Traceback (most recent call last):
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 187, in _run_module_as_main
+    mod_name, mod_spec, code = _get_module_details(mod_name, _Error)
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 146, in _get_module_details
+    return _get_module_details(pkg_main_name, error)
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 110, in _get_module_details
+    __import__(pkg_name)
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/__init__.py", line 9, in <module>
+    from arangodb.cli.main import app
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/main.py", line 14, in <module>
+    from arangodb.core.utils.cli.formatters import console
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/core/utils/cli/__init__.py", line 5
+    Description: Package initialization and exports
+                         ^^^^^^^^^^^^^^
+SyntaxError: invalid syntax
+
+2025-06-07 17:26:18.377 | INFO     | test_advanced_features:run_cli_command:40 - Running: search semantic --query "supplier price increases and negotiations" --collection memories --db pizza_test --limit 3
+2025-06-07 17:26:18.596 | ERROR    | test_advanced_features:run_cli_command:50 - Command failed: Traceback (most recent call last):
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 187, in _run_module_as_main
+    mod_name, mod_spec, code = _get_module_details(mod_name, _Error)
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 146, in _get_module_details
+    return _get_module_details(pkg_main_name, error)
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 110, in _get_module_details
+    __import__(pkg_name)
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/__init__.py", line 9, in <module>
+    from arangodb.cli.main import app
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/main.py", line 14, in <module>
+    from arangodb.core.utils.cli.formatters import console
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/core/utils/cli/__init__.py", line 5
+    Description: Package initialization and exports
+                         ^^^^^^^^^^^^^^
+SyntaxError: invalid syntax
+
+2025-06-07 17:26:18.596 | INFO     | test_advanced_features:run_cli_command:40 - Running: search semantic --query "crust texture cheese quality fresh ingredients" --collection pizza_reviews --db pizza_test --limit 3
+2025-06-07 17:26:18.817 | ERROR    | test_advanced_features:run_cli_command:50 - Command failed: Traceback (most recent call last):
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 187, in _run_module_as_main
+    mod_name, mod_spec, code = _get_module_details(mod_name, _Error)
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 146, in _get_module_details
+    return _get_module_details(pkg_main_name, error)
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 110, in _get_module_details
+    __import__(pkg_name)
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/__init__.py", line 9, in <module>
+    from arangodb.cli.main import app
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/main.py", line 14, in <module>
+    from arangodb.core.utils.cli.formatters import console
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/core/utils/cli/__init__.py", line 5
+    Description: Package initialization and exports
+                         ^^^^^^^^^^^^^^
+SyntaxError: invalid syntax
+
+2025-06-07 17:26:18.818 | INFO     | test_advanced_features:run_cli_command:40 - Running: search hybrid --query "vegetarian pizza fresh vegetables" --collection pizzas --db pizza_test --bm25-weight 0.4 --semantic-weight 0.6
+2025-06-07 17:26:19.051 | ERROR    | test_advanced_features:run_cli_command:50 - Command failed: Traceback (most recent call last):
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 187, in _run_module_as_main
+    mod_name, mod_spec, code = _get_module_details(mod_name, _Error)
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 146, in _get_module_details
+    return _get_module_details(pkg_main_name, error)
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 110, in _get_module_details
+    __import__(pkg_name)
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/__init__.py", line 9, in <module>
+    from arangodb.cli.main import app
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/main.py", line 14, in <module>
+    from arangodb.core.utils.cli.formatters import console
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/core/utils/cli/__init__.py", line 5
+    Description: Package initialization and exports
+                         ^^^^^^^^^^^^^^
+SyntaxError: invalid syntax
+
+2025-06-07 17:26:19.052 | INFO     | test_advanced_features:run_cli_command:40 - Running: search hybrid --query "best pizza authentic Italian wood fired" --collection pizza_reviews --db pizza_test --bm25-weight 0.5 --semantic-weight 0.5
+2025-06-07 17:26:19.263 | ERROR    | test_advanced_features:run_cli_command:50 - Command failed: Traceback (most recent call last):
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 187, in _run_module_as_main
+    mod_name, mod_spec, code = _get_module_details(mod_name, _Error)
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 146, in _get_module_details
+    return _get_module_details(pkg_main_name, error)
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 110, in _get_module_details
+    __import__(pkg_name)
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/__init__.py", line 9, in <module>
+    from arangodb.cli.main import app
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/main.py", line 14, in <module>
+    from arangodb.core.utils.cli.formatters import console
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/core/utils/cli/__init__.py", line 5
+    Description: Package initialization and exports
+                         ^^^^^^^^^^^^^^
+SyntaxError: invalid syntax
+
+2025-06-07 17:26:19.265 | INFO     | test_advanced_features:run_cli_command:40 - Running: crud query --aql "
+    FOR customer IN customers
+        FILTER customer._key == 'cust_001'
+        FOR order IN 1..1 OUTBOUND customer customer_orders
+            FOR pizza IN 1..1 OUTBOUND order order_items
+                FOR ingredient IN 1..1 OUTBOUND pizza pizza_ingredients
+                    COLLECT ingredient_name = ingredient.name 
+                    WITH COUNT INTO times_consumed
+                    SORT times_consumed DESC
+                    LIMIT 5
+                    RETURN {
+                        ingredient: ingredient_name, 
+                        times_consumed: times_consumed
+                    }
+    " --db pizza_test
+2025-06-07 17:26:19.482 | ERROR    | test_advanced_features:run_cli_command:50 - Command failed: Traceback (most recent call last):
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 187, in _run_module_as_main
+    mod_name, mod_spec, code = _get_module_details(mod_name, _Error)
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 146, in _get_module_details
+    return _get_module_details(pkg_main_name, error)
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 110, in _get_module_details
+    __import__(pkg_name)
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/__init__.py", line 9, in <module>
+    from arangodb.cli.main import app
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/main.py", line 14, in <module>
+    from arangodb.core.utils.cli.formatters import console
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/core/utils/cli/__init__.py", line 5
+    Description: Package initialization and exports
+                         ^^^^^^^^^^^^^^
+SyntaxError: invalid syntax
+
+2025-06-07 17:26:19.483 | INFO     | test_advanced_features:run_cli_command:40 - Running: graph traverse pizzas/pepperoni --direction outbound --edge-collection pizza_ingredients --depth 2 --db pizza_test
+2025-06-07 17:26:19.693 | ERROR    | test_advanced_features:run_cli_command:50 - Command failed: Traceback (most recent call last):
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 187, in _run_module_as_main
+    mod_name, mod_spec, code = _get_module_details(mod_name, _Error)
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 146, in _get_module_details
+    return _get_module_details(pkg_main_name, error)
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 110, in _get_module_details
+    __import__(pkg_name)
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/__init__.py", line 9, in <module>
+    from arangodb.cli.main import app
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/main.py", line 14, in <module>
+    from arangodb.core.utils.cli.formatters import console
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/core/utils/cli/__init__.py", line 5
+    Description: Package initialization and exports
+                         ^^^^^^^^^^^^^^
+SyntaxError: invalid syntax
+
+2025-06-07 17:26:19.694 | INFO     | test_advanced_features:run_cli_command:40 - Running: graph traverse memories/mem_001 --direction any --edge-collection memory_links --depth 2 --db pizza_test
+2025-06-07 17:26:19.908 | ERROR    | test_advanced_features:run_cli_command:50 - Command failed: Traceback (most recent call last):
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 187, in _run_module_as_main
+    mod_name, mod_spec, code = _get_module_details(mod_name, _Error)
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 146, in _get_module_details
+    return _get_module_details(pkg_main_name, error)
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 110, in _get_module_details
+    __import__(pkg_name)
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/__init__.py", line 9, in <module>
+    from arangodb.cli.main import app
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/main.py", line 14, in <module>
+    from arangodb.core.utils.cli.formatters import console
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/core/utils/cli/__init__.py", line 5
+    Description: Package initialization and exports
+                         ^^^^^^^^^^^^^^
+SyntaxError: invalid syntax
+
+2025-06-07 17:26:19.910 | INFO     | test_advanced_features:run_cli_command:40 - Running: memory create --content 'Friday rush analysis: Orders spike 300% between 6-8 PM. Pepperoni pizza accounts for 45% of Friday orders. Customer John Smith consistently orders at 6:30 PM Fridays. Recommend: Pre-make 20 pepperoni pizzas at 5:45 PM on Fridays.' --metadata '{"context": "operational_insight", "source": "order_analysis", "confidence": 0.88, "day_of_week": "friday", "time_window": "18:00-20:00"}' --tags 'operations,peak_hours,pepperoni,predictive' --db pizza_test
+2025-06-07 17:26:20.120 | ERROR    | test_advanced_features:run_cli_command:50 - Command failed: Traceback (most recent call last):
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 187, in _run_module_as_main
+    mod_name, mod_spec, code = _get_module_details(mod_name, _Error)
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 146, in _get_module_details
+    return _get_module_details(pkg_main_name, error)
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 110, in _get_module_details
+    __import__(pkg_name)
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/__init__.py", line 9, in <module>
+    from arangodb.cli.main import app
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/main.py", line 14, in <module>
+    from arangodb.core.utils.cli.formatters import console
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/core/utils/cli/__init__.py", line 5
+    Description: Package initialization and exports
+                         ^^^^^^^^^^^^^^
+SyntaxError: invalid syntax
+
+2025-06-07 17:26:20.121 | INFO     | test_advanced_features:run_cli_command:40 - Running: memory search --query "Friday peak hours operations" --db pizza_test
+2025-06-07 17:26:20.331 | ERROR    | test_advanced_features:run_cli_command:50 - Command failed: Traceback (most recent call last):
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 187, in _run_module_as_main
+    mod_name, mod_spec, code = _get_module_details(mod_name, _Error)
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 146, in _get_module_details
+    return _get_module_details(pkg_main_name, error)
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 110, in _get_module_details
+    __import__(pkg_name)
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/__init__.py", line 9, in <module>
+    from arangodb.cli.main import app
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/main.py", line 14, in <module>
+    from arangodb.core.utils.cli.formatters import console
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/core/utils/cli/__init__.py", line 5
+    Description: Package initialization and exports
+                         ^^^^^^^^^^^^^^
+SyntaxError: invalid syntax
+
+2025-06-07 17:26:20.332 | INFO     | test_advanced_features:run_cli_command:40 - Running: episode list --limit 5 --db pizza_test
+2025-06-07 17:26:20.548 | ERROR    | test_advanced_features:run_cli_command:50 - Command failed: Traceback (most recent call last):
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 187, in _run_module_as_main
+    mod_name, mod_spec, code = _get_module_details(mod_name, _Error)
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 146, in _get_module_details
+    return _get_module_details(pkg_main_name, error)
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 110, in _get_module_details
+    __import__(pkg_name)
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/__init__.py", line 9, in <module>
+    from arangodb.cli.main import app
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/main.py", line 14, in <module>
+    from arangodb.core.utils.cli.formatters import console
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/core/utils/cli/__init__.py", line 5
+    Description: Package initialization and exports
+                         ^^^^^^^^^^^^^^
+SyntaxError: invalid syntax
+
+2025-06-07 17:26:20.550 | INFO     | test_advanced_features:run_cli_command:40 - Running: temporal extract --collection orders --start 2024-12-01 --end 2024-12-31 --db pizza_test
+2025-06-07 17:26:20.767 | ERROR    | test_advanced_features:run_cli_command:50 - Command failed: Traceback (most recent call last):
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 187, in _run_module_as_main
+    mod_name, mod_spec, code = _get_module_details(mod_name, _Error)
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 146, in _get_module_details
+    return _get_module_details(pkg_main_name, error)
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 110, in _get_module_details
+    __import__(pkg_name)
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/__init__.py", line 9, in <module>
+    from arangodb.cli.main import app
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/main.py", line 14, in <module>
+    from arangodb.core.utils.cli.formatters import console
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/core/utils/cli/__init__.py", line 5
+    Description: Package initialization and exports
+                         ^^^^^^^^^^^^^^
+SyntaxError: invalid syntax
+
+2025-06-07 17:26:20.767 | INFO     | test_advanced_features:run_cli_command:40 - Running: crud query --aql "
+    FOR review IN pizza_reviews
+        COLLECT 
+            month = DATE_MONTH(review.created_at),
+            pizza = DOCUMENT(review.pizza_id).name
+        AGGREGATE 
+            avg_rating = AVG(review.rating),
+            avg_sentiment = AVG(review.sentiment_score),
+            review_count = COUNT(review)
+        SORT month, avg_rating DESC
+        RETURN {
+            month: month,
+            pizza: pizza,
+            avg_rating: avg_rating,
+            avg_sentiment: avg_sentiment,
+            reviews: review_count
+        }
+    " --db pizza_test
+2025-06-07 17:26:20.982 | ERROR    | test_advanced_features:run_cli_command:50 - Command failed: Traceback (most recent call last):
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 187, in _run_module_as_main
+    mod_name, mod_spec, code = _get_module_details(mod_name, _Error)
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 146, in _get_module_details
+    return _get_module_details(pkg_main_name, error)
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 110, in _get_module_details
+    __import__(pkg_name)
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/__init__.py", line 9, in <module>
+    from arangodb.cli.main import app
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/main.py", line 14, in <module>
+    from arangodb.core.utils.cli.formatters import console
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/core/utils/cli/__init__.py", line 5
+    Description: Package initialization and exports
+                         ^^^^^^^^^^^^^^
+SyntaxError: invalid syntax
+
+2025-06-07 17:26:20.984 | INFO     | test_advanced_features:run_cli_command:40 - Running: memory create --content 'Recent analysis shows Hawaiian pizza is our least popular item with only 5% of orders. Customers complain about the pineapple quality. Recommendation: Remove Hawaiian pizza from menu.' --metadata '{"context": "product_analysis", "source": "sales_analysis", "confidence": 0.7}' --tags 'hawaiian,poor_performance,remove' --db pizza_test
+2025-06-07 17:26:21.213 | ERROR    | test_advanced_features:run_cli_command:50 - Command failed: Traceback (most recent call last):
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 187, in _run_module_as_main
+    mod_name, mod_spec, code = _get_module_details(mod_name, _Error)
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 146, in _get_module_details
+    return _get_module_details(pkg_main_name, error)
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 110, in _get_module_details
+    __import__(pkg_name)
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/__init__.py", line 9, in <module>
+    from arangodb.cli.main import app
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/main.py", line 14, in <module>
+    from arangodb.core.utils.cli.formatters import console
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/core/utils/cli/__init__.py", line 5
+    Description: Package initialization and exports
+                         ^^^^^^^^^^^^^^
+SyntaxError: invalid syntax
+
+2025-06-07 17:26:21.214 | INFO     | test_advanced_features:run_cli_command:40 - Running: contradiction detect --collection memories --db pizza_test
+2025-06-07 17:26:21.427 | ERROR    | test_advanced_features:run_cli_command:50 - Command failed: Traceback (most recent call last):
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 187, in _run_module_as_main
+    mod_name, mod_spec, code = _get_module_details(mod_name, _Error)
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 146, in _get_module_details
+    return _get_module_details(pkg_main_name, error)
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 110, in _get_module_details
+    __import__(pkg_name)
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/__init__.py", line 9, in <module>
+    from arangodb.cli.main import app
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/main.py", line 14, in <module>
+    from arangodb.core.utils.cli.formatters import console
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/core/utils/cli/__init__.py", line 5
+    Description: Package initialization and exports
+                         ^^^^^^^^^^^^^^
+SyntaxError: invalid syntax
+
+2025-06-07 17:26:21.429 | INFO     | test_advanced_features:run_cli_command:40 - Running: community detect --collection pizzas --edge-collection pizza_ingredients --db pizza_test
+2025-06-07 17:26:21.644 | ERROR    | test_advanced_features:run_cli_command:50 - Command failed: Traceback (most recent call last):
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 187, in _run_module_as_main
+    mod_name, mod_spec, code = _get_module_details(mod_name, _Error)
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 146, in _get_module_details
+    return _get_module_details(pkg_main_name, error)
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 110, in _get_module_details
+    __import__(pkg_name)
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/__init__.py", line 9, in <module>
+    from arangodb.cli.main import app
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/main.py", line 14, in <module>
+    from arangodb.core.utils.cli.formatters import console
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/core/utils/cli/__init__.py", line 5
+    Description: Package initialization and exports
+                         ^^^^^^^^^^^^^^
+SyntaxError: invalid syntax
+
+2025-06-07 17:26:21.644 | INFO     | test_advanced_features:run_cli_command:40 - Running: community detect --collection customers --edge-collection customer_orders --db pizza_test
+2025-06-07 17:26:21.853 | ERROR    | test_advanced_features:run_cli_command:50 - Command failed: Traceback (most recent call last):
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 187, in _run_module_as_main
+    mod_name, mod_spec, code = _get_module_details(mod_name, _Error)
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 146, in _get_module_details
+    return _get_module_details(pkg_main_name, error)
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 110, in _get_module_details
+    __import__(pkg_name)
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/__init__.py", line 9, in <module>
+    from arangodb.cli.main import app
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/main.py", line 14, in <module>
+    from arangodb.core.utils.cli.formatters import console
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/core/utils/cli/__init__.py", line 5
+    Description: Package initialization and exports
+                         ^^^^^^^^^^^^^^
+SyntaxError: invalid syntax
+
+2025-06-07 17:26:21.854 | INFO     | test_advanced_features:run_cli_command:40 - Running: crud query --aql "
+    LET supplier_impact = (
+        FOR supplier IN ingredient_suppliers
+            LET total_ingredient_cost = SUM(
+                FOR ingredient IN 1..1 OUTBOUND supplier supplier_ingredients
+                    LET usage = SUM(
+                        FOR pizza IN 1..1 INBOUND ingredient pizza_ingredients
+                            RETURN 1
+                    )
+                    RETURN ingredient.cost_per_unit * usage * 100
+            )
+            RETURN {
+                supplier: supplier.name,
+                total_impact: total_ingredient_cost,
+                reliability: supplier.reliability_score
+            }
+    )
+    RETURN {
+        total_suppliers: LENGTH(supplier_impact),
+        total_cost_impact: SUM(supplier_impact[*].total_impact),
+        suppliers: supplier_impact
+    }
+    " --db pizza_test
+2025-06-07 17:26:22.073 | ERROR    | test_advanced_features:run_cli_command:50 - Command failed: Traceback (most recent call last):
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 187, in _run_module_as_main
+    mod_name, mod_spec, code = _get_module_details(mod_name, _Error)
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 146, in _get_module_details
+    return _get_module_details(pkg_main_name, error)
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 110, in _get_module_details
+    __import__(pkg_name)
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/__init__.py", line 9, in <module>
+    from arangodb.cli.main import app
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/main.py", line 14, in <module>
+    from arangodb.core.utils.cli.formatters import console
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/core/utils/cli/__init__.py", line 5
+    Description: Package initialization and exports
+                         ^^^^^^^^^^^^^^
+SyntaxError: invalid syntax
+
+2025-06-07 17:26:22.074 | INFO     | test_advanced_features:run_cli_command:40 - Running: visualize graph --collection pizzas --edge-collection pizza_ingredients --layout force --db pizza_test --output /tmp/pizza_ingredients_graph.html
+2025-06-07 17:26:22.287 | ERROR    | test_advanced_features:run_cli_command:50 - Command failed: Traceback (most recent call last):
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 187, in _run_module_as_main
+    mod_name, mod_spec, code = _get_module_details(mod_name, _Error)
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 146, in _get_module_details
+    return _get_module_details(pkg_main_name, error)
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 110, in _get_module_details
+    __import__(pkg_name)
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/__init__.py", line 9, in <module>
+    from arangodb.cli.main import app
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/main.py", line 14, in <module>
+    from arangodb.core.utils.cli.formatters import console
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/core/utils/cli/__init__.py", line 5
+    Description: Package initialization and exports
+                         ^^^^^^^^^^^^^^
+SyntaxError: invalid syntax
+
+2025-06-07 17:26:22.287 | INFO     | test_advanced_features:run_cli_command:40 - Running: visualize graph --collection customers --edge-collection customer_orders --layout radial --db pizza_test --output /tmp/customer_journey_graph.html
+2025-06-07 17:26:22.499 | ERROR    | test_advanced_features:run_cli_command:50 - Command failed: Traceback (most recent call last):
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 187, in _run_module_as_main
+    mod_name, mod_spec, code = _get_module_details(mod_name, _Error)
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 146, in _get_module_details
+    return _get_module_details(pkg_main_name, error)
+  File "/home/graham/.local/share/uv/python/cpython-3.10.11-linux-x86_64-gnu/lib/python3.10/runpy.py", line 110, in _get_module_details
+    __import__(pkg_name)
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/__init__.py", line 9, in <module>
+    from arangodb.cli.main import app
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/cli/main.py", line 14, in <module>
+    from arangodb.core.utils.cli.formatters import console
+  File "/home/graham/workspace/experiments/arangodb/src/arangodb/core/utils/cli/__init__.py", line 5
+    Description: Package initialization and exports
+                         ^^^^^^^^^^^^^^
+SyntaxError: invalid syntax
+

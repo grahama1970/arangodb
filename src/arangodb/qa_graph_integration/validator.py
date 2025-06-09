@@ -1,5 +1,6 @@
 """
 QA Validation Module
+Module: validator.py
 
 This module provides validation functionality for QA pairs, including
 checking answers against source content and verifying that questions
@@ -506,7 +507,7 @@ if __name__ == "__main__":
         
         print(f"Validation score: {result.validation_score:.2f}")
         print(f"Validation status: {result.status}")
-        print("✅ Basic validation successful")
+        print(" Basic validation successful")
     except Exception as e:
         all_validation_failures.append(f"Basic validation test failed: {str(e)}")
     
@@ -546,7 +547,7 @@ if __name__ == "__main__":
         
         print(f"Validation score: {result.validation_score:.2f}")
         print(f"Validation status: {result.status}")
-        print("✅ Failed validation test successful")
+        print(" Failed validation test successful")
     except Exception as e:
         all_validation_failures.append(f"Failed validation test failed: {str(e)}")
     
@@ -613,7 +614,7 @@ if __name__ == "__main__":
         assert stats["failed"] == 1, f"Expected 1 failed pair, got {stats['failed']}"
         
         print(f"Validation stats: {json.dumps(stats, indent=2)}")
-        print("✅ Batch validation successful")
+        print(" Batch validation successful")
     except Exception as e:
         all_validation_failures.append(f"Batch validation test failed: {str(e)}")
     
@@ -690,7 +691,7 @@ if __name__ == "__main__":
             assert stats["validated"] == 2, f"Expected 2 validated pairs, got {stats['validated']}"
             
             print(f"Async validation stats: {json.dumps(stats, indent=2)}")
-            return "✅ Async validation successful"
+            return " Async validation successful"
         
         # Run async test
         import asyncio
@@ -701,11 +702,11 @@ if __name__ == "__main__":
     
     # Final validation result
     if all_validation_failures:
-        print(f"\n❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
+        print(f"\n VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
         for failure in all_validation_failures:
             print(f"  - {failure}")
         sys.exit(1)  # Exit with error code
     else:
-        print(f"\n✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
+        print(f"\n VALIDATION PASSED - All {total_tests} tests produced expected results")
         print("QA validator module is validated and ready for use")
         sys.exit(0)  # Exit with success code

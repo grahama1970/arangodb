@@ -1,5 +1,7 @@
 """
 Enhanced Memory Agent Search with Two-Stage Filtering
+Module: memory_agent_twostage.py
+Description: Functions for memory agent twostage operations
 
 This module shows the correct approach: vector search first,
 then Python filtering as a second stage.

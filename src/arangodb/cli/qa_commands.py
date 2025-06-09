@@ -1,5 +1,7 @@
 """
 Q&A Generation CLI Commands for ArangoDB
+Module: qa_commands.py
+Description: Functions for qa commands operations
 
 This module provides command-line interface for Q&A generation operations
 using documents and relationships stored in ArangoDB. It generates question-answer

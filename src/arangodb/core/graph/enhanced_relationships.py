@@ -1,5 +1,7 @@
 """
 Enhanced relationship operations for ArangoDB with temporal metadata support.
+Module: enhanced_relationships.py
+Description: Functions for enhanced relationships operations
 
 This module provides enhanced relationship operations for ArangoDB,
 including bi-temporal metadata support inspired by the Graphiti knowledge
@@ -60,7 +62,7 @@ def enhance_edge_with_temporal_metadata(
     source_document: Optional[Dict[str, Any]] = None
 ) -> Dict[str, Any]:
     """
-    Add or enhance temporal metadata in edge documents based on Graphiti's bi-temporal model.
+    Add or enhance temporal metadata in edge documents based on Graphiti's bi-temporal model.'
     
     Args:
         edge_doc: Edge document to enhance
@@ -894,12 +896,12 @@ if __name__ == "__main__":
         
         # Final validation result
         if all_validation_failures:
-            logger.error(f"❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
+            logger.error(f" VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
             for failure in all_validation_failures:
                 logger.error(f"  - {failure}")
             sys.exit(1)  # Exit with error code
         else:
-            logger.info(f"✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
+            logger.info(f" VALIDATION PASSED - All {total_tests} tests produced expected results")
             logger.info("Enhanced temporal relationship functionality is validated")
             sys.exit(0)  # Exit with success code
     

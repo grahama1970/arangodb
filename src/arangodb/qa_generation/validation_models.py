@@ -1,5 +1,7 @@
 """
 Validation models for Q&A generation errors and retries.
+Module: validation_models.py
+Description: Data models and schemas for validation models
 
 This module defines models for validation errors and retry messages.
 """

@@ -1,3 +1,32 @@
+"""
+Module: test_reporter.py
+Description: Test suite for reporter functionality
+
+External Dependencies:
+- traceback: [Documentation URL]
+- dataclasses: [Documentation URL]
+- loguru: [Documentation URL]
+
+Sample Input:
+>>> # Add specific examples based on module functionality
+
+Expected Output:
+>>> # Add expected output examples
+
+Example Usage:
+>>> # Add usage examples
+"""
+
+import sys
+from pathlib import Path
+
+# Add src to path for imports
+src_path = Path(__file__).parent.parent / "src"
+if src_path.exists() and str(src_path) not in sys.path:
+    sys.path.insert(0, str(src_path))
+
+
+
 #!/usr/bin/env python3
 """
 Test Result Reporter for ArangoDB Memory Bank
@@ -105,12 +134,12 @@ class TestReporter:
 | **Start Time** | {suite_result.start_time.strftime('%Y-%m-%d %H:%M:%S')} |
 | **Duration** | {duration:.2f}s |
 | **Total Tests** | {suite_result.total_tests} |
-| **✅ Passed** | {suite_result.passed_tests} |
-| **❌ Failed** | {suite_result.failed_tests} |
+| ** Passed** | {suite_result.passed_tests} |
+| ** Failed** | {suite_result.failed_tests} |
 | **⚠️ Errors** | {suite_result.error_tests} |
 | **⏭️ Skipped** | {suite_result.skipped_tests} |
 | **Success Rate** | {success_rate:.1f}% |
-| **Status** | {'✅ ALL PASS' if suite_result.failed_tests == 0 and suite_result.error_tests == 0 else '❌ FAILURES DETECTED'} |
+| **Status** | {' ALL PASS' if suite_result.failed_tests == 0 and suite_result.error_tests == 0 else ' FAILURES DETECTED'} |
 """
         return table
     
@@ -127,11 +156,11 @@ class TestReporter:
         for result in suite_result.test_results:
             # Format status with emoji
             status_emoji = {
-                "PASS": "✅",
-                "FAIL": "❌", 
+                "PASS": "",
+                "FAIL": "", 
                 "ERROR": "⚠️",
                 "SKIP": "⏭️"
-            }.get(result.status, "❓")
+            }.get(result.status, "")
             
             status_display = f"{status_emoji} {result.status}"
             
@@ -162,9 +191,9 @@ class TestReporter:
         failed_tests = [r for r in suite_result.test_results if r.status in ["FAIL", "ERROR"]]
         
         if not failed_tests:
-            return "\n## ✅ No Failures\n\nAll tests passed successfully!\n"
+            return "\n##  No Failures\n\nAll tests passed successfully!\n"
         
-        details = f"\n## ❌ Failure Details ({len(failed_tests)} failures)\n\n"
+        details = f"\n##  Failure Details ({len(failed_tests)} failures)\n\n"
         
         for result in failed_tests:
             details += f"### {result.test_id} - {result.test_name}\n\n"
@@ -207,10 +236,10 @@ class TestReporter:
         tests_with_queries = len([r for r in suite_result.test_results if r.arango_queries])
         
         if total_queries == 0:
-            return "\n## 🗄️ ArangoDB Summary\n\nNo database queries executed in this test suite.\n"
+            return "\n## ️ ArangoDB Summary\n\nNo database queries executed in this test suite.\n"
         
         summary = f"""
-## 🗄️ ArangoDB Summary
+## ️ ArangoDB Summary
 
 | Metric | Value |
 |--------|-------|
@@ -251,14 +280,14 @@ class TestReporter:
 
 {self.generate_failure_details(suite_result)}
 
-## 📊 Test Execution Timeline
+##  Test Execution Timeline
 
 | Test | Start Time | Duration | Status |
 |------|------------|----------|--------|
 """
         
         for result in suite_result.test_results:
-            status_emoji = {"PASS": "✅", "FAIL": "❌", "ERROR": "⚠️", "SKIP": "⏭️"}.get(result.status, "❓")
+            status_emoji = {"PASS": "", "FAIL": "", "ERROR": "⚠️", "SKIP": "⏭️"}.get(result.status, "")
             report += f"| {result.test_name} | {suite_result.start_time.strftime('%H:%M:%S')} | {result.duration:.3f}s | {status_emoji} {result.status} |\n"
         
         report += f"""

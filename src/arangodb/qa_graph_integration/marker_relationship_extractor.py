@@ -1,5 +1,7 @@
 """
 Marker Relationship Extractor
+Module: marker_relationship_extractor.py
+Description: Functions for marker relationship extractor operations
 
 This module extracts relationships from Marker output files, creating
 hierarchical and sequential relationships between document sections
@@ -379,7 +381,7 @@ if __name__ == "__main__":
         for i, rel in enumerate(relationships[:3]):
             print(f"  {i+1}. {rel['from']} --[{rel['type']}]--> {rel['to']}")
             
-        print("\n✅ Relationship extraction function works correctly")
+        print("\n Relationship extraction function works correctly")
     except Exception as e:
-        print(f"❌ Error testing relationship extraction: {e}")
+        print(f" Error testing relationship extraction: {e}")
         sys.exit(1)

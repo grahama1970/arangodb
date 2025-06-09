@@ -1,5 +1,7 @@
 """
 Conversation Compaction Module
+Module: compact_conversation.py
+Description: Functions for compact conversation operations
 
 This module provides functionality for creating compact representations of
 conversations using LLMs. It handles chunking of large conversations,

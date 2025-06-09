@@ -1,5 +1,6 @@
 """
 ArangoDB CLI Database Connection Utility
+Module: db_connection.py
 
 This module provides database connection handling for the CLI layer,
 connecting to the ArangoDB instance and ensuring all necessary collections,
@@ -148,7 +149,7 @@ if __name__ == "__main__":
         if not test_result:
             all_validation_failures.append("Failed to import dependency checker")
         else:
-            print(f"✓ ArangoDB availability flag: HAS_ARANGO = {HAS_ARANGO}")
+            print(f" ArangoDB availability flag: HAS_ARANGO = {HAS_ARANGO}")
     except Exception as e:
         all_validation_failures.append(f"Dependency checker validation failed: {e}")
     
@@ -160,7 +161,7 @@ if __name__ == "__main__":
         if not test_result:
             all_validation_failures.append("Failed to import core arango_setup functions")
         else:
-            print("✓ Core arango_setup functions imported successfully")
+            print(" Core arango_setup functions imported successfully")
     except Exception as e:
         all_validation_failures.append(f"Import validation failed: {e}")
     
@@ -174,7 +175,7 @@ if __name__ == "__main__":
         if missing_constants:
             all_validation_failures.append(f"Missing constants: {missing_constants}")
         else:
-            print("✓ All required constants imported successfully")
+            print(" All required constants imported successfully")
     except Exception as e:
         all_validation_failures.append(f"Constants validation failed: {e}")
     
@@ -210,7 +211,7 @@ if __name__ == "__main__":
             elif exit_status["code"] != 1:
                 all_validation_failures.append(f"get_db_connection called typer.Exit with code {exit_status['code']}, expected 1")
             else:
-                print("✓ get_db_connection properly handles missing ArangoDB dependency")
+                print(" get_db_connection properly handles missing ArangoDB dependency")
         
         finally:
             # Restore the original typer.Exit
@@ -221,11 +222,11 @@ if __name__ == "__main__":
     
     # Display validation results
     if all_validation_failures:
-        print(f"\n❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
+        print(f"\n VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
         for failure in all_validation_failures:
             print(f"  - {failure}")
         sys.exit(1)
     else:
-        print(f"\n✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
+        print(f"\n VALIDATION PASSED - All {total_tests} tests produced expected results")
         print("Module validated and ready for use")
         sys.exit(0)

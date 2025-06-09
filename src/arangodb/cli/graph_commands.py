@@ -1,5 +1,7 @@
 """
 ArangoDB CLI Graph Commands
+Module: graph_commands.py
+Description: Functions for graph commands operations
 
 This module provides command-line interface for graph operations using
 the core business logic layer. It handles CLI argument parsing, validation,
@@ -422,7 +424,7 @@ if __name__ == "__main__":
         if not test_result:
             all_validation_failures.append("Failed to import dependency checker flags")
         else:
-            print(f"✓ Dependency flags: HAS_ARANGO = {HAS_ARANGO}")
+            print(f" Dependency flags: HAS_ARANGO = {HAS_ARANGO}")
     except Exception as e:
         all_validation_failures.append(f"Dependency checker validation failed: {e}")
     
@@ -433,7 +435,7 @@ if __name__ == "__main__":
         if not test_result:
             all_validation_failures.append("Failed to check UI dependencies")
         else:
-            print(f"✓ UI dependency flags: HAS_RICH = {HAS_RICH}, HAS_TYPER = {HAS_TYPER}")
+            print(f" UI dependency flags: HAS_RICH = {HAS_RICH}, HAS_TYPER = {HAS_TYPER}")
     except Exception as e:
         all_validation_failures.append(f"UI dependency validation failed: {e}")
     
@@ -445,7 +447,7 @@ if __name__ == "__main__":
         if not test_result:
             all_validation_failures.append("Failed to import core graph functions")
         else:
-            print("✓ Core graph functions imported successfully")
+            print(" Core graph functions imported successfully")
     except Exception as e:
         all_validation_failures.append(f"Import validation failed: {e}")
     
@@ -460,17 +462,17 @@ if __name__ == "__main__":
         if missing_commands:
             all_validation_failures.append(f"Missing commands: {missing_commands}")
         else:
-            print(f"✓ All required commands ({', '.join(expected_commands)}) are registered")
+            print(f" All required commands ({', '.join(expected_commands)}) are registered")
     except Exception as e:
         all_validation_failures.append(f"Typer command validation failed: {e}")
     
     # Display validation results
     if all_validation_failures:
-        print(f"\n❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
+        print(f"\n VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
         for failure in all_validation_failures:
             print(f"  - {failure}")
         sys.exit(1)
     else:
-        print(f"\n✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
+        print(f"\n VALIDATION PASSED - All {total_tests} tests produced expected results")
         print("Module validated and ready for use")
         sys.exit(0)

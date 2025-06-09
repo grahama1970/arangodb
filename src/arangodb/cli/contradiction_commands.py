@@ -1,5 +1,7 @@
 """
 CLI commands for contradiction detection and resolution.
+Module: contradiction_commands.py
+Description: Functions for contradiction commands operations
 
 Provides commands to list, analyze, and resolve contradictions in the graph.
 """
@@ -405,7 +407,7 @@ if __name__ == "__main__":
         # Clean up
         sys_db.delete_database(database_name)
         
-        print("✅ VALIDATION PASSED - CLI commands working correctly")
+        print(" VALIDATION PASSED - CLI commands working correctly")
         
     except Exception as e:
         print(f"Validation failed: {e}")

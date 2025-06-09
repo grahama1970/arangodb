@@ -1,5 +1,7 @@
 """
 Fixed Main CLI Entry Point with Consistent Interface
+Module: main.py
+Description: Functions for main operations
 
 This module provides the main CLI entry point with all commands
 following the stellar template for perfect consistency.
@@ -17,7 +19,7 @@ from arangodb.cli.crud_commands import crud_app
 from arangodb.cli.search_commands import search_app
 from arangodb.cli.search_config_commands import app as search_config_app
 from arangodb.cli.memory_commands import memory_app
-from arangodb.cli.validate_commands import app as validate_app
+# from arangodb.cli.validate_commands import app as validate_app  # File doesn't exist
 from arangodb.cli.episode_commands import app as episode_app
 from arangodb.cli.community_commands import app as community_app
 from arangodb.cli.graph_commands import graph_app
@@ -30,7 +32,7 @@ from arangodb.cli.agent_commands import app as agent_app
 from arangodb.cli.sparta_commands import app as sparta_app
 
 # Import MCP mixin
-from arangodb.cli.slash_mcp_mixin import add_slash_mcp_commands
+from arangodb.cli.granger_slash_mcp_mixin import add_slash_mcp_commands
 
 # Create main app
 app = typer.Typer(
@@ -44,7 +46,7 @@ app.add_typer(crud_app, name="crud", help="CRUD operations for any collection")
 app.add_typer(search_app, name="search", help="Search operations with multiple algorithms")
 app.add_typer(search_config_app, name="search-config", help="Search configuration management")
 app.add_typer(memory_app, name="memory", help="Memory and conversation management")
-app.add_typer(validate_app, name="validate", help="Memory validation and verification")
+# app.add_typer(validate_app, name="validate", help="Memory validation and verification")  # Module doesn't exist
 app.add_typer(episode_app, name="episode", help="Episode management")
 app.add_typer(community_app, name="community", help="Community detection and management")
 app.add_typer(graph_app, name="graph", help="Graph relationship operations")
@@ -277,11 +279,11 @@ def health_check(output: str = typer.Option("text", "--output", "-o")):
     else:
         console.print(format_success(f"CLI Status: {health_status['status']}"))
         for check, status in health_status["checks"].items():
-            emoji = "✓" if status else "✗"
+            emoji = "" if status else ""
             console.print(f"  {emoji} {check}: {'OK' if status else 'Failed'}")
 
 # Add MCP and slash command generation
-add_slash_mcp_commands(app, output_dir=".claude/arangodb_commands")
+add_slash_mcp_commands(app, project_name='arangodb', output_dir=".claude/arangodb_commands")
 
 if __name__ == "__main__":
     app()

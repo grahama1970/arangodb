@@ -1,8 +1,9 @@
 """
 Contradiction logger for tracking and managing detected contradictions in the graph.
+Module: contradiction_logger.py
 
 This module provides utilities for logging contradictions, their resolutions, and
-providing insights into the graph's consistency state.
+providing insights into the graph's consistency state.'
 
 Sample usage:
     logger = ContradictionLogger(db)
@@ -281,7 +282,7 @@ if __name__ == "__main__":
         # Clean up
         sys_db.delete_database(database_name)
         
-        logger.info("✅ VALIDATION PASSED - Contradiction logger working correctly")
+        logger.info(" VALIDATION PASSED - Contradiction logger working correctly")
         sys.exit(0)
         
     except Exception as e:

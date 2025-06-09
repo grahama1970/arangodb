@@ -1,5 +1,7 @@
 """
 ArangoDB Agent Commands Module
+Module: agent_commands.py
+Description: Functions for agent commands operations
 
 Provides CLI commands for inter-module communication between ArangoDB and Marker.
 This module implements the communication mechanism described in docs/correspondence/module_communication.md.

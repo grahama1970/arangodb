@@ -1,5 +1,7 @@
 """
 Semantic Search Module - Integrated with Embedding Validation
+Module: semantic_search.py
+Description: Functions for semantic search operations
 
 This module implements vector similarity search in ArangoDB using the APPROX_NEAR_COSINE
 function correctly, with integrated embedding validation and vector utilities.
@@ -256,7 +258,7 @@ def semantic_search(
     auto_fix_embeddings: bool = False
 ) -> Dict[str, Any]:
     """
-    Semantic search using ArangoDB's APPROX_NEAR_COSINE with proper validation.
+    Semantic search using ArangoDB's APPROX_NEAR_COSINE with proper validation.'
     
     Args:
         db: ArangoDB database

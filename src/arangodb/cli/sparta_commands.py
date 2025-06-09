@@ -1,5 +1,8 @@
 """
 SPARTA threat matrix CLI commands
+
+Module: sparta_commands.py
+Description: Functions for sparta commands operations
 """
 
 import typer
@@ -34,7 +37,7 @@ def generate(
     include_analytics: bool = typer.Option(True, help="Include analytics dashboard")
 ):
     """Generate SPARTA threat matrix visualization"""
-    console.print(Panel("🛡️ SPARTA Threat Matrix Generator", style="bold blue"))
+    console.print(Panel("️ SPARTA Threat Matrix Generator", style="bold blue"))
     
     try:
         # Create output directory
@@ -50,17 +53,17 @@ def generate(
             generator = SPARTAMatrixGenerator()
             result = generator.generate_html_visualization(output_path, include_analytics)
         
-        console.print(f"✅ Visualization generated: {result}", style="green")
+        console.print(f" Visualization generated: {result}", style="green")
         
     except Exception as e:
-        console.print(f"❌ Error: {str(e)}", style="red")
+        console.print(f" Error: {str(e)}", style="red")
         raise typer.Exit(1)
 
 
 @app.command()
 def stats():
     """Display SPARTA matrix statistics"""
-    console.print(Panel("📊 SPARTA Matrix Statistics", style="bold blue"))
+    console.print(Panel(" SPARTA Matrix Statistics", style="bold blue"))
     
     # Use enhanced processor for more data
     processor = EnhancedSPARTADataProcessor()
@@ -131,7 +134,7 @@ def search(
     field: str = typer.Option("all", help="Field to search: all, name, description, id")
 ):
     """Search for techniques in SPARTA matrix"""
-    console.print(f"🔍 Searching for: [bold]{query}[/bold]")
+    console.print(f" Searching for: [bold]{query}[/bold]")
     
     processor = EnhancedSPARTADataProcessor()
     results = []
@@ -181,21 +184,21 @@ def export(
     format: str = typer.Option("json", help="Export format: json, csv")
 ):
     """Export SPARTA matrix data"""
-    console.print(f"📤 Exporting to {format.upper()} format...")
+    console.print(f" Exporting to {format.upper()} format...")
     
     try:
         generator = SPARTAMatrixGenerator()
         generator.export_matrix_data(output_path, format=format)
-        console.print(f"✅ Exported to: {output_path}", style="green")
+        console.print(f" Exported to: {output_path}", style="green")
     except Exception as e:
-        console.print(f"❌ Error: {str(e)}", style="red")
+        console.print(f" Error: {str(e)}", style="red")
         raise typer.Exit(1)
 
 
 @app.command()
 def scenarios():
     """Display attack scenarios"""
-    console.print(Panel("🎯 SPARTA Attack Scenarios", style="bold red"))
+    console.print(Panel(" SPARTA Attack Scenarios", style="bold red"))
     
     processor = EnhancedSPARTADataProcessor()
     scenarios = processor.generate_attack_scenarios()
@@ -228,7 +231,7 @@ def analyze(
     technique_ids: str = typer.Argument(..., help="Comma-separated technique IDs for attack chain")
 ):
     """Analyze an attack chain"""
-    console.print(Panel("🔗 Attack Chain Analysis", style="bold yellow"))
+    console.print(Panel(" Attack Chain Analysis", style="bold yellow"))
     
     processor = SPARTADataProcessor()
     calculator = ThreatCalculator()
@@ -276,9 +279,9 @@ def analyze(
         elif analysis['average_risk_score'] > 50:
             console.print("\n⚠️  [bold yellow]HIGH RISK[/bold yellow]: This attack chain requires immediate attention.")
         else:
-            console.print("\n✓ [bold green]MODERATE RISK[/bold green]: Standard security measures should be effective.")
+            console.print("\n [bold green]MODERATE RISK[/bold green]: Standard security measures should be effective.")
     else:
-        console.print("❌ No valid techniques found.", style="red")
+        console.print(" No valid techniques found.", style="red")
 
 
 if __name__ == "__main__":

@@ -1,5 +1,7 @@
 """
 Search Configuration Module
+Module: search_config.py
+Description: Configuration management and settings
 
 Provides configuration options for different search methods and strategies.
 Allows customization of search behavior per query type.

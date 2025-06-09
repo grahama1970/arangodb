@@ -1,112 +1,118 @@
-# ArangoDB Memory Bank Documentation
+# arangodb Documentation
 
-Welcome to the ArangoDB Memory Bank documentation. This guide helps you navigate our documentation structure.
+> 📚 Organized documentation for easy navigation
 
-## 📍 Documentation Map
+## 🗺️ Quick Navigation
+
+| Section | Description | Key Documents |
+|---------|-------------|---------------|
+| [00_quick_start](./00_quick_start/) | Get started quickly | README, quickstart guides |
+| [01_architecture](./01_architecture/) | System design & architecture | Architecture docs, schemas |
+| [02_api_reference](./02_api_reference/) | API documentation | API reference, endpoints |
+| [03_guides](./03_guides/) | How-to guides | Setup, usage, tutorials |
+| [04_integration](./04_integration/) | Integration with other modules | MCP, module integration |
+| [05_development](./05_development/) | Development resources | Contributing, testing |
+| [06_reports](./06_reports/) | Analysis and reports | Test reports, validations |
+| [99_tasks](./99_tasks/) | Task tracking | TODO lists, planning |
+
+## 📁 Directory Structure
 
 ```
 docs/
-├── 🏠 INDEX.md              # Start here - Documentation index
-├── 📢 BETA_ANNOUNCEMENT.md  # Beta release announcement
-├── 📋 BETA_RELEASE_NOTES.md # Detailed release notes
-├── 💡 CAPABILITIES_AND_LIMITATIONS.md # Feature status
-├── 🏗️ SYSTEM_OVERVIEW.md   # Architecture overview
-├── 📐 GLOBAL_CODING_STANDARDS.md # Development standards
-│
-├── api/
-│   └── python_api.md       # Python API reference
-│
-├── architecture/          # Technical architecture docs
-│   ├── ARANGO_USAGE.md    # ArangoDB specifics
-│   ├── COLLECTION_SCHEMAS.md # Data schemas
-│   ├── EMBEDDING_OPERATIONS.md # Vector handling
-│   └── FIXED_SEMANTIC_SEARCH.md # Search implementation
-│
-├── design/               # Design documents
-│   └── cli_consistency_final_report.md
-│
-├── features/             # Feature documentation
-│   └── community_detection.md
-│
-├── feedback/             # User feedback & analysis
-│   ├── 004_graphiti_parity_analysis.md
-│   └── 005_memory_conversation_comparison.md
-│
-├── guides/               # How-to guides
-│   ├── BETA_TESTING_GUIDE.md # Beta testing guide
-│   ├── TEMPORAL_MODEL_GUIDE.md # Bi-temporal features
-│   ├── TASK_DOCUMENTATION_OVERVIEW.md # Task docs overview
-│   ├── TASK_LIST_TEMPLATE_GUIDE.md # Task creation template
-│   ├── TASK_GUIDELINES_QUICK_REFERENCE.md # Quick checklist
-│   ├── TASK_ITERATION_PROCESS.md # Bug iteration process
-│   └── TROUBLESHOOTING.md # Problem solving
-│
-├── reports/              # Status reports
-│   ├── 025_cli_validation_report.md
-│   ├── 026_field_standardization_complete.md
-│   ├── 027_view_optimization_complete.md
-│   └── README.md         # Reports index
-│
-├── tasks/                # Development tasks
-│   └── [Task files...]   # Active development tasks
-│
-├── troubleshooting/      # Specific issues
-│   └── APPROX_NEAR_COSINE_USAGE.md
-│
-├── usage/                # User guides
-│   ├── CLI_GUIDE.md      # CLI reference
-│   ├── quick_reference_guide.md # Quick commands
-│   └── agent_integration_guide.md # AI integration
-│
-└── archive/              # Historical docs
-    └── iteration1/       # Old iteration docs
+├── 00_quick_start/      # Start here!
+├── 01_architecture/     # System design
+├── 02_api_reference/    # API docs
+├── 03_guides/           # How-to guides
+├── 04_integration/      # Integration docs
+├── 05_development/      # Dev resources
+├── 06_reports/          # Reports & analysis
+├── 99_tasks/            # Task tracking
+└── archive/             # Deprecated docs
 ```
 
-## 🚀 Quick Links
+## 📚 Document Index
 
-### New Users
-1. [Beta Announcement](BETA_ANNOUNCEMENT.md) - Start here
-2. [System Overview](SYSTEM_OVERVIEW.md) - Understand the system
-3. [CLI Guide](usage/CLI_GUIDE.md) - Learn commands
-4. [Python API](api/python_api.md) - Programming interface
+### 00 Quick Start
+- [README](./00_quick_start/README.md)
 
-### Developers
-1. [Global Coding Standards](GLOBAL_CODING_STANDARDS.md) - Code style
-2. [Task Documentation Overview](guides/TASK_DOCUMENTATION_OVERVIEW.md) - Task docs guide
-3. [Task List Template](guides/TASK_LIST_TEMPLATE_GUIDE.md) - Creating new tasks
-4. [Architecture Docs](architecture/) - Technical details
+### 01 Architecture
+- [cli_consistency_final_report](./01_architecture/design/cli_consistency_final_report.md)
+- [responsive_d3_design](./01_architecture/design/responsive_d3_design.md)
+- [intelligence_layer_design](./01_architecture/design/intelligence_layer_design.md)
+- [stellar_cli_template](./01_architecture/design/stellar_cli_template.md)
+- [COLLECTION_SCHEMAS](./01_architecture/architecture/COLLECTION_SCHEMAS.md)
+- *...and 5 more*
+
+### 02 Api Reference
+- [visualization_api](./02_api_reference/api/visualization_api.md)
+- [python_api](./02_api_reference/api/python_api.md)
+
+### 03 Guides
+- [CLI_GUIDE](./03_guides/usage/CLI_GUIDE.md)
+- [quick_reference_guide](./03_guides/usage/quick_reference_guide.md)
+- [agent_integration_guide](./03_guides/usage/agent_integration_guide.md)
+- [ITERATION_LEARNINGS](./03_guides/guides/ITERATION_LEARNINGS.md)
+- [README_ITERATION_PROCESS](./03_guides/guides/README_ITERATION_PROCESS.md)
+- *...and 5 more*
+
+### 06 Reports
+- [028_d3_graph_visualization_amended_report](./06_reports/reports/028_d3_graph_visualization_amended_report.md)
+- [045_qa_directory_rename](./06_reports/reports/045_qa_directory_rename.md)
+- [029_marker_integration_implementation](./06_reports/reports/029_marker_integration_implementation.md)
+- [033_cli_complete_verification_matrix](./06_reports/reports/033_cli_complete_verification_matrix.md)
+- [032_cli_testing_results](./06_reports/reports/032_cli_testing_results.md)
+- *...and 5 more*
+
+### 99 Tasks
+- [032_pizza_database_cli_validation](./99_tasks/tasks/032_pizza_database_cli_validation.md)
+- [009_arangodb_test_summary](./99_tasks/tasks/009_arangodb_test_summary.md)
+- [010_arangodb_enhancement_plan](./99_tasks/tasks/010_arangodb_enhancement_plan.md)
+- [014_code_cleanup_consolidation](./99_tasks/tasks/014_code_cleanup_consolidation.md)
+- [026_bi_temporal_implementation](./99_tasks/tasks/026_bi_temporal_implementation.md)
+- *...and 5 more*
+
+### Archive
+- [001_task_function_testing_debug](./archive/001_task_function_testing_debug.md)
+- [001_task_function_testing_debug_updated](./archive/001_task_function_testing_debug_updated.md)
+- [023_community_detection_day1_summary](./archive/023_community_detection_day1_summary.md)
+- [iteration_1_issues](./archive/iteration_1_issues.md)
+- [001_community_detection_checklist](./archive/023_checklists/001_community_detection_checklist.md)
+- *...and 5 more*
+
+### Correspondence
+- [module_communication](./correspondence/module_communication.md)
+- [ARANGODB_MARKER_COMMUNICATION](./correspondence/ARANGODB_MARKER_COMMUNICATION.md)
+- [MARKER_DATA_FORMAT](./correspondence/MARKER_DATA_FORMAT.md)
+
+### Features
+- [interactive_table_visualization](./features/interactive_table_visualization.md)
+- [community_detection](./features/community_detection.md)
+
+### Feedback
+- [004_graphiti_parity_analysis](./feedback/004_graphiti_parity_analysis.md)
+- [005_memory_conversation_comparison](./feedback/005_memory_conversation_comparison.md)
+
+### Requirements
+- [PDF_REQUIREMENTS](./requirements/PDF_REQUIREMENTS.md)
+
+### Technical
+- [SEMANTIC_SEARCH_FIX_COMPLETE](./technical/SEMANTIC_SEARCH_FIX_COMPLETE.md)
+- [VECTOR_SEARCH_FIX_SUMMARY](./technical/VECTOR_SEARCH_FIX_SUMMARY.md)
 
 ### Troubleshooting
-1. [General Guide](guides/TROUBLESHOOTING.md) - Common issues
-2. [Database Issues](architecture/ARANGODB_TROUBLESHOOTING.md) - ArangoDB
-3. [Search Problems](architecture/SEARCH_API_ISSUES.md) - Search issues
+- [APPROX_NEAR_COSINE_USAGE](./troubleshooting/APPROX_NEAR_COSINE_USAGE.md)
 
-## 📂 Finding Information
+## 🔍 Finding Information
 
-### By Topic
-- **Getting Started**: See [INDEX.md](INDEX.md)
-- **CLI Commands**: See [CLI_GUIDE.md](usage/CLI_GUIDE.md)
-- **API Reference**: See [python_api.md](api/python_api.md)
-- **Architecture**: See [architecture/](architecture/)
-- **Troubleshooting**: See [guides/TROUBLESHOOTING.md](guides/TROUBLESHOOTING.md)
+- **New to the project?** Start with [00_quick_start](./00_quick_start/)
+- **Need API details?** Check [02_api_reference](./02_api_reference/)
+- **Integration help?** See [04_integration](./04_integration/)
+- **Contributing?** Read [05_development](./05_development/)
 
-### By User Type
-- **End Users**: Start with [usage/](usage/)
-- **Developers**: Start with [guides/](guides/)
-- **Beta Testers**: Start with [BETA_TESTING_GUIDE.md](guides/BETA_TESTING_GUIDE.md)
+## 🗄️ Archive
 
-### By Task
-- **Install/Setup**: See [BETA_RELEASE_NOTES.md](BETA_RELEASE_NOTES.md)
-- **Learn Commands**: See [CLI_GUIDE.md](usage/CLI_GUIDE.md)
-- **Integrate**: See [agent_integration_guide.md](usage/agent_integration_guide.md)
-- **Develop**: See [TASK_DOCUMENTATION_OVERVIEW.md](guides/TASK_DOCUMENTATION_OVERVIEW.md)
-- **Create Tasks**: See [TASK_LIST_TEMPLATE_GUIDE.md](guides/TASK_LIST_TEMPLATE_GUIDE.md)
-- **Quick Reference**: See [TASK_GUIDELINES_QUICK_REFERENCE.md](guides/TASK_GUIDELINES_QUICK_REFERENCE.md)
+Deprecated or historical documentation has been moved to [archive](./archive/) for reference.
 
-## 🔍 Recent Updates
-- Consolidated CLI documentation into single guide
-- Reorganized documentation structure for clarity
-- Archived outdated iteration 1 documents
-- Updated INDEX.md with clearer navigation
+---
 
-Last Updated: 2025-05-18
+*Documentation reorganized on 2025-06-01 for clarity and easy navigation.*

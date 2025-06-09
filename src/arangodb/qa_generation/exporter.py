@@ -1,5 +1,7 @@
 """
 Export Q&A pairs to various training formats.
+Module: exporter.py
+Description: Implementation of exporter functionality
 
 This module handles exporting validated Q&A pairs to formats suitable
 for fine-tuning with UnSloth and other training frameworks.

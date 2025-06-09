@@ -1,3 +1,24 @@
+"""
+Module: display_utils.py
+Description: Utility functions and helpers for display utils
+
+External Dependencies:
+- rich: [Documentation URL]
+- colorama: [Documentation URL]
+- tabulate: [Documentation URL]
+- arangodb: [Documentation URL]
+- loguru: [Documentation URL]
+
+Sample Input:
+>>> # Add specific examples based on module functionality
+
+Expected Output:
+>>> # Add expected output examples
+
+Example Usage:
+>>> # Add usage examples
+"""
+
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table

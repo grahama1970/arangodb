@@ -1,5 +1,6 @@
 """
 Marker to ArangoDB QA Connector
+Module: marker_connector.py
 
 This module bridges between Marker's output format and ArangoDB's Q&A generation system,
 ensuring that document structure and raw corpus are properly preserved and utilized.
@@ -413,10 +414,10 @@ if __name__ == "__main__":
                 assert loaded_output["document"]["id"] == "test_doc", "Document ID mismatch"
                 assert loaded_output["raw_corpus"]["full_text"].startswith("Introduction"), "Raw corpus mismatch"
                 
-                print("✅ Marker output created and loaded successfully")
+                print(" Marker output created and loaded successfully")
             except Exception as e:
                 print(f"⚠️ Skipping ArangoDB verification due to connection error: {e}")
-                print("✅ VALIDATION PASSED (MOCK MODE)")
+                print(" VALIDATION PASSED (MOCK MODE)")
                 sys.exit(0)
         except Exception as e:
             all_validation_failures.append(f"Marker output loading test failed: {str(e)}")
@@ -453,8 +454,8 @@ if __name__ == "__main__":
             
             assert len(objects) == 4, f"Expected 4 objects, got {len(objects)}"
             
-            print(f"✅ Stored document with ID: {doc_id}")
-            print(f"✅ Stored {len(objects)} document objects")
+            print(f" Stored document with ID: {doc_id}")
+            print(f" Stored {len(objects)} document objects")
         except Exception as e:
             all_validation_failures.append(f"Document storage test failed: {str(e)}")
         
@@ -479,7 +480,7 @@ if __name__ == "__main__":
             # Should have at least some relationships
             assert relationships, "No relationships created"
             
-            print(f"✅ Created document relationships")
+            print(f" Created document relationships")
         except Exception as e:
             all_validation_failures.append(f"Relationship creation test failed: {str(e)}")
     
@@ -490,11 +491,11 @@ if __name__ == "__main__":
     
     # Final validation result
     if all_validation_failures:
-        print(f"\n❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
+        print(f"\n VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
         for failure in all_validation_failures:
             print(f"  - {failure}")
         sys.exit(1)  # Exit with error code
     else:
-        print(f"\n✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
+        print(f"\n VALIDATION PASSED - All {total_tests} tests produced expected results")
         print("Marker connector module is validated and ready for use")
         sys.exit(0)  # Exit with success code

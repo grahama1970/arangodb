@@ -1,5 +1,7 @@
 """
 CLI for exporting QA pairs to Unsloth format.
+Module: unsloth_cli.py
+Description: Functions for unsloth cli operations
 
 This module provides a dedicated command-line interface for exporting
 Q&A pairs to formats suitable for fine-tuning with Unsloth.
@@ -161,7 +163,7 @@ def export_to_unsloth(
                 )
         
         # Display results
-        console.print(f"[green]✓[/green] Successfully exported {get_qa_count(qa_data)} QA pairs")
+        console.print(f"[green][/green] Successfully exported {get_qa_count(qa_data)} QA pairs")
         
         # Show output files
         table = Table(title="Export Results")

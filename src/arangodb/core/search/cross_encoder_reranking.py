@@ -1,5 +1,7 @@
 """
 # Cross-Encoder Reranking Module
+Module: cross_encoder_reranking.py
+Description: Functions for cross encoder reranking operations
 
 This module provides functionality to rerank search results using cross-encoder models,
 which can significantly improve search quality by performing a more sophisticated

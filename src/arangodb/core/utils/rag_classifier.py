@@ -1,3 +1,25 @@
+"""
+Module: rag_classifier.py
+Description: Implementation of rag classifier functionality
+
+External Dependencies:
+- concurrent: [Documentation URL]
+- arango: [Documentation URL]
+- loguru: [Documentation URL]
+- tqdm: [Documentation URL]
+- tabulate: [Documentation URL]
+- dotenv: [Documentation URL]
+
+Sample Input:
+>>> # Add specific examples based on module functionality
+
+Expected Output:
+>>> # Add expected output examples
+
+Example Usage:
+>>> # Add usage examples
+"""
+
 #!/usr/bin/env python3
 """
 Module: rag_classifier.py

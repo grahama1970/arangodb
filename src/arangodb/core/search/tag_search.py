@@ -1,5 +1,7 @@
 """
 Tag-Based Search Module
+Module: tag_search.py
+Description: Functions for tag search operations
 
 This module provides functionality for searching documents by tags in ArangoDB.
 It allows filtering by one or more tags with options for requiring all tags or any tag.
@@ -353,10 +355,10 @@ if __name__ == "__main__":
         try:
             client = connect_arango()
             db = ensure_database(client)
-            print("✅ Successfully connected to ArangoDB")
+            print(" Successfully connected to ArangoDB")
         except Exception as e:
             all_validation_failures.append(f"ArangoDB connection failed: {str(e)}")
-            print(f"❌ ArangoDB connection failed: {str(e)}")
+            print(f" ArangoDB connection failed: {str(e)}")
             sys.exit(1)
         
         # Test 2: Basic tag search with single tag
@@ -374,23 +376,23 @@ if __name__ == "__main__":
             
             # Verify we got valid results structure
             if "results" in search_results and "tags" in search_results:
-                print(f"✅ Successfully got valid search results structure")
+                print(f" Successfully got valid search results structure")
                 
                 # Check results (we might have 0 results with empty database, but the search should still work)
-                print(f"✅ Found {len(search_results.get('results', []))} results for tag(s): {search_tag}")
+                print(f" Found {len(search_results.get('results', []))} results for tag(s): {search_tag}")
                 
                 # Verify tags were correctly included in results
                 if search_results.get("tags") == search_tag:
-                    print(f"✅ Tags parameter was correctly included in results")
+                    print(f" Tags parameter was correctly included in results")
                 else:
                     all_validation_failures.append(f"Tags parameter mismatch: expected {search_tag}, got {search_results.get('tags')}")
-                    print(f"❌ Tags parameter mismatch: expected {search_tag}, got {search_results.get('tags')}")
+                    print(f" Tags parameter mismatch: expected {search_tag}, got {search_results.get('tags')}")
             else:
                 all_validation_failures.append(f"Invalid search results structure: {search_results.keys()}")
-                print(f"❌ Invalid search results structure")
+                print(f" Invalid search results structure")
         except Exception as e:
             all_validation_failures.append(f"Basic tag search failed: {str(e)}")
-            print(f"❌ Basic tag search failed: {str(e)}")
+            print(f" Basic tag search failed: {str(e)}")
         
         # Test 3: Tag search with multiple tags (ANY mode)
         total_tests += 1
@@ -408,21 +410,21 @@ if __name__ == "__main__":
             
             # Verify search worked
             if "results" in search_results:
-                print(f"✅ Successfully performed search with multiple tags (ANY mode)")
+                print(f" Successfully performed search with multiple tags (ANY mode)")
                 print(f"Found {len(search_results.get('results', []))} results for tags: {search_tags} (ANY mode)")
                 
                 # Verify require_all_tags parameter was included properly
                 if search_results.get("require_all_tags") == False:
-                    print(f"✅ require_all_tags parameter correctly set to False")
+                    print(f" require_all_tags parameter correctly set to False")
                 else:
                     all_validation_failures.append("require_all_tags parameter not correctly set to False")
-                    print("❌ require_all_tags parameter not correctly set to False")
+                    print(" require_all_tags parameter not correctly set to False")
             else:
                 all_validation_failures.append("Tag search with ANY mode returned invalid results structure")
-                print("❌ Tag search with ANY mode returned invalid results structure")
+                print(" Tag search with ANY mode returned invalid results structure")
         except Exception as e:
             all_validation_failures.append(f"Tag search with ANY mode failed: {str(e)}")
-            print(f"❌ Tag search with ANY mode failed: {str(e)}")
+            print(f" Tag search with ANY mode failed: {str(e)}")
         
         # Test 4: Tag search with multiple tags (ALL mode)
         total_tests += 1
@@ -440,21 +442,21 @@ if __name__ == "__main__":
             
             # Verify search worked
             if "results" in search_results:
-                print(f"✅ Successfully performed search with multiple tags (ALL mode)")
+                print(f" Successfully performed search with multiple tags (ALL mode)")
                 print(f"Found {len(search_results.get('results', []))} results for tags: {search_tags} (ALL mode)")
                 
                 # Verify require_all_tags parameter was included properly
                 if search_results.get("require_all_tags") == True:
-                    print(f"✅ require_all_tags parameter correctly set to True")
+                    print(f" require_all_tags parameter correctly set to True")
                 else:
                     all_validation_failures.append("require_all_tags parameter not correctly set to True")
-                    print("❌ require_all_tags parameter not correctly set to True")
+                    print(" require_all_tags parameter not correctly set to True")
             else:
                 all_validation_failures.append("Tag search with ALL mode returned invalid results structure")
-                print("❌ Tag search with ALL mode returned invalid results structure")
+                print(" Tag search with ALL mode returned invalid results structure")
         except Exception as e:
             all_validation_failures.append(f"Tag search with ALL mode failed: {str(e)}")
-            print(f"❌ Tag search with ALL mode failed: {str(e)}")
+            print(f" Tag search with ALL mode failed: {str(e)}")
         
         # Test 5: Tag search with custom filter expression
         total_tests += 1
@@ -472,23 +474,23 @@ if __name__ == "__main__":
             
             # Verify search worked
             if "results" in search_results:
-                print(f"✅ Successfully performed search with custom filter expression")
+                print(f" Successfully performed search with custom filter expression")
                 print(f"Found {len(search_results.get('results', []))} results for tags: {search_tags} with filter: {filter_expr}")
             else:
                 all_validation_failures.append("Tag search with filter expression returned invalid results structure")
-                print("❌ Tag search with filter expression returned invalid results structure")
+                print(" Tag search with filter expression returned invalid results structure")
         except Exception as e:
             all_validation_failures.append(f"Tag search with filter expression failed: {str(e)}")
-            print(f"❌ Tag search with filter expression failed: {str(e)}")
+            print(f" Tag search with filter expression failed: {str(e)}")
         
         # Final validation result
         if all_validation_failures:
-            print(f"\n❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
+            print(f"\n VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
             for failure in all_validation_failures:
                 print(f"  - {failure}")
             sys.exit(1)  # Exit with error code
         else:
-            print(f"\n✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
+            print(f"\n VALIDATION PASSED - All {total_tests} tests produced expected results")
             print("Tag search functionality is validated and ready for use")
             sys.exit(0)  # Exit with success code
             

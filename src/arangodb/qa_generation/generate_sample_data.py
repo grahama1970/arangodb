@@ -1,5 +1,7 @@
 """
 Generate sample QA data for testing.
+Module: generate_sample_data.py
+Description: Functions for generate sample data operations
 
 This module creates sample QA data for testing export formats
 and Unsloth compatibility.

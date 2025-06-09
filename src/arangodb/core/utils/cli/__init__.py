@@ -1,5 +1,7 @@
 """
 CLI utility functions for consistent output formatting
+Module: __init__.py
+Description: Package initialization and exports
 """
 
 import json
@@ -61,14 +63,14 @@ def format_output(
 
 def format_error(message: str, exception: Optional[Exception] = None) -> None:
     """Format and display error messages consistently"""
-    error_text = f"❌ {message}"
+    error_text = f" {message}"
     if exception:
         error_text += f": {str(exception)}"
     console.print(error_text, style="red")
 
 def format_success(message: str) -> None:
     """Format and display success messages consistently"""
-    console.print(f"✅ {message}", style="green")
+    console.print(f" {message}", style="green")
 
 def format_warning(message: str) -> None:
     """Format and display warning messages consistently"""

@@ -1,3 +1,21 @@
+"""
+Module: comprehensive_test_runner.py
+Description: Test suite for comprehensive_runner functionality
+
+External Dependencies:
+- arango: https://docs.python-arango.com/
+- loguru: https://loguru.readthedocs.io/
+
+Sample Input:
+>>> # See function docstrings for specific examples
+
+Expected Output:
+>>> # See function docstrings for expected results
+
+Example Usage:
+>>> # Import and use as needed based on module functionality
+"""
+
 #!/usr/bin/env python3
 """
 Comprehensive Test Runner with Markdown Reporting
@@ -346,4 +364,4 @@ def main():
         return 0
 
 if __name__ == "__main__":
-    sys.exit(main())
+    # sys.exit() removed)

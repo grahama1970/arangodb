@@ -1,29 +1,20 @@
 """
-Module Description:
-Defines the central configuration dictionary (CONFIG) and constants for the ArangoDB project.
-Loads settings from environment variables using python-dotenv for database connections,
-embedding models, search parameters, classification thresholds,
-graph settings, and LLM configurations. Also defines constants used throughout the project.
+Module: constants.py
 
-Links:
-- python-dotenv: https://github.com/theskumar/python-dotenv
-- os module: https://docs.python.org/3/library/os.html
+External Dependencies:
+- arango: https://docs.python-arango.com/
+- loguru: https://loguru.readthedocs.io/
 
-Sample Input/Output:
+Sample Input:
+>>> # See function docstrings for specific examples
 
-- Accessing config values:
-  from arangodb.core.constants import CONFIG
-  db_host = CONFIG["arango"]["host"]
-  model_name = CONFIG["embedding"]["model_name"]
+Expected Output:
+>>> # See function docstrings for expected results
 
-- Accessing constants:
-from arangodb.core.utils.config_validator import validate_config, print_config_summary
-  from arangodb.core.constants import COLLECTION_NAME, EDGE_COLLECTION_NAME
-  
-- Running validation:
-  python -m arangodb.core.constants
-  (Prints validation status and exits with 0 or 1)
+Example Usage:
+>>> # Import and use as needed based on module functionality
 """
+
 import os
 import sys # Import sys for exit codes
 from dotenv import load_dotenv
@@ -46,7 +37,7 @@ CONFIG = {
     },
     "embedding": {
         "model_name": "BAAI/bge-large-en-v1.5",  # Changed to BGE model
-        "dimensions": 1024,  # BGE model dimensions (different from nomic's 768)
+        "dimensions": 1024,  # BGE model dimensions (different from nomic's 768)'
         "field": "embedding",
         "batch_size": 32,
     },
@@ -226,10 +217,10 @@ if __name__ == "__main__":
     is_valid = validate_config()
 
     if is_valid:
-        print("✅ VALIDATION COMPLETE - Required environment variables are set.")
+        print(" VALIDATION COMPLETE - Required environment variables are set.")
         sys.exit(0)
     else:
-        print("❌ VALIDATION FAILED - Missing required environment variables. See logs for details.")
+        print(" VALIDATION FAILED - Missing required environment variables. See logs for details.")
         sys.exit(1)
 
 # Import field constants at the end to avoid circular imports

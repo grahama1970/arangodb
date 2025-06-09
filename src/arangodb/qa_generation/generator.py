@@ -1,5 +1,6 @@
 """
-Q&A Generation module that leverages ArangoDB's graph relationships.
+Q&A Generation module that leverages ArangoDB's graph relationships.'
+Module: generator.py
 
 This module generates high-quality question-answer pairs from documents
 using graph traversal and multi-hop reasoning.

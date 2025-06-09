@@ -1,4 +1,5 @@
 """FastAPI server for D3.js visualizations with caching support
+Module: visualization_server.py
 
 This module provides REST endpoints for generating and serving D3.js visualizations
 with Redis caching for improved performance.

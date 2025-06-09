@@ -1,5 +1,6 @@
 """
 Q&A Edge Enrichment Module
+Module: enrichment.py
 
 Provides functionality to automatically enrich Q&A edges with search integration
 and contradiction detection, making them fully integrated with the graph model.
@@ -27,7 +28,7 @@ class QAEdgeEnricher:
     Enriches Q&A edges with search integration and contradiction detection.
     
     This class provides functionality to integrate Q&A edges with the existing
-    search and graph infrastructure, ensuring they're available for querying
+    search and graph infrastructure, ensuring they're available for querying'
     and resolving any contradictions with existing knowledge.
     """
     

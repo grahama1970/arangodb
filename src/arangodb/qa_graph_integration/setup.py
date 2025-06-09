@@ -1,5 +1,7 @@
 """
 ArangoDB QA Collections Setup
+Module: setup.py
+Description: Implementation of setup functionality
 
 This module creates and configures the necessary ArangoDB collections for storing
 Q&A pairs and their relationships to document elements. It handles the setup of

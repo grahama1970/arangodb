@@ -1,3 +1,30 @@
+"""
+Module: setup_pizza_db_simple.py
+
+External Dependencies:
+- arango: https://docs.python-arango.com/
+- loguru: https://loguru.readthedocs.io/
+
+Sample Input:
+>>> # See function docstrings for specific examples
+
+Expected Output:
+>>> # See function docstrings for expected results
+
+Example Usage:
+>>> # Import and use as needed based on module functionality
+"""
+
+import sys
+from pathlib import Path
+
+# Add src to path for imports
+src_path = Path(__file__).parent.parent / "src"
+if src_path.exists() and str(src_path) not in sys.path:
+    sys.path.insert(0, str(src_path))
+
+
+
 #!/usr/bin/env python3
 """
 Simple setup script for pizza database without embedding dependencies.
@@ -81,7 +108,7 @@ def setup_pizza_database():
             result = collection.insert_many(data)
             print(f"Loaded {len(data)} documents into {coll_name}")
     
-    print("\n✅ Pizza database setup complete!")
+    print("\n Pizza database setup complete!")
     print(f"Database '{db_name}' is ready for testing")
     
     return db

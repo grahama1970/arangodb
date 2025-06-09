@@ -1,4 +1,5 @@
 """Performance optimizer for D3.js visualizations
+Module: performance_optimizer.py
 
 This module provides performance optimization strategies for handling large graphs
 including data sampling, level-of-detail rendering, and WebGL acceleration.
@@ -536,11 +537,11 @@ if __name__ == "__main__":
     
     # Final validation result
     if all_validation_failures:
-        print(f"❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
+        print(f" VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
         for failure in all_validation_failures:
             print(f"  - {failure}")
         exit(1)
     else:
-        print(f"✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
+        print(f" VALIDATION PASSED - All {total_tests} tests produced expected results")
         print("Performance optimizer is working correctly")
         exit(0)
